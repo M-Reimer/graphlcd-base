@@ -1,0 +1,98 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The SED1520 driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The SED1520 driver supports LC displays that use the Epson SED1520
+controller, connected to the parallel port of your PC.
+
+
+Wirings
+-------
+The SED1520 driver supports the following connection on a parallel
+port:
+
+  printerport   LCD          other
+  -----------   ----------   ----------
+  GND    (18)   GND   (01)   GND          (Ground)
+                Vdd   (02)   +5V
+                Vo    (03)                (LCD Contrast In -4V)
+  nSEL   (17)   R/S   (04)                (Register Select)
+                R/W   (05)   GND          (Read/Write)
+  nSTRB  (01)   EN1   (06)                (Enable Left)
+  D0     (02)   D0    (07)                (DataBit0)
+  D1     (03)   D1    (08)                (DataBit1)
+  D2     (04)   D2    (09)                (DataBit2)
+  D3     (05)   D3    (10)                (DataBit3)
+  D4     (06)   D4    (11)                (DataBit4)
+  D5     (07)   D5    (12)                (DataBit5)
+  D6     (08)   D6    (13)                (DataBit6)
+  D7     (09)   D7    (14)                (DataBit7)
+  INIT   (16)   EN2   (15)                (Enable Right)
+                RESET (16)   +5V          (Controller Reset)
+                LED+  (17)   +4V/150mA    (Backlight with 6,4Ohm Resistor to +5V)
+  nAUTO  (14)   LED-  (18)   GND          (Backlight GND [via BS170])
+
+  See also http://www.usblcd.de/lcdproc/sed1520-dip.php4 ...
+
+Note: The pin numbering may vary with other displays.
+
+
+Configuration Parameters
+------------------------
+The SED1520 driver supports the following parameters in config file:
+
+Device
+ Instead of using the direct output via port address (see Port), you
+ can use the parport device (/dev/parportX). The advantage over the
+ direct output via port address is that this works for non-root users
+ also. But it's a little bit slower. The modules ppdev.o, parport.o
+ and parport_pc.o must be loaded or compiled into the kernel.
+
+Port
+ Sets the port address of the parallel port. If this parameter is not
+ given, 0x378 is used. To use this direct output, the program that
+ uses the driver library has to be started with user 'root'.
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 120 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 32 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+AdjustTiming
+ To get a timing that is as accurate as possible, the drivers measure
+ the time for port commands (see: benchmark in syslog). You might
+ decrease or increase the time to wait after port commands with this
+ parameter. Normally, there is no need to change this parameter.
+ Possible values: -50 <= x <= 50
+ Default value: 0
+
+RefreshDisplay
+ Normally, most of the drivers do not update the whole display, but
+ only the areas that have changed since last update. So it might be,
+ that some faulty pixels would stay a longer time. To avoid this, the
+ plugin makes a complete refresh from time to time. This parameter
+ defines how often a complete refresh will be done.
+ e.g.: A value of 5 means, that the plugin will make a complete
+       refresh on every 5th update.
+ A value of 0 completely disables complete refreshs. 
+ Possible values: 0 <= x <= 50
+ Default value: 5
+

@@ -1,0 +1,126 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The GU140X32F driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The GU140X32F driver supports Noritake GU140x32-F7806 VFD displays.
+The VFD is operating in its 8 bit-mode connected to a PC's parallel
+port.
+
+
+Wirings
+-------
+The GU140x32F driver supports the following connections on a parallel
+port:
+ - Standard
+ - Windows
+
+Standard wiring:
+
+  printerport   LCD          other
+  -----------   ----------   ----------
+                GND   (01)   GND          (Ground)
+                VCC   (02)   VCC          (+5VDC 500mA)
+                NC    (03)
+  nSTRB  (01)   RS    (04)                (Register Select)
+  nAUTO  (14)   RW    (05)                (Read/Write)
+  INIT   (16)   EN    (06)                (Chip Enable)
+  D0     (02)   D0    (07)                (Data Bit 0)
+  D1     (03)   D1    (08)                (Data Bit 1)
+  D2     (04)   D2    (09)                (Data Bit 2)
+  D3     (05)   D3    (10)                (Data Bit 3)
+  D4     (06)   D4    (11)                (Data Bit 4)
+  D5     (07)   D5    (12)                (Data Bit 5)
+  D6     (08)   D6    (13)                (Data Bit 6)
+  D7     (09)   D7    (14)                (Data Bit 7)
+
+Windows wiring:
+
+  printerport   LCD          other
+  -----------   ----------   ----------
+                GND   (01)   GND          (Ground)
+                VCC   (02)   VCC          (+5VDC 500mA)
+                NC    (03)
+  INIT   (16)   RS    (04)                (Register Select)
+  nAUTO  (14)   RW    (05)                (Read/Write)
+  nSTRB  (01)   EN    (06)                (Chip Enable)
+  D0     (02)   D0    (07)                (Data Bit 0)
+  D1     (03)   D1    (08)                (Data Bit 1)
+  D2     (04)   D2    (09)                (Data Bit 2)
+  D3     (05)   D3    (10)                (Data Bit 3)
+  D4     (06)   D4    (11)                (Data Bit 4)
+  D5     (07)   D5    (12)                (Data Bit 5)
+  D6     (08)   D6    (13)                (Data Bit 6)
+  D7     (09)   D7    (14)                (Data Bit 7)
+
+Note: The pin numbering may vary with other displays.
+
+
+Configuration Parameters
+------------------------
+The GU140x32F driver supports the following parameters in config file:
+
+Device
+ Instead of using the direct output via port address (see Port), you
+ can use the parport device (/dev/parportX). The advantage over the
+ direct output via port address is that this works for non-root users
+ also. But it's a little bit slower. The modules ppdev.o, parport.o
+ and parport_pc.o must be loaded or compiled into the kernel.
+
+Port
+ Sets the port address of the parallel port. If this parameter is not
+ given, 0x378 is used. To use this direct output, the program that
+ uses the driver library has to be started with user 'root'.
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 140 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 32 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Brightness
+ Sets the brightness of your display's backlight.
+ Possible values: 0 <= x <= 100)
+ Default value: 100
+
+AdjustTiming
+ To get a timing that is as accurate as possible, the drivers measure
+ the time for port commands (see: benchmark in syslog). You might
+ decrease or increase the time to wait after port commands with this
+ parameter. Normally, there is no need to change this parameter.
+ Possible values: -50 <= x <= 50
+ Default value: 0
+
+RefreshDisplay
+ Normally, most of the drivers do not update the whole display, but
+ only the areas that have changed since last update. So it might be,
+ that some faulty pixels would stay a longer time. To avoid this, the
+ plugin makes a complete refresh from time to time. This parameter
+ defines how often a complete refresh will be done.
+ e.g.: A value of 5 means, that the plugin will make a complete
+       refresh on every 5th update.
+ A value of 0 completely disables complete refreshs. 
+ Possible values: 0 <= x <= 50
+ Default value: 5
+
+Wiring
+ Select the type of wiring your display is connected with.
+ Possible values: 'Standard', 'Windows'
+ Default value: 'Standard'
+

@@ -1,0 +1,111 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The GU126X64-K610A4 driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The GU126X64-K610A4 driver supports Noritake GU126X64D-K610A4 VFD 
+display.
+
+The VFD is connected to a single PC parallel port.
+
+Wirings
+-------
+The GU126X64-K610A4 driver supports the following connections on a
+parallel port:
+
+
+  printerport   LCD                 other
+  -----------   ----------------    -------
+                5V     (Con1.1)     VCC        (Power supply 5V)
+  ACK    (10)   MB     (Con1.9)                (Module Busy)
+                0V     (Con1.5)     GND        (Ground)
+
+  GND    (18)   0V     (Con2.1)                (Ground)
+  INIT   (16)   ENABLE (Con2.2)                (ENABLE)
+  D0     (02)   PA0    (Con2.3)                (DataBit 0)
+  D1     (03)   PA1    (Con2.4)                (DataBit 1)
+  D2     (04)   PA2    (Con2.5)                (DataBit 2)
+  D3     (05)   PA3    (Con2.6)                (DataBit 3)
+  D4     (06)   PA4    (Con2.7)                (DataBit 4)
+  D5     (07)   PA5    (Con2.8)                (DataBit 5)
+  D6     (08)   PA6    (Con2.9)                (DataBit 6)
+  D7     (09)   PA7    (Con2.10)               (DataBit 7)
+
+The Display is configured to parallel port mode with "Clock Input"
+to "Falling Edge".
+
+================================================================
+   
+Configuration Parameters
+------------------------
+The GU126X64-K610A4 driver supports the following parameters in 
+config file:
+
+Device
+ Instead of using the direct output via port address (see Port), you
+ can use the parport device (/dev/parportX). The advantage over the
+ direct output via port address is that this works for non-root users
+ also. But it's a little bit slower. The modules ppdev.o, parport.o
+ and parport_pc.o must be loaded or compiled into the kernel.
+
+Port
+ Sets the port address of the parallel port. If this parameter is not
+ given, 0x378 is used. To use this direct output, the program that
+ uses the driver library has to be started with user 'root'.
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 256 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 64 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Brightness
+ Sets the brightness of your display's backlight.
+ Possible values: 0 <= x <= 100)
+ Default value: 100
+
+AdjustTiming
+ To get a timing that is as accurate as possible, the drivers measure
+ the time for port commands (see: benchmark in syslog). You might
+ decrease or increase the time to wait after port commands with this
+ parameter. Normally, there is no need to change this parameter.
+ Possible values: -50 <= x <= 50
+ Default value: 0
+
+RefreshDisplay
+ Normally, most of the drivers do not update the whole display, but
+ only the areas that have changed since last update. So it might be,
+ that some faulty pixels would stay a longer time. To avoid this, the
+ plugin makes a complete refresh from time to time. This parameter
+ defines how often a complete refresh will be done.
+ e.g.: A value of 5 means, that the plugin will make a complete
+       refresh on every 5th update.
+ A value of 0 completely disables complete refreshs. 
+ Possible values: 0 <= x <= 50
+ Default value: 0
+
+Debug
+ Prints debugging information of some methods of the driver.
+ (add the values of interest)
+
+  1: show a log at the start of a refresh
+  2: show a log at the end of a refresh with timing information
+  4: show the rows (8 pixel) refreshed
+  8: show every commands/bytes sent to the display
+ 16: log every unsuccessful waiting for display acknowledge

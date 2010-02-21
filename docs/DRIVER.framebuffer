@@ -1,0 +1,44 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The Framebuffer driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The Framebuffer driver writes the output to the framebuffer device at
+/dev/fb0.
+
+The driver is optimized for a 640x480x16 framebuffer. To use it, have
+a kernel with a framebuffer device (e.g. vesa fb) and add e.g.
+vga=0311 to the kernel init parameters (e.g. in lilo.conf).
+
+
+Configuration Parameters
+------------------------
+The Framebuffer driver supports the following parameters in config
+file:
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 320 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 240 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Zoom
+ Determines if pixels should be drawn double sized.
+ Possible values: 0, 1
+

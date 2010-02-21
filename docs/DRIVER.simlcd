@@ -1,0 +1,36 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The SimLCD driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The Image driver writes a file including the output that you would
+normally see on a LCD e.g. from the graphlcd plugin. You can use the
+SimLCD tool to view this file.
+
+
+Configuration Parameters
+------------------------
+The SimLCD driver supports the following parameters in config file:
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 240 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 128 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+

@@ -1,0 +1,151 @@
+GraphLCD base package Revision History
+--------------------------------------
+
+2007-02-25: Version 0.1.5
+- added missing include path definition (thanks to Wolfgang Astleitner)
+- replaced unsigned long long with uint64_t
+- added missing includes
+- increased VER_MAJOR for glcdgraphics library as interface changed in an incompatible way (thanks to Tobias Grimm)
+- changed type of fbp (framebuffer pointer) to void*. Compare fbp against MAP_FAILED to test for success of mmap. This should fix a x86_64 compile error.
+- ks0108: clear data lines after display refresh to fix problems with display contrast that occur under some conditions.
+
+
+2007-02-04: Version 0.1.4
+- added missing include of stdint.h in several files
+- added -fPIC compiler option to library Makefiles
+- graphlcd.conf: added missing "Driver=serdisp" in serdisp section (thanks to Jörn Hermann)
+- graphlcd.conf: changed default value for sleep method to gettimeofday
+- glcdgraphics library changes:
+  - Added cBitmap::DrawSlope function that draws a slope of the given type
+  - added class for loading and saving PBM (portable bitmap) files
+  - made loading of GLCD files platform independent (hopefully)
+  - added copy constructor to cBitmap class
+  - removed the friend class stuff from cImage, instead added some functions to set members
+  - new class cImageFile that acts as a base class for image format load/save classes like cGLCDFile or cPBMFile
+  - removed const qualifier from cImage::GetBitmap
+  - added added Invert method to cBitmap
+  - added methods to set font parameter (height, ascent, ...) to cFont class
+  - made loading of FNT files platform independent (hopefully)
+  - return false in cGLCDFile::Open and ::Save when opening of file failed
+  - added trim function to cut leading and trailing spaces from strings
+  - added WrapText method to cFont class
+  - fixed missing last line in cFont::WrapText
+  - fixed WrapText when Height is zero
+  - fixed font loading bug for graphlcd's FNT format
+  - fixed missing addition of spaceBetween in cFont::WrapText that caused too long lines with some fonts
+  - fixed loading of GLCD animations (thanks to Malte Schröder)
+- glcddrivers library changes:
+  - only config.h, driver.h and drivers.h are needed for applications
+  - added driver for g15daemon (thanks to Mike)
+  - added driver for noritake gu126x64D-K610A4 display (thanks to Alexander Rieger)
+  - gu140x32: fix seqfault if fonts.conf missed (thanks to Andreas Brachold)
+  - t6963c: added support for Serial wiring using an industry version with a serial to parallel converter (thanks to Torsten Lang)
+  - avrctl: adapted to changed commands PC -> AVR
+  - avrctl: implemented SetBrightness method
+  - avrctl: changed type of some parameters to SetColData to uint16_t
+  - avrctl: allow sizes below 256x128. Buffer sent to controller is still 256x128.
+  - framebuffer: fixed compiler error on 64bit systems (thanks to Malte Schröder)
+	- serdisp: updated serdisplib driver (thanks to Wolfgang Astleitner)
+  - added simple network driver (not complete) that sends the current display content as and hey string to connected clients
+	- link against libpthread
+	- fixed some default values to be consistent with comments in graphlcd.conf
+- tools changes:
+  - convpic: adapted to changes related to new base class cImageFile
+  - convpic: use classes from glcdgraphics lib for glcd file conversion
+  - convpic: added pbm support
+  - crtfont: use cFont class methods to save in FNT format
+  - genfont: use cFont class methods to load freetype2 supported fonts
+  - genfont: use cFont class methods to save in FNT format
+  - showpic: call SetBrightness method
+  - showpic: changed setting of brightness to use value from config structure
+  - new tool lcdtestpattern to display a test pattern on a LCD (thanks to Alexander Rieger)
+
+
+2006-01-15: Version 0.1.3
+- Added a major.minor.micro version to the libraries starting with 1.0.0
+- Moved usage of DESTDIR from serveral Makefiles to Make.config (thanks to
+  Lucian Muresan).
+- Moved Freetype2 dependency from Make.config to Makefile of libglcdgraphics
+  (thanks to Tobias Grimm).
+- Creating an additional symlink for the library files to be found during
+  making the tools that need them (thanks to Tobias Grimm).
+- Updated serdisplib driver (thanks to Wolfgang Astleitner).
+- KS0108 driver: Added an alternative way of setting the display control lines
+  (same as in old versions). It is selectable through graphlcd configfile
+  parameter "Control".
+- Using default values for width and height in case they are zero, too
+  (thanks to Tobias Grimm).
+- Added cSerialPort class.
+- Added driver for my AVR controlled display.
+
+
+2005-09-17: Version 0.1.2
+- split off drivers from graphlcd plugin to GraphLCD driver library
+  (libglcddrivers)
+- split off graphics and font handling from graphlcd plugin to GraphLCD
+  graphics library (libglcdgraphics)
+- split off tools from graphlcd plugin to GraphLCD base package
+- almost completely rewritten graphics and font handling
+- added configuration file to hold the driver-specific options
+- changed driver interface
+- adopted the tools' code to use the new driver and graphics API
+- glcddrivers: new driver noritake800 for Noritake 800(A) series
+  displays (thanks to Lucian Muresan)
+- glcdgraphics: fixed a NULL-pointer exception in cBitmap::DrawCharacter
+  when skipPixels is equal to width of the character and SubBitmap
+  returns NULL, which was not tested for (thanks to Malte Schröder for
+  reporting this one)
+- glcdgraphics: fixed a wrong return value in cBitmap::DrawCharacter in
+  case skipPixels > 0 which prevented scrolling from working right.
+- now compiles with gcc 2.95 and gcc 3.x
+- added missing #includes
+- new tool showtext: allows showing a text on the LCD, see
+  README.showtext for details.
+- glcddrivers: fixed a too early port release in sed1330 driver (thanks
+  to Matthias Huber)
+- glcddrivers: sed1330: added missing horizontal scrolling
+  initialization. Now, there should be no displaced display any longer.
+  (thanks to Wolfgang Astleitner)
+- glcddrivers: Now serdisplib is loaded dynamically using libdl. So, no
+  INCLUDE_SERDISPLIB define is needed any longer (thanks to Wolfgang
+  Astleitner)
+- glcddrivers: fixed gu256x64-3900 driver: Now sizes other than 256x64
+  should work. (thanks to Detlef Ruge and Ralf Müller)
+- glcdgraphics: fixed a bug in cBitmap::DrawText that prevented scrolling
+  from working.
+- glcdgraphics: fixed a bug in cBitmap::SubBitmap.
+- glcdgraphics: changed the interface of DrawText and DrawCharacter of
+  cBitmap class.
+- glcdgraphics: extended font attributes to better support converted true
+  type fonts. Also changed font file format to support this attributes.
+- glcdgraphics: the lastChange attribute of cImage now is 64 bits wide.
+- crtfont: extended it to support the new font attributes
+- crtfont: changed file format of description files. Now the font
+  attributes are given by its names, p. e. lineheight:20. Look in
+  README.crtfont for details.
+- new tool genfont: allows converting of true type fonts to GraphLCD
+  fonts using freetype2 library. You have to uncomment HAVE_FREETYPE2 in
+  Make.config to use it.
+- added new fonts verdana and verdana bold in sizes 9 to 29 converted by
+  genfont.
+- glcdgraphics: Added additional type casts to std::min calls to make it
+  compile on x86-64 (thanks to Stefan Bergler).
+- glcddrivers: fixed a bug in serdisp.c. When using direct IO the port
+  string was truncated (thanks to Stefan Bergler).
+- glcddrivers: Added method cConfig::GetConfigIndex for getting a
+  configuration by its name (thanks to Lucian Muresan).
+- Added some $(DESTDIR) all over the Makefiles (thanks to Lucian Muresan).
+- glcddrivers: sed1330: Added setting of CS line in 6800 mode (thanks to
+  Wolfgang Astleitner).
+- glcdgraphics: Added FreeType2 support based on patch by Lucian Muresan.
+  - You have to set HAVE_FREETYPE2 in Make.config to enable this
+  - Added some helper functions to GLCD::cFont class
+- glcddrivers: ks0108: Improved timings: Made setting of display control
+  lines like defined in the controller's data sheet. This fixes problems
+  with some display types. Thanks to Matthias Breitbach for providing a
+  LCD of that type.
+- glcddrivers: gu256x64-3900:
+  - Corrected calculation of m_nTimingAdjustCmd.
+  - Added a test for RefreshDisplay config value to prevent a floating
+    point exception to occur when it is set to zero.
+

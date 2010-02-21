@@ -1,0 +1,36 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The Image driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The Image driver writes image sequences in PBM (Portable Bit Map)
+format showing the output that you would normally see on a LCD e.g.
+from the graphlcd plugin.
+
+
+Configuration Parameters
+------------------------
+The Image driver supports the following parameters in config file:
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 240 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 128 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+

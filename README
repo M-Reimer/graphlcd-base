@@ -1,0 +1,97 @@
+This is the base package of the GraphLCD project. It contains
+ - GraphLCD driver library - libglcddrivers
+ - GraphLCD graphics library - libglcdgraphics
+ - GraphLCD tools (crtfont, convpic, showpic, showtext)
+ - GraphLCD media files (pictures and splash screens in GLCD format, fonts)
+
+written by Andreas Regel (andreas.regel AT powarman.de)
+
+based on the graphlcd plugin for the Video Disc Recorder
+  written by                   Carsten Siebholz (c.siebholz AT t-online.de)
+  from 0.0.8 on maintained by  Andreas Regel (andreas.regel AT powarman.de)
+    gu140x32f driver by        Andreas Brachold (vdr04 AT deltab.de)
+    gu256x64-372 driver by     Andreas Weinberger (vdr AT smue.org)
+    gu256x64-3xx0 driver by    Ralf Mueller (ralf AT bj-ig.de)
+    gu126x64D-K610A4 driver by Alexander Rieger (Alexander.Rieger AT inka.de)
+    image driver by            Andreas Regel (andreas.regel AT powarman.de)
+    ks0108 driver by           Andreas Weinberger (vdr AT smue.org)
+    sed1330 driver by          Roland Praml (praml.roland AT t-online.de)
+                               Heinz Gressenberger (heinz.gressenberger AT stmk.gv.at)
+    sed1520 driver by          Andreas Weinberger (vdr AT smue.org)
+    framebuffer driver by      Stephan Skrodzki (skrodzki AT stevekist.de)
+    serdisplib driver by       Wolfgang Astleitner (mrwastl AT users.sourceforge.net)
+    t6963c driver by           Andreas Regel (andreas.regel AT powarman.de)
+    noritake800 drider by      Lucian Muresan (lucianm AT users.sourceforge.net)
+
+
+Project's homepage: http://graphlcd.berlios.de/
+
+
+See the file COPYING for license information.
+
+
+Description
+-----------
+The GraphLCD base is a project to support graphical LC displays. It is
+mainly used by the graphlcd plugin for the Video Disc Recorder to
+display its information.
+
+The GraphLCD driver library supports the following LCD
+controllers/modules:
+ - Hitachi HD61830
+ - Toshiba T6963
+ - Samsung KS0108
+ - Epson SED1520 (only tested with DIP122 lcd module)
+ - Epson SED1330
+ - Noritake GU140X32F-7806
+ - Noritake GU256X64-372
+ - Noritake GU256X64-3XX0 (serial or parallel)
+ - Noritake GU126x64D-K610A4 displays (parallel)
+ - Noritake 800 series displays
+ - all controllers supported by serdisplib (http://serdisplib.sourceforge.net)
+
+Other controllers might be supported in the future.
+
+Additionally the GraphLCD driver library includes some special drivers:
+ - framebuffer, for devices that are connected to the VGA connector
+ - image, for writing image sequences in PBM (Portable Bit Map) format that
+   show the plugin's output.
+
+
+Installation and Configuration:
+-------------------------------
+1. Unpack the tarball to an arbitrary directory.
+
+  tar xzf graphlcd-base-0.1.2.tgz
+
+2. Configure if you want FreeType2 support by commenting/uncommenting
+   HAVE_FREETYPE2 in Make.config.
+
+3. Compile the libraries and tools.
+
+  make all (from the package's directory)
+
+4. Install the libraries and tools.
+
+  make install (from the package's directory)
+
+5. Edit the configuration file graphlcd.conf to fit your needs.
+
+6. Copy it to the GraphLCD's default configuration search path (/etc).
+
+  cp graphlcd.conf /etc
+
+
+Notes about FreeType2:
+----------------------
+If the HAVE_FREETYPE2 variable is defined, then the new method
+cFont::LoadFT2(..) from the graphics library will load a FreeType2-supported
+font (only TTFs tested so far) and render it into the raster font structure
+that cFont uses normally. The method is also defined if no FT2 support is
+compiled in, only then it will return false afer logging an error message in
+the system log, telling that graphlcd-base has been compiled without FT2
+support. This way, applications using this library (vdrplugin-graphlcd, or the
+wrapper LCDproc "meta-driver" glcdprocdriver for example, can treat this case
+and have a fallback to the glcdraphics-native raster font if FT2 is not
+supported, or the TTF font could not be loaded for some reason.
+

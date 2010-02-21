@@ -1,0 +1,61 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The serdisp driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The serdisp driver supports LC displays that are supported by
+serdisplib (http://serdisplib.sourceforge.net).
+
+
+Configuration Parameters
+------------------------
+The serdisp driver supports the following parameters in config file:
+
+Controller
+ Select the controller your LCD uses named like in serdisplib.
+ Possible values: See README in serdisplib package
+
+Device
+ Instead of using the direct output via port address (see Port), you
+ can use the parport device (/dev/parportX). The advantage over the
+ direct output via port address is that this works for non-root users
+ also. But it's a little bit slower. The modules ppdev.o, parport.o
+ and parport_pc.o must be loaded or compiled into the kernel.
+
+Port
+ Sets the port address of the parallel port. If this parameter is not
+ given, 0x378 is used. To use this direct output, the program that
+ uses the driver library has to be started with user 'root'.
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value according to the selected controller is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value according to the selected controller is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Contrast
+ Sets the contrast of your display.
+ Possible values: 0 <= x <= 10
+ Default value: 5
+
+Backlight
+ Switches the backlight of your display on and off.
+ Possible values: 'yes', 'no'
+ Default value: 'yes'
+

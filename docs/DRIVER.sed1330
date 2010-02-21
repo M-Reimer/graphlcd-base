@@ -1,0 +1,223 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The SED1330 driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The SED1330 driver supports LC displays that use the Epson
+SED1330/1335 controller, connected to the parallel port of your PC.
+
+
+Wirings
+-------
+The SED1330 driver supports the following connections on a parallel
+port:
+ - Original
+ - PowerLCD
+ - LCDProc
+ - Tweakers
+ - YASEDW
+
+Original wiring:
+
+  printerport   LCD          other        function in 6800 mode   8080 mode
+  -----------   ----------   ----------   ---------------------   -----------
+                /RES  (01)   +5V          /RES (Reset)
+  nSTRB  (01)   /RD   (02)                E (Enable)              /RD (Read)
+  nAUTO  (14)   /WR   (03)                R/W (Read/Write)        /WR (Write)
+                SEL2  (04)   GND          Interface select 2
+                SEL1  (05)   +5V          Interface select 1
+  nSEL   (17)   /CS   (06)   GND          /CS (Chip select)
+  INIT   (16)   A0    (07)                A0 (Access type)
+  D0     (02)   DB0   (08)                D0 (Data bus 0)
+  D1     (03)   DB1   (09)                D1 (Data bus 1)
+  D2     (04)   DB2   (10)                D2 (Data bus 2)
+  D3     (05)   DB3   (11)                D3 (Data bus 3)
+  D4     (06)   DB4   (12)                D4 (Data bus 4)
+  D5     (07)   DB5   (13)                D5 (Data bus 5)
+  D6     (08)   DB6   (14)                D6 (Data bus 6)
+  D7     (09)   DB7   (15)                D7 (Data bus 7)
+                VDD   (16)   +5V          VDD (Logic power supply)
+  GND    (18)   VSS   (17)   GND          GND (Ground)
+                V0    (18)   +5V..-22V    V0 (LCD contrast)
+                VLC   (19)   -22V         VEE (LCD drive voltage)
+                FGND  (20)   GND          Frame ground
+
+PowerLCD wiring:
+
+  printerport   LCD          other        function in 6800 mode   8080 mode
+  -----------   ----------   ----------   ---------------------   -----------
+                /RES  (01)   +5V          /RES (Reset)
+  nSEL   (17)   /RD   (02)                E (Enable)              /RD (Read)
+  nSTRB  (01)   /WR   (03)                R/W (Read/Write)        /WR (Write)
+                SEL2  (04)   GND          Interface select 2
+                SEL1  (05)   +5V          Interface select 1
+  nAUTO  (14)   /CS   (06)   GND          /CS (Chip select)
+  INIT   (16)   A0    (07)                A0 (Access type)
+  D0     (02)   DB0   (08)                D0 (Data bus 0)
+  D1     (03)   DB1   (09)                D1 (Data bus 1)
+  D2     (04)   DB2   (10)                D2 (Data bus 2)
+  D3     (05)   DB3   (11)                D3 (Data bus 3)
+  D4     (06)   DB4   (12)                D4 (Data bus 4)
+  D5     (07)   DB5   (13)                D5 (Data bus 5)
+  D6     (08)   DB6   (14)                D6 (Data bus 6)
+  D7     (09)   DB7   (15)                D7 (Data bus 7)
+                VDD   (16)   +5V          VDD (Logic power supply)
+  GND    (18)   VSS   (17)   GND          GND (Ground)
+                V0    (18)   +5V..-22V    V0 (LCD contrast)
+                VLC   (19)   -22V         VEE (LCD drive voltage)
+                FGND  (20)   GND          Frame ground
+
+LCDProc wiring:
+
+  printerport   LCD          other        function in 6800 mode   8080 mode
+  -----------   ----------   ----------   ---------------------   -----------
+                /RES  (01)   +5V          /RES (Reset)
+  INIT   (16)   /RD   (02)                E (Enable)              /RD (Read)
+  nAUTO  (14)   /WR   (03)                R/W (Read/Write)        /WR (Write)
+                SEL2  (04)   GND          Interface select 2
+                SEL1  (05)   +5V          Interface select 1
+  nSTRB  (01)   /CS   (06)   GND          /CS (Chip select)
+  nSEL   (17)   A0    (07)                A0 (Access type)
+  D0     (02)   DB0   (08)                D0 (Data bus 0)
+  D1     (03)   DB1   (09)                D1 (Data bus 1)
+  D2     (04)   DB2   (10)                D2 (Data bus 2)
+  D3     (05)   DB3   (11)                D3 (Data bus 3)
+  D4     (06)   DB4   (12)                D4 (Data bus 4)
+  D5     (07)   DB5   (13)                D5 (Data bus 5)
+  D6     (08)   DB6   (14)                D6 (Data bus 6)
+  D7     (09)   DB7   (15)                D7 (Data bus 7)
+                VDD   (16)   +5V          VDD (Logic power supply)
+  GND    (18)   VSS   (17)   GND          GND (Ground)
+                V0    (18)   +5V..-22V    V0 (LCD contrast)
+                VLC   (19)   -22V         VEE (LCD drive voltage)
+                FGND  (20)   GND          Frame ground
+
+Tweakers wiring:
+
+  printerport   LCD          other        function in 6800 mode   8080 mode
+  -----------   ----------   ----------   ---------------------   -----------
+                /RES  (01)   +5V          /RES (Reset)
+  nAUTO  (14)   /RD   (02)                E (Enable)              /RD (Read)
+  INIT   (16)   /WR   (03)                R/W (Read/Write)        /WR (Write)
+                SEL2  (04)   GND          Interface select 2
+                SEL1  (05)   +5V          Interface select 1
+  nSTRB  (01)   /CS   (06)   GND          /CS (Chip select)
+  nSEL   (17)   A0    (07)                A0 (Access type)
+  D0     (02)   DB0   (08)                D0 (Data bus 0)
+  D1     (03)   DB1   (09)                D1 (Data bus 1)
+  D2     (04)   DB2   (10)                D2 (Data bus 2)
+  D3     (05)   DB3   (11)                D3 (Data bus 3)
+  D4     (06)   DB4   (12)                D4 (Data bus 4)
+  D5     (07)   DB5   (13)                D5 (Data bus 5)
+  D6     (08)   DB6   (14)                D6 (Data bus 6)
+  D7     (09)   DB7   (15)                D7 (Data bus 7)
+                VDD   (16)   +5V          VDD (Logic power supply)
+  GND    (18)   VSS   (17)   GND          GND (Ground)
+                V0    (18)   +5V..-22V    V0 (LCD contrast)
+                VLC   (19)   -22V         VEE (LCD drive voltage)
+                FGND  (20)   GND          Frame ground
+
+YASEDW wiring:
+
+  printerport   LCD          other        function in 6800 mode   8080 mode
+  -----------   ----------   ----------   ---------------------   -----------
+                /RES  (01)   +5V          /RES (Reset)
+  INIT   (16)   /RD   (02)                E (Enable)              /RD (Read)
+  nSTRB  (01)   /WR   (03)                R/W (Read/Write)        /WR (Write)
+                SEL2  (04)   GND          Interface select 2
+                SEL1  (05)   +5V          Interface select 1
+  nSEL   (17)   /CS   (06)   GND          /CS (Chip select)
+  nAUTO  (14)   A0    (07)                A0 (Access type)
+  D0     (02)   DB0   (08)                D0 (Data bus 0)
+  D1     (03)   DB1   (09)                D1 (Data bus 1)
+  D2     (04)   DB2   (10)                D2 (Data bus 2)
+  D3     (05)   DB3   (11)                D3 (Data bus 3)
+  D4     (06)   DB4   (12)                D4 (Data bus 4)
+  D5     (07)   DB5   (13)                D5 (Data bus 5)
+  D6     (08)   DB6   (14)                D6 (Data bus 6)
+  D7     (09)   DB7   (15)                D7 (Data bus 7)
+                VDD   (16)   +5V          VDD (Logic power supply)
+  GND    (18)   VSS   (17)   GND          GND (Ground)
+                V0    (18)   +5V..-22V    V0 (LCD contrast)
+                VLC   (19)   -22V         VEE (LCD drive voltage)
+                FGND  (20)   GND          Frame ground
+
+Note: The pin numbering may vary with other displays.
+
+SEL1 on GND selects 8080 mode, SEL1 on VDD selects 6800 mode.
+
+
+Configuration Parameters
+------------------------
+The SED1330 driver supports the following parameters in config file:
+
+Device
+ Instead of using the direct output via port address (see Port), you
+ can use the parport device (/dev/parportX). The advantage over the
+ direct output via port address is that this works for non-root users
+ also. But it's a little bit slower. The modules ppdev.o, parport.o
+ and parport_pc.o must be loaded or compiled into the kernel.
+
+Port
+ Sets the port address of the parallel port. If this parameter is not
+ given, 0x378 is used. To use this direct output, the program that
+ uses the driver library has to be started with user 'root'.
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 320 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 240 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+AdjustTiming
+ To get a timing that is as accurate as possible, the drivers measure
+ the time for port commands (see: benchmark in syslog). You might
+ decrease or increase the time to wait after port commands with this
+ parameter. Normally, there is no need to change this parameter.
+ Possible values: -50 <= x <= 50
+ Default value: 0
+
+RefreshDisplay
+ Normally, most of the drivers do not update the whole display, but
+ only the areas that have changed since last update. So it might be,
+ that some faulty pixels would stay a longer time. To avoid this, the
+ plugin makes a complete refresh from time to time. This parameter
+ defines how often a complete refresh will be done.
+ e.g.: A value of 5 means, that the plugin will make a complete
+       refresh on every 5th update.
+ A value of 0 completely disables complete refreshs. 
+ Possible values: 0 <= x <= 50
+ Default value: 5
+
+Wiring
+ Select the type of wiring your display is connected with.
+ Possible values: 'Original', 'PowerLCD', 'LCDProc', 'Tweakers',
+                  'YASEDW'
+ Default value: 'Original'
+
+OscillatorFrequency
+ Select the frequency the oscillator on your LCD board uses in kHz.
+ Possible values: 1000 <= x <= 15000)
+ Default value: 9600
+
+Interface
+ Select the interface mode your display is connected with.
+ Possible values: '6800', '8080'
+ Default value: '6800'
+

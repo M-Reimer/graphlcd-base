@@ -1,0 +1,61 @@
+This is the README of the crtfont tool, which is part of the GraphLCD
+base package.
+
+written by Andreas Regel (andreas.regel AT powarman.de)
+
+based on crtfont from the graphlcd plugin for the Video Disc Recorder
+written by Carsten Siebholz (c.siebholz AT t-online.de)
+
+See the file COPYING for license information.
+
+
+Description:
+------------
+crtfont is a program to create fonts for the GraphLCD graphics library.
+
+
+Installation and Configuration:
+-------------------------------
+see the file README in the base package's root directory.
+
+
+Using crtfont:
+--------------
+To create a font, 2 source files are required:
+- an image, that contains the characters as a bitmap. This image might
+  be in:
+  - Portable Bit Map (PBM) format.
+- a description file (*.desc), that contains informations about the
+  positions of each character in the image.
+  The format of the description file:
+  - The first line contains the version of the description file format:
+      version:1
+  - The next lines contain the font attributes in the format
+    <attribute>:<value>, one attribute per line. Possible attributes
+	are:
+      fontheight: the total height of the font
+      fontascent: the vertical distance from the horizontal baseline to
+                  the highest character coordinate.
+      lineheight: the baseline-to-baseline distance
+      spacebetween: additional space between characters in a text
+      spacewidth: the width of the space character. If this value is
+                  greater than zero, all characters will be compressed
+                  horizontally to their active pixels.
+  - All other lines define the characters and their positions in the
+    image. The syntax is like:
+      PosX_1 Char_1 PosX_2 Char_2 PosX_3  ... PosX_n Char_n EndX
+    where PosX_x specifies the horizontal position of the leftmost
+    pixel of the character. Char_x might be the character itself
+    (A, B, ...) or it's decimal ASCII value (65, 66, ...)
+
+Usage: crtfont -f <format> -b <bmpfile> -d <descfile> -o <outfile>
+
+  -f  --format    specifies the format of the bitmap. Possible values
+                  are:
+                    PBM: file is an Portable Bit Map
+  -b  --bmpfile   specifies the name of the bitmap file (*.pbm)
+  -d  --descfile  specifies the name of the description file (*.desc)
+  -o  --outfile   specifies the name of the output file (*.fnt)
+
+  example: crtfont -f PBM -b f12.pbm -d f12.desc -o f12.fnt
+

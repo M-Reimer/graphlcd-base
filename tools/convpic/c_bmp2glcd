@@ -1,0 +1,10 @@
+#!/bin/sh
+# Converts all BMP images to *.glcd
+
+old=bmp
+new=glcd
+
+for file in ./*."$old"; do
+  convpic -i "$file" -o "`basename \"$file\" \"$old\"`$new"
+done
+

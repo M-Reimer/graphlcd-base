@@ -1,0 +1,38 @@
+This is the README of the showpic tool, which is part of the GraphLCD
+base package.
+
+written by Andreas Regel (andreas.regel AT powarman.de)
+
+based on showpic from the graphlcd plugin for the Video Disc Recorder
+written by Carsten Siebholz (c.siebholz AT t-online.de)
+
+See the file COPYING for license information.
+
+
+Description:
+------------
+showpic is a program to show an image on a graphical LC Display. It
+support all controller the GraphLCD driver library supports.
+
+The images must be in an own format (*.glcd), which can be created with
+the convpic tool.
+
+
+Using showpic:
+--------------
+  showpic [-c CONFIGFILE] [-d DISPLAY] [-s SLEEP] [-uie] file [more files]
+
+  -c  --config      specifies the location of the config file
+                    (default: /etc/graphlcd.conf)
+  -d  --display     specifies the output display
+                    (default: the first one in config file)
+  -u  --upsidedown  rotates the output by 180 degrees (default: no)
+  -i  --invert      inverts the output (default: no)
+  -e  --endless     show all images in endless loop (default: no)
+  -s  --sleep       set sleeptime between two images [ms]
+  -b  --brightness  set brightness for display if driver support it
+                    (default: config file value)
+
+examples: showpic -c /etc/graphlcd.conf vdr-logo.glcd
+          showpic -c /etc/graphlcd.conf -d LCD_T6963 -u -i vdr-logo.glcd
+

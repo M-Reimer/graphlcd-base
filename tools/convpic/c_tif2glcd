@@ -1,0 +1,10 @@
+#!/bin/sh
+# Converts all TIFF images to *.glcd
+
+old=tif
+new=glcd
+
+for file in ./*."$old"; do
+  convpic -i "$file" -o "`basename \"$file\" \"$old\"`$new"
+done
+

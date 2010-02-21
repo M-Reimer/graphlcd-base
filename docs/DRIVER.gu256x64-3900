@@ -1,0 +1,176 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The GU256X64-3900 driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The GU256X64-3900 driver supports Noritake GU256X64-3900 VFD displays.
+The VFD is either operating in 8 bit-mode connected to a single PC
+parallel port or in serial mode connected to a single PC serial port.
+
+
+Wirings
+-------
+The GU256X64-3900 driver supports the following connections on a
+parallel port:
+ - Standard
+ - Satyr
+
+Standard wiring:
+
+  printerport   LCD          other
+  -----------   ----------   ----------
+  D0     (02)   DB0   (08)                (DataBit 0)
+  D1     (03)   DB1   (07)                (DataBit 1)
+  D2     (04)   DB2   (06)                (DataBit 2)
+  D3     (05)   DB3   (05)                (DataBit 3)
+  D4     (06)   DB4   (04)                (DataBit 4)
+  D5     (07)   DB5   (03)                (DataBit 5)
+  D6     (08)   DB6   (02)                (DataBit 6)
+  D7     (09)   DB7   (01)                (DataBit 7)
+  ACK    (10)   RDY   (12)                (Display Ready)
+  INIT   (16)   nWR   (10)                (Write)
+  GND    (18)   GND   (09)   GND          (Ground)
+  GND    (19)   GND   (11)   GND          (Ground)
+  GND    (20)   GND   (13)   GND          (Ground)
+  GND    (21)   GND   (14)   GND          (Ground)
+                VCC   (15)   VCC          (Power supply 5V)
+                VCC   (16)   VCC          (Power supply 5V)
+
+Satyr Wiring:
+
+  printerport   LCD          other
+  -----------   ----------   ----------
+  nSTRB  (01)   nWR   (10)                (Write)
+  D0     (02)   DB0   (08)                (DataBit 0)
+  D1     (03)   DB1   (07)                (DataBit 1)
+  D2     (04)   DB2   (06)                (DataBit 2)
+  D3     (05)   DB3   (05)                (DataBit 3)
+  D4     (06)   DB4   (04)                (DataBit 4)
+  D5     (07)   DB5   (03)                (DataBit 5)
+  D6     (08)   DB6   (02)                (DataBit 6)
+  D7     (09)   DB7   (01)                (DataBit 7)
+  BUSY   (11)   RDY   (12)                (Display Ready)
+  GND    (18)   GND   (09)   GND          (Ground)
+  GND    (19)   GND   (11)   GND          (Ground)
+  GND    (20)   GND   (13)   GND          (Ground)
+  GND    (21)   GND   (14)   GND          (Ground)
+                VCC   (15)   VCC          (Power supply 5V)
+                VCC   (16)   VCC          (Power supply 5V)
+
+Note: The pin numbering may vary with other displays.
+
+
+The GU256X64-3900 driver supports the following connection on a
+serial port:
+
+  serialport   LCD          other
+  ----------   ----------   ----------
+  DCD   (01)   DTR   (02)
+  RxD   (02)   TxD   (04)
+  TxD   (03)   RxD   (01)
+  DTR   (04)   DSR   (03)
+  GND   (05)   GND   (07)   GND          (Ground)
+  DSR   (06)   DTR   (02)
+               VCC   (06)   VCC          (Power supply 5V)
+
+Note: The pin numbering may vary with other displays.
+
+On display switches:
+ SW No.   Function                 Default
+ ------   --------                 -------
+   1      Display address select   Off
+   2      Display address select   Off
+   3      Display address select   Off
+   4      Display address select   Off
+   5      Baud rate select         Off
+   6      Command mode select      Off      switch DMA On/Off
+   7      Operating mode select    Off
+   8      Protocol Select          Off
+
+Serial access to GU256X64C-3xx0 is nearly as fast as normal parallel
+access but doesn't create the high system load of the parallel
+approach. So for me serial access is preferred over normal parallel
+mode. Even better is the DMA parallel mode. For DMA mode you have to
+switch SW6 on the display to ON.
+
+
+Configuration Parameters
+------------------------
+The GU256X64-3900 driver supports the following parameters in config
+file:
+
+Device
+ Instead of using the direct output via port address (see Port), you
+ can use the parport device (/dev/parportX). The advantage over the
+ direct output via port address is that this works for non-root users
+ also. But it's a little bit slower. The modules ppdev.o, parport.o
+ and parport_pc.o must be loaded or compiled into the kernel.
+
+Port
+ Sets the port address of the parallel port. If this parameter is not
+ given, 0x378 is used. To use this direct output, the program that
+ uses the driver library has to be started with user 'root'.
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 256 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 64 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Brightness
+ Sets the brightness of your display's backlight.
+ Possible values: 0 <= x <= 100)
+ Default value: 100
+
+AdjustTiming
+ To get a timing that is as accurate as possible, the drivers measure
+ the time for port commands (see: benchmark in syslog). You might
+ decrease or increase the time to wait after port commands with this
+ parameter. Normally, there is no need to change this parameter.
+ Possible values: -50 <= x <= 50
+ Default value: 0
+
+RefreshDisplay
+ Normally, most of the drivers do not update the whole display, but
+ only the areas that have changed since last update. So it might be,
+ that some faulty pixels would stay a longer time. To avoid this, the
+ plugin makes a complete refresh from time to time. This parameter
+ defines how often a complete refresh will be done.
+ e.g.: A value of 5 means, that the plugin will make a complete
+       refresh on every 5th update.
+ A value of 0 completely disables complete refreshs. 
+ Possible values: 0 <= x <= 50
+ Default value: 5
+
+Wiring
+ Select the type of wiring your display is connected with.
+ Possible values: 'Standard', 'Satyr'
+ Default value: 'Standard'
+
+Interface
+ Select the interface your display is connnected to.
+ Possible values: 'Parallel', 'Serial'
+ Default value: 'Parallel'
+
+DMA
+ Enables/disables the usage of the controller's DMA mode which
+ increases writing speed. This only works in parallel interface mode.
+ Possible values: 'yes', 'no'
+ Default value: 'yes'
+

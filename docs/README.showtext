@@ -1,0 +1,35 @@
+This is the README of the showtext tool, which is part of the GraphLCD
+base package.
+
+written by Andreas Regel (andreas.regel AT powarman.de)
+
+See the file COPYING for license information.
+
+
+Description:
+------------
+showtext is a program to show a user defined text with a user defined
+font on a graphical LC Display. It supports all controllers the GraphLCD
+driver library supports.
+
+The font must be in a special format (*.fnt), which can be created with
+the crtfont tool.
+
+
+Using showtext:
+--------------
+  showtext [-c CONFIGFILE] [-d DISPLAY] [-f FONT] [-x XPOS] [-y YPOS] [-uib] text [more text]
+
+  -c  --config      specifies the location of the config file
+                    (default: /etc/graphlcd.conf)
+  -d  --display     specifies the output display
+                    (default: the first one in config file)
+  -f  --font        specifies the font that is used for the text output
+  -x  --xpos        specifies the x-position where the text starts
+  -y  --ypos        specifies the y-position where the text starts
+  -u  --upsidedown  rotates the output by 180 degrees (default: no)
+  -i  --invert      inverts the output (default: no)
+  -b  --brightness  set brightness for display if driver support it [%]
+                    (default: config file value)
+
+  example: showtext -c /etc/graphlcd.conf -f f17.fnt "Line1" "Line2"

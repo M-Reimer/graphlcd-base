@@ -1,0 +1,32 @@
+Dateiformat von "Graphlcd-Logo"
+
+
+Einzelbild für LCD
+=================================
+
+HEADER
+Position	Typ	Name	Bedeutung
+0x0000		char[4]	magic	  - "GLCD"
+0x0004		word  	width   - Breite der Bilder (LE)
+0x0006		word  	height  - Höhe der Bilder (LE)
+0x0008		char[]	data    - Einzel-Bild
+
+DATEN
+char[height][width/8], pro Byte 8 nebeneinander liegende Pixel
+
+Animation für LCD
+=================================
+
+HEADER
+Position	Typ	Name	Bedeutung
+0x0000		char[4]	magic	  - "GLCA"
+0x0004		word  	width   - Breite der Bilder (LE)
+0x0006		word  	height  - Höhe der Bilder (LE)
+0x0008		word    count   - Anzahl der Bilder (LE)
+0x000a		long	  delay   - Wartezeit zwischen den Bildern (in ms; LE)
+0x0010		char[]	data    - Einzel-Bilder
+
+DATEN
+char[height][width/8], pro Byte 8 nebeneinander liegende Pixel (1 = Pixel gesetzt)
+
+LE = Little Endian byte order = wie bei intel ;)

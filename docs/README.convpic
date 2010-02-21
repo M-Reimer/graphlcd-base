@@ -1,0 +1,42 @@
+This is the README of the crtfont tool, which is part of the GraphLCD
+base package.
+
+written by Carsten Siebholz <c.siebholz AT t-online.de>
+           Andreas Brachold <vdr04 AT deltab de>
+
+See the file COPYING for license information.
+
+
+Description:
+------------
+convpic is a program to convert images to an own simple format (*.glcd)
+that is used by the GraphLCD graphics library.
+
+
+Installation and Configuration:
+-------------------------------
+see the file README in the base package's root directory.
+
+
+Using convpic:
+--------------
+Usage: convpic [-n] [-d x] -i infile [more files] -o outfile
+
+  -n  --invert   inverts the output (default: no)
+  -i  --infile   specifies the name of the input file
+  -o  --outfile  specifies the name of the output file
+  -d  --delay    specifies the delay delay between multiple images
+
+supported formats:
+  TIFF: file is an uncompressed RGB-encoded 2-color TIFF
+  BMP : file is an uncompressed RGB-encoded 2-color Windows BMP
+  ANI : file is an uncompressed multi-frame from tuxbox-aniplay
+  GLCD: file is the own format used by the GraphLCD graphics library
+
+example: convpic -i vdr-logo.bmp -o vdr-logo.glcd
+
+
+Known Problems:
+---------------
+  Export of TIFF isn't supported.
+

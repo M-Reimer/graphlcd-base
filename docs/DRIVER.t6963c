@@ -1,0 +1,159 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The T6963C driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The T6963C driver supports LC displays that use the Toshiba T6963C
+controller, connected to the parallel port of your PC.
+
+
+Wirings
+-------
+The T6963C driver supports the following connections on a parallel
+port:
+ - Standard (used by LCDproc)
+ - Windows (used by many windows programs)
+
+Standard wiring:
+
+  printerport   LCD          other
+  -----------   ----------   ----------
+  GND    (18)   GND   (01)   GND          (Ground)
+  nSTRB  (01)   WR    (06)                (Write)
+  nAUTO  (14)   CE    (15)                (Chip Enable)
+  INIT   (16)   C/D   (04)                (Command/Data)
+  nSEL   (17)   RD    (05)                (Read)
+  D0     (02)   D0    (07)                (Data Bit 0)
+  D1     (03)   D1    (08)                (Data Bit 1)
+  D2     (04)   D2    (09)                (Data Bit 2)
+  D3     (05)   D3    (10)                (Data Bit 3)
+  D4     (06)   D4    (11)                (Data Bit 4)
+  D5     (07)   D5    (12)                (Data Bit 5)
+  D6     (08)   D6    (13)                (Data Bit 6)
+  D7     (09)   D7    (14)                (Data Bit 7)
+
+Windows wiring:
+
+  printerport   LCD          other
+  -----------   ----------   ----------
+  GND    (18)   GND   (01)   GND          (Ground)
+  nSTRB  (01)   CE    (15)                (Chip Enable)
+  nAUTO  (14)   RD    (05)                (Read)
+  INIT   (16)   WR    (06)                (Write)
+  nSEL   (17)   C/D   (04)                (Command/Data)
+  D0     (02)   D0    (07)                (Data Bit 0)
+  D1     (03)   D1    (08)                (Data Bit 1)
+  D2     (04)   D2    (09)                (Data Bit 2)
+  D3     (05)   D3    (10)                (Data Bit 3)
+  D4     (06)   D4    (11)                (Data Bit 4)
+  D5     (07)   D5    (12)                (Data Bit 5)
+  D6     (08)   D6    (13)                (Data Bit 6)
+  D7     (09)   D7    (14)                (Data Bit 7)
+
+Serial wiring using a industry version with a serial to parallel
+converter:
+
+  printerport   LCD
+  -----------   ----------
+  nAuto  (14)   nCE   (03)
+  nSTRB  (01)   nSCK  (07)
+  INIT   (16)   nC/D  (08)
+  INIT   (16)   nSDAT (08)
+  GND    (25)   GND   (01)
+
+
+Note: The pin numbering may vary with other displays.
+
+The LCD must operate in the 6x8 or 8x8 font mode. Usually, there is a
+pin to choose 6x8 or 8x8 font mode.
+
+There are Displays that have a pin to select the number of characters
+per line. In that case, you have to select (width (in pixels) / 6) or
+(width (in pixels) / 8) characters per line.
+
+Attention: You have to tie these pins to +5V or GND. Don't leave them
+open circuit or you will get unpredictable results.
+
+Because the T6963 driver reads the status of the display, it might be
+neccessary to enable the bidirectional mode in the BIOS and to enable
+bidirectional mode in the Linux kernel:
+ <*> Parallel port support
+  <*>   PC-style hardware
+  [*]   IEEE 1284 transfer modes
+
+
+Configuration Parameters
+------------------------
+The T6963C driver supports the following parameters in config file:
+
+Device
+ Instead of using the direct output via port address (see Port), you
+ can use the parport device (/dev/parportX). The advantage over the
+ direct output via port address is that this works for non-root users
+ also. But it's a little bit slower. The modules ppdev.o, parport.o
+ and parport_pc.o must be loaded or compiled into the kernel.
+
+Port
+ Sets the port address of the parallel port. If this parameter is not
+ given, 0x378 is used. To use this direct output, the program that
+ uses the driver library has to be started with user 'root'.
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 240 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 128 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+RefreshDisplay
+ Normally, most of the drivers do not update the whole display, but
+ only the areas that have changed since last update. So it might be,
+ that some faulty pixels would stay a longer time. To avoid this, the
+ plugin makes a complete refresh from time to time. This parameter
+ defines how often a complete refresh will be done.
+ e.g.: A value of 5 means, that the plugin will make a complete
+       refresh on every 5th update.
+ A value of 0 completely disables complete refreshs. 
+ Possible values: 0 <= x <= 50
+ Default value: 5
+
+Wiring
+ Select the type of wiring your display is connected with.
+ Possible values: 'Standard', 'Windows'
+ Default value: 'Standard'
+
+FontSelect
+ Select the font width your display uses for text mode. In most cases
+ this is selectable through one of the pins of your LCD board
+ Possible values: '6', '8'
+ Default value: '6'
+
+AutoMode
+ Enables or disables the usage of T6963C's auto mode which doubles
+ writing speed when enabled.
+ Possible values: 'yes', 'no'
+ Default value: 'yes'
+
+StatusCheck
+ Enables or disables the usage of T6963C's status check. When using a
+ shielded cable for connecting your display, the disabling may be
+ possible. This results in doubling the speed of writing data to the
+ LCD.
+ Possible values: 'yes', 'no'
+ Default value: 'yes'
+

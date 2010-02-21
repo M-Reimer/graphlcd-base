@@ -1,0 +1,10 @@
+#!/bin/sh
+# Converts all images in current directory
+
+old=$1
+new=$2
+
+for file in ./*."$old"; do
+  convpic -i "$file" -o "`basename \"$file\" \"$old\"`$new"
+done
+

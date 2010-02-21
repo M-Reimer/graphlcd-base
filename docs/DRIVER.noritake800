@@ -1,0 +1,115 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The Noritake 800(A) series driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The Noritake 800(A) series driver supports following VFD displays manufactured
+by Noritake (see http://www.noritake-itron.com on the link "Medium 0.6 dot"):
+ - GU128X64-800A;
+ - GU256X32-800A;
+ - GU128X32-800A;
+ - GU160X16-800A;
+ - GU160X32-800A;
+ - GU192X16-800A.
+
+Wirings
+-------
+The VFD should be connected to a parallel port of the PC
+
+printer port      LIQUIDMP3        MZ            other?
+---------------------------------------------
+
+Data lines D0...D7 connected straight in all wirings
+
+Strobe (1)         CSS (23)      WR (17)
+Linefeed (14)      RD (21)       RD (21)
+Init (16)          WR (17)       CSS (23)
+Select (17)        C/D (19)      C/D (19)
+
+Printer port pins 18 .... 25 connected to GND;
+VFD *ONLY EVEN* pins 2 .... 24 connected to GND
+Everything else is *NOT CONNECTED*
+
+Further wirings might work and then for sure very easyly added to the code.
+Just extend N800LptWiringMask(..) accordingly. This method is called in a
+loop over all 16 (4 wires for now) possibilities in the constructor, so the
+results are cached for the actual writes to the LPT control port, very
+similar to ReverseBits(..) for data.
+
+The driver should also work for "WIRING_MZ", just report if there are
+problems.
+Feel free to add support for "Parallel #2 Interface" or "Serial interface".
+
+Tested only on my own GU128x64-800(A) so far, just with the default 8-bit
+mode parallel wiring (referred as WIRING_LIQUIDMP3 or "0" in this code, or
+"Parallel #1 Interface"in the data sheet). I can't actually test the other
+wiring (as the display is already mounted in my HTPC, and the cable soldered),
+or even the other modes from the datasheet ("Parallel #2 Interface", or
+"Serial interface"), for those, my display lacks the necessary jumpers on
+it's PCB)
+  
+  
+Configuration Parameters
+------------------------
+The Noritake 800(A) series driver supports the following parameters in config
+file:
+
+Device
+ Instead of using the direct output via port address (see Port), you
+ can use the parport device (/dev/parportX). The advantage over the
+ direct output via port address is that this works for non-root users
+ also. But it's a little bit slower. The modules ppdev.o, parport.o
+ and parport_pc.o must be loaded or compiled into the kernel.
+
+Port
+ Sets the port address of the parallel port. If this parameter is not
+ given, 0x378 is used. To use this direct output, the program that
+ uses the driver library has to be started with user 'root'.
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 256 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 64 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Brightness
+ Sets the brightness of your display's backlight.
+ Possible values: 0 <= x <= 100)
+ Default value: 100
+
+AdjustTiming ---> not used in this driver (if there are problems, please report)
+ To get a timing that is as accurate as possible, the drivers measure
+ the time for port commands (see: benchmark in syslog). You might
+ decrease or increase the time to wait after port commands with this
+ parameter. Normally, there is no need to change this parameter.
+ Possible values: -50 <= x <= 50
+ Default value: 0
+
+RefreshDisplay ---> not used in this driver (if there are problems, please report)
+ Normally, most of the drivers do not update the whole display, but
+ only the areas that have changed since last update. So it might be,
+ that some faulty pixels would stay a longer time. To avoid this, the
+ plugin makes a complete refresh from time to time. This parameter
+ defines how often a complete refresh will be done.
+ e.g.: A value of 5 means, that the plugin will make a complete
+       refresh on every 5th update.
+ A value of 0 completely disables complete refreshs. 
+ Possible values: 0 <= x <= 50
+ Default value: 5
+
