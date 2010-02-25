@@ -7,7 +7,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2003-2005 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2003-2010 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #ifndef _GLCDDRIVERS_SERDISP_H_
@@ -53,6 +53,7 @@ private:
     int   (*fp_serdisp_feature)        (void* dd, int feature, int value);
     int   (*fp_serdisp_isoption)       (void* dd, const char* optionname);
     void  (*fp_serdisp_setoption)      (void* dd, const char* optionname, long value);
+    long  (*fp_serdisp_getoption)      (void* dd, const char* optionname, int* typesize);
     int   (*fp_serdisp_getwidth)       (void* dd);
     int   (*fp_serdisp_getheight)      (void* dd);
     void  (*fp_serdisp_quit)           (void* dd);
@@ -71,6 +72,7 @@ public:
     virtual void Clear();
     virtual void Set8Pixels(int x, int y, unsigned char data);
     virtual void Refresh(bool refreshAll = false);
+    virtual void SetBrightness(unsigned int percent);
 };
 
 #endif

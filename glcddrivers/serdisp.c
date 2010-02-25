@@ -7,7 +7,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2003-2005 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2003-2010 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <stdio.h>
@@ -30,6 +30,7 @@
 #define FEATURE_ROTATE    0x04
 
 #define SD_COL_BLACK      0xFF000000
+#define SD_COL_WHITE      0xFFFFFFFF
 
 namespace GLCD
 {
@@ -50,6 +51,8 @@ cDriverSerDisp::~cDriverSerDisp(void)
 int cDriverSerDisp::Init(void)
 {
     char* errmsg; // error message returned by dlerror()
+    int bg_forced = 0;  /* bg-colour set through graphlcd option 'BGColour' */
+    int fg_forced = 0;  /* fg-colour set through graphlcd option 'FGColour' */
 
     std::string controller;
     std::string optionstring = "";
@@ -161,6 +164,12 @@ int cDriverSerDisp::Init(void)
                     config->name.c_str(), "serdisp_setoption", errmsg);
                 return -1;
             }
+            fp_serdisp_getoption = (long int (*)(void*, const char*, int*)) dlsym(sdhnd, "serdisp_getoption");
+            if ( (errmsg = dlerror()) != NULL  ) { // should not happen
+                syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
+                    config->name.c_str(), "serdisp_getoption", errmsg);
+                return -1;
+            }
         } /* >= 1.96 */
     }
 
@@ -223,7 +232,6 @@ int cDriverSerDisp::Init(void)
 
     // done loading all required symbols
 
-
     // setting up the display
     width = 0;
     height = 0;
@@ -239,9 +247,11 @@ int cDriverSerDisp::Init(void)
         } else if (config->options[i].name == "FGColour") {
             fg_colour = strtoul(config->options[i].value.c_str(), (char **)NULL, 0);
             fg_colour |= 0xFF000000L;  /* force alpha to 0xFF */
+            fg_forced = 1;
         } else if (config->options[i].name == "BGColour") {
             bg_colour = strtoul(config->options[i].value.c_str(), (char **)NULL, 0);
             bg_colour |= 0xFF000000L;  /* force alpha to 0xFF */
+            bg_forced = 1;
         }
     }
 
@@ -309,6 +319,14 @@ int cDriverSerDisp::Init(void)
         return -1;
     }
 
+    // self-emitting displays (like OLEDs): default background colour => black
+    if ( supports_options && fp_serdisp_isoption(dd, "SELFEMITTING") && (fp_serdisp_getoption(dd, "SELFEMITTING", 0)) ) {
+       if (!bg_forced)
+         bg_colour = SD_COL_BLACK; /* set background colour to black */
+       if (!fg_forced)
+         fg_colour = SD_COL_WHITE; /* set foreground colour to white */
+    }
+
     width = config->width;
     if (width <= 0)
         width = fp_serdisp_getwidth(dd);
@@ -343,6 +361,8 @@ int cDriverSerDisp::Init(void)
 
     *oldConfig = *config;
 
+    // set initial brightness
+    SetBrightness(config->brightness);
     // clear display
     Clear();
 
@@ -406,16 +426,25 @@ int cDriverSerDisp::CheckSetup()
         update = true;
     }
 
-    /* driver dependend options */
-    for (unsigned int i = 0; i < config->options.size(); i++) {
-        std::string optionname = config->options[i].name;
-        if (optionname != "UpsideDown" && optionname != "Contrast" &&
-            optionname != "Backlight" && optionname != "Invert") {
+    if (config->brightness != oldConfig->brightness)
+    {   
+        oldConfig->brightness = config->brightness;
+        SetBrightness(config->brightness);
+        update = true;
+    }
 
-            if ( fp_serdisp_isoption(dd, optionname.c_str()) == 1 )  /* if == 1: option is existing AND r/w */
-                fp_serdisp_setoption(dd, optionname.c_str(), strtol(config->options[i].value.c_str(), NULL, 0));
-            oldConfig->options[i] = config->options[i];
-            update = true;
+    /* driver dependend options */
+    if ( supports_options ) {
+        for (unsigned int i = 0; i < config->options.size(); i++) {
+            std::string optionname = config->options[i].name;
+            if (optionname != "UpsideDown" && optionname != "Contrast" &&
+                optionname != "Backlight" && optionname != "Invert") {
+
+                if ( fp_serdisp_isoption(dd, optionname.c_str()) == 1 )  /* if == 1: option is existing AND r/w */
+                    fp_serdisp_setoption(dd, optionname.c_str(), strtol(config->options[i].value.c_str(), NULL, 0));
+                oldConfig->options[i] = config->options[i];
+                update = true;
+            }
         }
     }
 
@@ -462,6 +491,12 @@ void cDriverSerDisp::Refresh(bool refreshAll)
         fp_serdisp_rewrite(dd);
     else
         fp_serdisp_update(dd);
+}
+
+void cDriverSerDisp::SetBrightness(unsigned int percent)
+{   
+    if ( supports_options && (fp_serdisp_isoption(dd, "BRIGHTNESS") == 1) )  /* if == 1: option is existing AND r/w */
+         fp_serdisp_setoption(dd, "BRIGHTNESS", (long)percent);
 }
 
 } // end of namespace
