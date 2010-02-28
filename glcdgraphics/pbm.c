@@ -12,8 +12,9 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <syslog.h>
+#include <cstdlib>
 
-#include <string>
+#include <cstring>
 
 #include "bitmap.h"
 #include "pbm.h"

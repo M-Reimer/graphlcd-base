@@ -16,7 +16,7 @@
 #include <stdint.h>
 #include <syslog.h>
 
-#include <string>
+#include <cstring>
 
 #include "bitmap.h"
 #include "glcd.h"

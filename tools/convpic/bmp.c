@@ -29,8 +29,8 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <string.h>
-
-#include <string>
+#include <cstring>
+#include <cstdlib>
 
 #include <glcdgraphics/bitmap.h>
 #include <glcdgraphics/image.h>

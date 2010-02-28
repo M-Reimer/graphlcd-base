@@ -29,6 +29,7 @@
 #include <unistd.h>
 #include <termios.h>
 #include <sys/time.h>
+#include <cstring>
 
 #include "common.h"
 #include "config.h"

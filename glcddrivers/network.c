@@ -18,6 +18,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <cstring>
 
 #include "common.h"
 #include "config.h"

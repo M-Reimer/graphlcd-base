@@ -16,6 +16,8 @@
 #include <unistd.h>
 #include <sys/mman.h>
 #include <sys/ioctl.h>
+#include <cstdlib>
+#include <cstring>
 
 #include "common.h"
 #include "config.h"

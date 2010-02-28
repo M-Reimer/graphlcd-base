@@ -12,6 +12,8 @@
  */
 
 #include <syslog.h>
+#include <cstring>
+#include <cstdlib>
 
 #include "common.h"
 #include "config.h"

@@ -11,6 +11,7 @@
 
 #include <syslog.h>
 #include <sys/time.h>
+#include <cstring>
 
 #include "common.h"
 #include "config.h"

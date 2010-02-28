@@ -12,6 +12,7 @@
 
 #include <stdio.h>
 #include <syslog.h>
+#include <cstring>
 
 #include "common.h"
 #include "config.h"

@@ -25,6 +25,8 @@
 #include <syslog.h>
 #include <unistd.h>
 #include <sys/time.h>
+#include <cstring>
+#include <cstdlib>
 
 #include "common.h"
 #include "config.h"
