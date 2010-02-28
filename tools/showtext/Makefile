@@ -18,7 +18,7 @@ all: $(PRGNAME)
 # Implicit rules:
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) $<
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(DEFINES) $(INCLUDES) $<
 
 # Dependencies:
 
@@ -32,7 +32,7 @@ $(DEPFILE): Makefile
 # The main program:
 
 $(PRGNAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) -rdynamic $(OBJS) $(LIBS) $(LIBDIRS) -lglcdgraphics -lglcddrivers -lstdc++ -o $(PRGNAME)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -rdynamic $(OBJS) $(LIBS) $(LIBDIRS) -lglcdgraphics -lglcddrivers -lstdc++ -o $(PRGNAME)
 
 install: $(PRGNAME)
 	install -d $(BINDIR)

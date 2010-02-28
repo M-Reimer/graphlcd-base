@@ -22,7 +22,7 @@ HEADERS = config.h driver.h drivers.h
 ### Implicit rules:
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) $<
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(DEFINES) $(INCLUDES) $<
 
 # Dependencies:
 
@@ -38,7 +38,7 @@ $(DEPFILE): Makefile
 all: $(LIBNAME)
 
 $(LIBNAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -ldl -lpthread -Wl,-soname="$(BASENAME).$(VERMAJOR)" -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -shared $(OBJS) $(LIBS) -ldl -lpthread -Wl,-soname="$(BASENAME).$(VERMAJOR)" -o $@
 	ln -sf $(LIBNAME) $(BASENAME)
 
 install: all

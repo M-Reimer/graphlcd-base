@@ -21,7 +21,7 @@ HEADERS = bitmap.h font.h glcd.h image.h imagefile.h pbm.h
 ### Implicit rules:
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) $<
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(DEFINES) $(INCLUDES) $<
 
 # Dependencies:
 
@@ -46,7 +46,7 @@ endif### Targets:
 all: $(LIBNAME)
 
 $(LIBNAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -Wl,-soname="$(BASENAME).$(VERMAJOR)" -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -shared $(OBJS) $(LIBS) -Wl,-soname="$(BASENAME).$(VERMAJOR)" -o $@
 	ln -sf $(LIBNAME) $(BASENAME)
 
 install: all
