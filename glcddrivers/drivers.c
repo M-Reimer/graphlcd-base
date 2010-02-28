@@ -27,6 +27,7 @@
 #include "avrctl.h"
 #include "network.h"
 #include "gu126x64D-K610A4.h"
+#include "dm140gink.h"
 #include "serdisp.h"
 #include "g15daemon.h"
 
@@ -50,6 +51,7 @@ tDriver drivers[] =
     {"avrctl",        kDriverAvrCtl},
     {"network",       kDriverNetwork},
     {"gu126x64D-K610A4", kDriverGU126X64D_K610A4},
+    {"dm140gink",     kDriverDM140GINK},
     {"serdisp",       kDriverSerDisp},
     {"g15daemon",     kDriverG15daemon},
     {"",              kDriverUnknown}
@@ -104,6 +106,8 @@ cDriver * CreateDriver(int driverID, cDriverConfig * config)
             return new cDriverNetwork(config);
         case kDriverGU126X64D_K610A4:
             return new cDriverGU126X64D_K610A4(config);
+        case kDriverDM140GINK:
+            return new cDriverDM140GINK(config);
         case kDriverSerDisp:
             return new cDriverSerDisp(config);
         case kDriverG15daemon:

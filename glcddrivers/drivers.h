@@ -39,6 +39,7 @@ enum eDriver
     kDriverAvrCtl        = 13,
     kDriverNetwork       = 14,
     kDriverGU126X64D_K610A4 = 15,
+    kDriverDM140GINK     = 16,
     kDriverSerDisp       = 100,
     kDriverG15daemon     = 200
 };
