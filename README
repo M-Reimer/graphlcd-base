@@ -9,6 +9,8 @@ written by Andreas Regel (andreas.regel AT powarman.de)
 based on the graphlcd plugin for the Video Disc Recorder
   written by                   Carsten Siebholz (c.siebholz AT t-online.de)
   from 0.0.8 on maintained by  Andreas Regel (andreas.regel AT powarman.de)
+  from 0.1.5 on maintained by  Wolfgang Astleitner (mrwastl AT users.sourceforge.net) & Andreas 'randy' Weinberger (vdr AT smue.org)
+
     gu140x32f driver by        Andreas Brachold (vdr04 AT deltab.de)
     gu256x64-372 driver by     Andreas Weinberger (vdr AT smue.org)
     gu256x64-3xx0 driver by    Ralf Mueller (ralf AT bj-ig.de)
@@ -21,11 +23,11 @@ based on the graphlcd plugin for the Video Disc Recorder
     framebuffer driver by      Stephan Skrodzki (skrodzki AT stevekist.de)
     serdisplib driver by       Wolfgang Astleitner (mrwastl AT users.sourceforge.net)
     t6963c driver by           Andreas Regel (andreas.regel AT powarman.de)
-    noritake800 drider by      Lucian Muresan (lucianm AT users.sourceforge.net)
-
+    noritake800 driver by      Lucian Muresan (lucianm AT users.sourceforge.net)
+    futaba dm140 driver by     Stephan Skrodzki (skrodzki AT stevekist.de)
 
 Project's homepage: http://graphlcd.berlios.de/
-
+GIT repo: http://projects.vdr-developer.org/projects/show/graphlcd
 
 See the file COPYING for license information.
 

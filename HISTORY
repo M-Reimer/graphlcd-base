@@ -1,6 +1,12 @@
 GraphLCD base package Revision History
 --------------------------------------
 
+2010-03-01: Version 0.1.6
+- added LDFLAGS_diff in Makefiles for better combat
+- added gcc43-compat patch (include cstring.h/csdtlib.h)
+- added support for Futaba DM140 vfd
+- added support for option BRIGHTNESS (for graphlcd-dimming support); added correct intialisation for self-emitting displays (eg. OLEDs); added missing check for ancient serdisplib-version (mrwastl)
+
 2007-02-25: Version 0.1.5
 - added missing include path definition (thanks to Wolfgang Astleitner)
 - replaced unsigned long long with uint64_t
