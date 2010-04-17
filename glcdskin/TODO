@@ -1,0 +1,8 @@
+- add missing objects like textbox, scrollbar
+- add dynamic behaviour to objects like scrolling and blinking
+- add special objects for external data so that other plugins can draw text and bitmaps on an area of the display that will be defined in the skin. This could be used p.e. for a spectrum analyzer or displaying id3 tags.
+- add service interface for external data objects
+- make skin variables more dynamic, p.e. evaluate positions while displaying, not only during skin loading. This should make it easier to support several display sizes with one skin.
+- DOCUMENTATION, DOCUMENTATION, DOCUMENTATION
+- fix all the small bugs that were introduced
+- all the stuff I forgot :-)
