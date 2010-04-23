@@ -46,7 +46,7 @@ controllers/modules:
  - Epson SED1520 (only tested with DIP122 lcd module)
  - Epson SED1330
  - Noritake GU140X32F-7806
- - Noritake GU256X64-372
+ - Noritake GU256X64-372, GU256X64-352 & GU256X64-355
  - Noritake GU256X64-3XX0 (serial or parallel)
  - Noritake GU126x64D-K610A4 displays (parallel)
  - Noritake 800 series displays

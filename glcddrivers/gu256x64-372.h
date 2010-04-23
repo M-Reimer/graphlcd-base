@@ -48,6 +48,13 @@ class cDriverGU256X64_372 : public cDriver
 
     int CheckSetup();
 
+    int WRHI;
+    int WRLO;
+    int RDHI;
+    int RDLO;
+    int CDHI;
+    int CDLO;
+
 protected:
     void ClearVFDMem();
     void SetPixel(int x, int y);

@@ -7,14 +7,19 @@ The GU256X64-372 driver
 Description
 -----------
 The GU256X64-372 driver supports Noritake GU256x64-372 VFD displays.
+Also, GU256x64-355 and GU256x64-352 are reported to work.
 The VFD is operating in its 8 bit-mode connected to a PC's parallel
 port.
 
 
-Wiring
+Wirings
 ------
-The GU256x64-372 driver supports the following connection on a parallel
-port:
+The GU256x64-372 driver supports the following connections on a
+parallel port:
+ - Standard
+ - Windows (used by lcdinfo)
+
+Standard wiring:
 
   printerport   LCD          other
   -----------   ----------   ----------
@@ -29,6 +34,24 @@ port:
   INIT   (16)   nWR   (17)                (Write)
   nSEL   (17)   R/S   (19)                (Register Select, C/D)
   GND    (18)   nRD   (21)                (Read)
+  GND    (18)   CSS   (23)                (Chip Select)
+  GND    (18)   GND   (02)                (Ground)
+
+Windows wiring:
+
+  printerport   LCD          other
+  -----------   ----------   ----------
+  nSTRB  (01)   nWR   (17)                (Write)
+  D0     (02)   D0    (15)                (Data Bit 0)
+  D1     (03)   D1    (13)                (Data Bit 1)
+  D2     (04)   D2    (11)                (Data Bit 2)
+  D3     (05)   D3    (09)                (Data Bit 3)
+  D4     (06)   D4    (07)                (Data Bit 4)
+  D5     (07)   D5    (05)                (Data Bit 5)
+  D6     (08)   D6    (03)                (Data Bit 6)
+  D7     (09)   D7    (01)                (Data Bit 7)
+  nAUTO  (14)   nRD   (21)                (Read)
+  nSEL   (17)   R/S   (19)                (Register Select, C/D)
   GND    (18)   CSS   (23)                (Chip Select)
   GND    (18)   GND   (02)                (Ground)
 
@@ -93,4 +116,9 @@ RefreshDisplay
  A value of 0 completely disables complete refreshs. 
  Possible values: 0 <= x <= 50
  Default value: 5
+
+Wiring
+ Select the type of wiring your display is connected with.
+ Possible values: 'Standard', 'Windows'
+ Default value: 'Standard'
 

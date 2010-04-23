@@ -1,6 +1,9 @@
 GraphLCD base package Revision History
 --------------------------------------
 
+2010-04-23: version 0.1.6_1
+- added additional wiring for GU256x64-372 driver (thanks to mentox, http://www.vdr-portal.de/board/thread.php?postid=895721#post895721)
+
 2010-03-01: Version 0.1.6
 - added LDFLAGS_diff in Makefiles for better combat
 - added gcc43-compat patch (include cstring.h/csdtlib.h)

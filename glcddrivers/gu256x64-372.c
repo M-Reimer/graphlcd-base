@@ -64,10 +64,22 @@ namespace GLCD
 #define BRIGHT_3        0x1A // luminance level 3  75.0%
 #define BRIGHT_4        0x1B // luminance level 4  62.5%
 
-#define WRHI            0x04  // INIT
-#define WRLO            0x00
-#define CDHI            0x00 // nSEL
-#define CDLO            0x08
+static const std::string kWiringStandard = "Standard";
+static const std::string kWiringWindows  = "Windows";
+
+const unsigned char kStandardWRHI = 0x04; // 16 / INIT
+const unsigned char kStandardWRLO = 0x00; //
+const unsigned char kStandardRDHI = 0x00; // 
+const unsigned char kStandardRDLO = 0x00; //
+const unsigned char kStandardCDHI = 0x00; // 17 / nSELECT
+const unsigned char kStandardCDLO = 0x08; //
+
+const unsigned char kWindowsWRHI = 0x00; // 01 / nSTRB
+const unsigned char kWindowsWRLO = 0x01; //
+const unsigned char kWindowsRDHI = 0x00; // 14 / nLINEFEED
+const unsigned char kWindowsRDLO = 0x02; //
+const unsigned char kWindowsCDHI = 0x00; // 17 / nSELECT
+const unsigned char kWindowsCDLO = 0x08; //
 
 
 cDriverGU256X64_372::cDriverGU256X64_372(cDriverConfig * config)
@@ -99,11 +111,44 @@ int cDriverGU256X64_372::Init()
         height = 64;
     m_iSizeYb = (height + 7) / 8;
 
+    // default values
+    WRHI = kStandardWRHI;
+    WRLO = kStandardWRLO;
+    RDHI = kStandardRDHI;
+    RDLO = kStandardRDLO;
+    CDHI = kStandardCDHI;
+    CDLO = kStandardCDLO;
+
     for (unsigned int i = 0; i < config->options.size(); i++)
     {
-        if (config->options[i].name == "")
+        if (config->options[i].name == "Wiring")
         {
-        }
+            if (config->options[i].value == kWiringStandard)
+            {
+                WRHI = kStandardWRHI;
+                WRLO = kStandardWRLO;
+                RDHI = kStandardRDHI;
+                RDLO = kStandardRDLO;
+                CDHI = kStandardCDHI;
+                CDLO = kStandardCDLO;
+                syslog(LOG_DEBUG, "%s: using standard wiring\n");
+            }
+            else if (config->options[i].value == kWiringWindows)
+            {
+                WRHI = kWindowsWRHI;
+                WRLO = kWindowsWRLO;
+                RDHI = kWindowsRDHI;
+                RDLO = kWindowsRDLO;
+                CDHI = kWindowsCDHI;
+                CDLO = kWindowsCDLO;
+                syslog(LOG_DEBUG, "%s: using windows wiring\n");
+            }
+            else
+            {
+                syslog(LOG_ERR, "%s error: wiring %s not supported, using default (Standard)!\n",
+                       config->name.c_str(), config->options[i].value.c_str());
+            }
+        }	
     }
 
     // setup linear lcd array
@@ -277,12 +322,12 @@ void cDriverGU256X64_372::GU256X64Cmd(unsigned char data)
     if (m_bSleepIsInit)
         nSleepInit();
 
-    port->WriteControl(CDHI | WRHI);
+    port->WriteControl(CDHI | WRHI | RDLO);
     port->WriteData(data);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
-    port->WriteControl(CDHI | WRLO);
+    port->WriteControl(CDHI | WRLO | RDLO);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
-    port->WriteControl(CDHI | WRHI);
+    port->WriteControl(CDHI | WRHI | RDLO);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
 }
 
@@ -291,12 +336,12 @@ void cDriverGU256X64_372::GU256X64Data(unsigned char data)
     if (m_bSleepIsInit)
         nSleepInit();
 
-    port->WriteControl(CDLO | WRHI);
+    port->WriteControl(CDLO | WRHI | RDLO);
     port->WriteData(data);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
-    port->WriteControl(CDLO | WRLO);
+    port->WriteControl(CDLO | WRLO | RDLO);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
-    port->WriteControl(CDLO | WRHI);
+    port->WriteControl(CDLO | WRHI | RDLO);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
 }
 
