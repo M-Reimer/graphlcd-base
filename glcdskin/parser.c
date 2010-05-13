@@ -320,7 +320,7 @@ bool EndElem(const std::string & name)
         {
             if (object == NULL)
             {
-                printf("rotating parent to object\n");
+                //printf("rotating parent to object\n");
                 object = parents[parents.size() - 1];
                 parents.pop_back();
             }
@@ -343,7 +343,7 @@ bool EndElem(const std::string & name)
 #endif
             if (parents.size() > 0)
             {
-                printf("pushing to parent\n");
+                //printf("pushing to parent\n");
                 cSkinObject *parent = parents[parents.size() - 1];
                 if (parent->mObjects == NULL)
                     parent->mObjects = new cSkinObjects();
