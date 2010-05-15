@@ -300,6 +300,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                 mStoredImagePath = currPath;
                 mScrollLoopReached = false;
                 mLastChange = timestamp;
+                mChangeDelay = -1;
             }
 
             GLCD::cImage * image = cache->Get(evalPath);
@@ -317,8 +318,8 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                 if (mScrollLoopMode != -1)  // if == -1: currScrollLoopMode already contains correct value
                   currScrollLoopMode = mScrollLoopMode;
 
-                mChangeDelay = image->Delay();
-                if (mChangeDelay != -1 && currScrollLoopMode > 0 && !mScrollLoopReached && framecount > 1) {
+                if (framecount > 1 && currScrollLoopMode > 0 && !mScrollLoopReached) {
+                    mChangeDelay = image->Delay();
 
                     if ( (int)(timestamp - mLastChange) >= mChangeDelay) {
 
