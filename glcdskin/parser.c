@@ -205,6 +205,7 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
                 ATTRIB_OPT_FUNC_PARAM("y", object->ParseIntParam, object->mPos2.y);
                 ATTRIB_OPT_FUNC("color", object->ParseColor);
                 ATTRIB_MAN_FUNC("path", object->mPath.Parse);
+                ATTRIB_OPT_FUNC("loop", object->ParseScrollLoopMode);
             }
             else if (name == "text"
                 || name == "scrolltext")
@@ -213,6 +214,9 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
                 ATTRIB_OPT_FUNC("align", object->ParseAlignment);
                 ATTRIB_OPT_FUNC("font", object->ParseFontFace);
                 ATTRIB_OPT_BOOL("multiline", object->mMultiline);
+                ATTRIB_OPT_FUNC("scrollmode", object->ParseScrollLoopMode);
+                ATTRIB_OPT_FUNC("scrollspeed", object->ParseScrollSpeed);
+                ATTRIB_OPT_FUNC("scrolltime", object->ParseScrollTime);
 #if 0
                 if (name == "blink")
                 {

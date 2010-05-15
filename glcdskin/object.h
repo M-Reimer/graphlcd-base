@@ -96,6 +96,21 @@ private:
     cSkinString mText;
     cSkinFunction * mCondition;
 
+    uint64_t mLastChange;           // last change in dynamic object (scroll, frame change, ...)
+    int mChangeDelay;               // delay between two changes (frame change, scrolling, ...)
+                                    // special values: -2: no further looping (mScrollLoopMode == 'once')
+                                    //                 -1: not set (ie: not an animated image)
+
+    std::string mStoredImagePath;   // stored image path
+    int  mImageFrameId;             // frame ID of image
+
+    int mScrollLoopMode;            // scroll (text) or loop (image) mode: -1: default, 0: never, 1: once, 2: always
+    bool mScrollLoopReached;        // if scroll/loop == once: already looped once?
+    int mScrollSpeed;               // scroll speed: 0: default, [1 - 10]: speed
+    int mScrollTime;                // scroll time interval: 0: default, [100 - 2000]: time interval
+    int mScrollOffset;              // scroll offset (pixels)
+    std::string mCurrText;          // current text (for checks if text has changed)
+
     cSkinObjects * mObjects; // used for block objects such as <list>
 
 public:
@@ -112,11 +127,15 @@ public:
     bool ParseWidth(const std::string &Text);
     bool ParseHeight(const std::string &Text);
 
+    bool ParseScrollLoopMode(const std::string & Text);
+    bool ParseScrollSpeed(const std::string & Text);
+    bool ParseScrollTime(const std::string & Text);
+
     void SetListIndex(int MaxItems, int Index);
 
     eType Type(void) const { return mType; }
     cSkinFunction * Condition(void) const { return mCondition; }
-	cSkinDisplay * Display(void) const { return mDisplay; }
+    cSkinDisplay * Display(void) const { return mDisplay; }
     cSkin * Skin(void) const { return mSkin; }
 
     const std::string & TypeName(void) const;
@@ -127,6 +146,10 @@ public:
     cSkinObject * GetObject(uint32_t Index) const;
 
     void Render(cBitmap * screen);
+
+    // check if update is required for dynamic objects (image, text, progress, pane)
+    // false: no update required, true: update required
+    bool NeedsUpdate(uint64_t CurrentTime);
 };
 
 class cSkinObjects: public std::vector<cSkinObject *>

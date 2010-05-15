@@ -43,6 +43,8 @@ public:
     cSkinObject * GetObject(uint32_t n) const { return mObjects[n]; }
 
     void Render(cBitmap * screen);
+
+    bool NeedsUpdate(uint64_t CurrentTime);
 };
 
 class cSkinDisplays: public std::vector<cSkinDisplay *>

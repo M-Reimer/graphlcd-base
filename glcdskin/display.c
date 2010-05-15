@@ -28,6 +28,17 @@ void cSkinDisplay::Render(cBitmap * screen)
 }
 
 
+bool cSkinDisplay::NeedsUpdate(uint64_t CurrentTime)
+{
+    for (uint32_t i = 0; i < NumObjects(); ++i) {
+        if ( GetObject(i)->NeedsUpdate(CurrentTime) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
 cSkinDisplays::cSkinDisplays(void)
 {
 }

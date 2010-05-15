@@ -3,6 +3,7 @@
 #include "skin.h"
 #include "cache.h"
 #include "function.h"
+#include <sys/time.h>
 
 namespace GLCD
 {
@@ -43,6 +44,16 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mFont(this, false),
     mText(this, false),
     mCondition(NULL),
+    mLastChange(0),
+    mChangeDelay(-1),               // delay between two images frames: -1: not animated / don't care
+    mStoredImagePath(""),
+    mImageFrameId(0),               // start with 1st frame
+    mScrollLoopMode(-1),            // scroll (text) or loop (image) mode: default (-1)
+    mScrollLoopReached(false),      // if scroll/loop == once: already looped once?
+    mScrollSpeed(0),                // scroll speed: default (0)
+    mScrollTime(0),                 // scroll time interval: default (0)
+    mScrollOffset(0),               // scroll offset (pixels)
+    mCurrText(""),
     mObjects(NULL)
 {
 }
@@ -66,6 +77,16 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
     mFont(Src.mFont),
     mText(Src.mText),
     mCondition(Src.mCondition),
+    mLastChange(0),
+    mChangeDelay(-1),
+    mStoredImagePath(""),
+    mImageFrameId(0),
+    mScrollLoopMode(Src.mScrollLoopMode),
+    mScrollLoopReached(Src.mScrollLoopReached),
+    mScrollSpeed(Src.mScrollSpeed),
+    mScrollTime(Src.mScrollTime),
+    mScrollOffset(Src.mScrollOffset),
+    mCurrText(Src.mCurrText),
     mObjects(NULL)
 {
     if (Src.mObjects)
@@ -181,6 +202,50 @@ bool cSkinObject::ParseFontFace(const std::string & Text)
     return mFont.Parse(Text);
 }
 
+
+bool cSkinObject::ParseScrollLoopMode(const std::string & Text)
+{
+    if (Text == "never")
+        mScrollLoopMode = 0;
+    else if (Text == "once")
+        mScrollLoopMode = 1;
+    else if (Text == "always")
+        mScrollLoopMode = 2;
+    else
+        return false;
+    return true;
+}
+
+bool cSkinObject::ParseScrollSpeed(const std::string & Text)
+{
+    int val;
+    if (!ParseIntParam(Text, val))
+        return false;
+
+    if (val < 0 || val > 10)
+        return false;
+
+    mScrollSpeed = val;
+    return true;
+}
+
+bool cSkinObject::ParseScrollTime(const std::string & Text)
+{
+    int val;
+    if (!ParseIntParam(Text, val))
+        return false;
+
+    if (val < 0 || val > 2000)
+        return false;
+
+    if (val > 0 && val < 100)
+        val = 100;
+
+    mScrollTime = val;
+    return true;
+}
+
+
 void cSkinObject::SetListIndex(int MaxItems, int Index)
 {
     mText.SetListIndex(MaxItems, Index);
@@ -211,22 +276,63 @@ tSize cSkinObject::Size(void) const
 
 void cSkinObject::Render(GLCD::cBitmap * screen)
 {
+    struct timeval tv;
+    uint64_t timestamp;
+
     if (mCondition != NULL && !mCondition->Evaluate())
         return;
+
+    gettimeofday(&tv, 0);
+    timestamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
 
     switch (Type())
     {
         case cSkinObject::image:
         {
             cImageCache * cache = mSkin->ImageCache();
-            GLCD::cImage * image = cache->Get(mPath.Evaluate());
+            int currScrollLoopMode = 2;  //default if not configured in the skin: always
+
+            cType evalPath = mPath.Evaluate();
+            std::string currPath = evalPath;
+
+            if (currPath != mStoredImagePath) {
+                mImageFrameId = 0;
+                mStoredImagePath = currPath;
+                mScrollLoopReached = false;
+                mLastChange = timestamp;
+            }
+
+            GLCD::cImage * image = cache->Get(evalPath);
             if (image)
             {
-                const GLCD::cBitmap * bitmap = image->GetBitmap();
+                int framecount = image->Count();
+
+                const GLCD::cBitmap * bitmap = image->GetBitmap(mImageFrameId);
+
                 if (bitmap)
                 {
                     screen->DrawBitmap(Pos().x, Pos().y, *bitmap, mColor);
                 }
+
+                if (mScrollLoopMode != -1)  // if == -1: currScrollLoopMode already contains correct value
+                  currScrollLoopMode = mScrollLoopMode;
+
+                mChangeDelay = image->Delay();
+                if (mChangeDelay != -1 && currScrollLoopMode > 0 && !mScrollLoopReached && framecount > 1) {
+
+                    if ( (int)(timestamp - mLastChange) >= mChangeDelay) {
+
+                        if (currScrollLoopMode == 1 && mImageFrameId+1 == framecount) {
+                            mScrollLoopReached = true;  // stop looping and switch to 1st frame
+                        }
+
+                        mImageFrameId = (mImageFrameId+1) % framecount;
+                        mLastChange = timestamp;
+                    }
+                }
+
+                if (mLastChange == 0)
+                    mLastChange = timestamp;
             }
             break;
         }
@@ -301,14 +407,49 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
         }
 
         case cSkinObject::text:
+        case cSkinObject::scrolltext:
         {
             cSkinFont * skinFont = mSkin->GetFont(mFont.Evaluate());
+            int currScrollLoopMode = 1; // default values if no setup default values available
+            int currScrollSpeed = 8;
+            int currScrollTime = 500;
+
+            // get default values from derived config-class if available
+            tSkinToken token = tSkinToken();
+            token.Id = mSkin->Config().GetTokenId("ScrollMode");
+            if (token.Id >= 0) {
+                cType t = mSkin->Config().GetToken(token);
+                currScrollLoopMode = (int)(t);
+            }
+            token.Id = mSkin->Config().GetTokenId("ScrollSpeed");
+            if (token.Id >= 0) {
+                cType t = mSkin->Config().GetToken(token);
+                currScrollSpeed = (int)(t);
+            }
+            token.Id = mSkin->Config().GetTokenId("ScrollTime");
+            if (token.Id >= 0) {
+                cType t = mSkin->Config().GetToken(token);
+                currScrollTime = (int)(t);
+            }
+
             if (skinFont)
             {
                 const cFont * font = skinFont->Font();
                 std::string text = mText.Evaluate();
+
+                if (! (text == mCurrText) ) {
+                    mScrollOffset = 0;
+                    mCurrText = text;
+                    mScrollLoopReached = false;
+                    mLastChange = timestamp;
+                }
+
                 if (mMultiline)
                 {
+
+                    // scrolling in multiline not supported at the moment
+                    mScrollLoopReached = true;  // avoid check in NeedsUpdate()
+
                     std::vector <std::string> lines;
                     font->WrapText(Size().w, Size().h, text, lines);
                     for (size_t i = 0; i < lines.size(); i++)
@@ -334,6 +475,9 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                     if (text.find('\t') != std::string::npos
                         && mSkin->Config().GetTabPosition(0, Size().w, *font) > 0)
                     {
+                        // scrolling in texts with tabulators not supported at the moment
+                        mScrollLoopReached = true;  // avoid check in NeedsUpdate()
+
                         std::string::size_type pos1;
                         std::string::size_type pos2;
                         std::string str;
@@ -363,8 +507,12 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                     {
                         int w = font->Width(text);
                         int x = Pos().x;
+                        bool updateScroll = false;
+
                         if (w < Size().w)
                         {
+                            mScrollLoopReached = true;  // avoid check in NeedsUpdate()
+
                             if (mAlign == taRight)
                             {
                                 x += Size().w - w;
@@ -373,18 +521,53 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             {
                                 x += (Size().w - w) / 2;
                             }
+                        } else {
+
+                           if (mScrollLoopMode != -1)  // if == -1: currScrollLoopMode already contains correct value
+                               currScrollLoopMode = mScrollLoopMode;
+
+                           if (mScrollSpeed > 0)
+                               currScrollSpeed = mScrollSpeed;
+
+                           if (mScrollTime > 0)
+                               currScrollTime = mScrollTime;
+
+                           if (currScrollLoopMode > 0 && (!mScrollLoopReached || mScrollOffset) && 
+                               ((int)(timestamp-mLastChange) >= currScrollTime)
+                              )
+                           {
+                               if (mScrollLoopReached)
+                                   mScrollOffset = 0;
+                               else
+                                   updateScroll = true;
+                           }
+
                         }
-                        screen->DrawText(x, Pos().y, x + Size().w - 1, text, font, mColor);
+                        screen->DrawText(x, Pos().y, x + Size().w - 1, text, font, mColor, true, mScrollOffset);
+
+                        if (updateScroll) {
+                            mScrollOffset += currScrollSpeed;
+
+                            if ( x + Size().w + mScrollOffset > w+Size().w) {
+                                if (currScrollLoopMode == 1)
+                                    // reset mScrollOffset in next step (else: string not redrawn when scroll done)
+                                    mScrollLoopReached = true;
+                                else
+                                    mScrollOffset= 0;
+                            }
+                            updateScroll = false;
+                            mLastChange = timestamp;
+                        }
                     }
                 }
             }
             break;
         }
 
-        case cSkinObject::scrolltext:
+//        case cSkinObject::scrolltext:
             //DrawScrolltext(Object->Pos(), Object->Size(), Object->Fg(), Object->Text(), Object->Font(),
             //    Object->Align());
-            break;
+//            break;
 
         case cSkinObject::scrollbar:
             //DrawScrollbar(Object->Pos(), Object->Size(), Object->Bg(), Object->Fg());
@@ -429,6 +612,83 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
             break;
     }
 }
+
+bool cSkinObject::NeedsUpdate(uint64_t CurrentTime)
+{
+    if (mCondition != NULL && !mCondition->Evaluate())
+        return false;
+
+    switch (Type())
+    {
+        case cSkinObject::image:
+        {
+            int currScrollLoopMode = 2;
+
+            if (mScrollLoopMode != -1)
+                currScrollLoopMode = mScrollLoopMode;
+
+            if ( mChangeDelay > 0 && currScrollLoopMode > 0 && !mScrollLoopReached && 
+                 ( (int)(CurrentTime-mLastChange) >= mChangeDelay)
+               )
+            {
+              return true;
+            }
+            return false;
+            break;
+        }
+        case cSkinObject::text:
+        case cSkinObject::scrolltext:
+        {
+            int currScrollLoopMode = 1; // default values if no setup default values available
+            int currScrollTime = 500;
+
+            // get default values from derived config-class if available
+            tSkinToken token = tSkinToken();
+            token.Id = mSkin->Config().GetTokenId("ScrollMode");
+            if (token.Id >= 0) {
+                cType t = mSkin->Config().GetToken(token);
+                currScrollLoopMode = (int)(t);
+            }
+            token.Id = mSkin->Config().GetTokenId("ScrollTime");
+            if (token.Id >= 0) {
+                cType t = mSkin->Config().GetToken(token);
+                currScrollTime = (int)(t);
+            }
+
+            if (mScrollLoopMode != -1)  // if == -1: currScrollLoopMode already contains correct value
+                currScrollLoopMode = mScrollLoopMode;
+
+            if (mScrollTime > 0)
+                currScrollTime = mScrollTime;
+
+            if (currScrollLoopMode > 0 && (!mScrollLoopReached || mScrollOffset) && 
+                (int)(CurrentTime-mLastChange) >= currScrollTime
+               )
+            {
+                return true;
+            }
+            return false;
+            break;
+        }
+        case cSkinObject::progress:
+            return false;
+            break;
+        case cSkinObject::block:
+        {
+            for (uint32_t i = 0; i < NumObjects(); i++) {
+                if ( GetObject(i)->NeedsUpdate(CurrentTime) ) {
+                    return true;
+                }
+            }
+            return false;
+            break;
+        }
+        default:  // all other elements are static ones
+            return false;
+    }
+    return false;
+}
+
 
 cSkinObjects::cSkinObjects(void)
 {
