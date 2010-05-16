@@ -545,7 +545,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
 
                         }
 
-                        if (updateScroll) {
+                        if (mScrollOffset) {
                             w += font->Width("     ");
                             std::string textdoubled = text + "     " + text;
                             screen->DrawText(x, Pos().y, x + Size().w - 1, textdoubled, font, mColor, true, mScrollOffset);
