@@ -3,7 +3,6 @@
 #include "skin.h"
 #include "cache.h"
 #include "function.h"
-#include <sys/time.h>
 
 namespace GLCD
 {
@@ -53,7 +52,9 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mScrollSpeed(0),                // scroll speed: default (0)
     mScrollTime(0),                 // scroll time interval: default (0)
     mScrollOffset(0),               // scroll offset (pixels)
-    mCurrText(""),
+    mCurrText(""),                  // current text (for checks if text has changed)
+    mAltText(""),                   // alternative text source for text-objects
+    mAltCondition(NULL),            // condition when alternative sources are used
     mObjects(NULL)
 {
 }
@@ -79,7 +80,7 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
     mCondition(Src.mCondition),
     mLastChange(0),
     mChangeDelay(-1),
-    mStoredImagePath(""),
+    mStoredImagePath(Src.mStoredImagePath),
     mImageFrameId(0),
     mScrollLoopMode(Src.mScrollLoopMode),
     mScrollLoopReached(Src.mScrollLoopReached),
@@ -87,6 +88,8 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
     mScrollTime(Src.mScrollTime),
     mScrollOffset(Src.mScrollOffset),
     mCurrText(Src.mCurrText),
+    mAltText(Src.mAltText),
+    mAltCondition(Src.mAltCondition),
     mObjects(NULL)
 {
     if (Src.mObjects)
@@ -246,6 +249,19 @@ bool cSkinObject::ParseScrollTime(const std::string & Text)
 }
 
 
+bool cSkinObject::ParseAltCondition(const std::string & Text)
+{
+    cSkinFunction *result = new cSkinFunction(this);
+    if (result->Parse(Text))
+    {
+        delete mAltCondition;
+        mAltCondition = result;
+        return true;
+    }
+    return false;
+}
+
+
 void cSkinObject::SetListIndex(int MaxItems, int Index)
 {
     mText.SetListIndex(MaxItems, Index);
@@ -276,14 +292,12 @@ tSize cSkinObject::Size(void) const
 
 void cSkinObject::Render(GLCD::cBitmap * screen)
 {
-    struct timeval tv;
     uint64_t timestamp;
 
     if (mCondition != NULL && !mCondition->Evaluate())
         return;
 
-    gettimeofday(&tv, 0);
-    timestamp = tv.tv_sec * 1000 + tv.tv_usec / 1000;
+    timestamp = mSkin->Config().Now();
 
     switch (Type())
     {
@@ -436,7 +450,19 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
             if (skinFont)
             {
                 const cFont * font = skinFont->Font();
-                std::string text = mText.Evaluate();
+                std::string text = "";
+
+                // is an alternative text defined + alternative condition defined and true?
+                if (mAltCondition != NULL && mAltCondition->Evaluate() && (mAltText.size() != 0)) {
+                    cSkinString *result = new cSkinString(this, false);
+
+                    if (result->Parse(mAltText)) {
+                        text = (std::string) result->Evaluate();
+                    }
+                    delete result;
+                } else { // nope: use the original text
+                    text = (std::string) mText.Evaluate();
+                }
 
                 if (! (text == mCurrText) ) {
                     mScrollOffset = 0;
@@ -447,7 +473,6 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
 
                 if (mMultiline)
                 {
-
                     // scrolling in multiline not supported at the moment
                     mScrollLoopReached = true;  // avoid check in NeedsUpdate()
 
@@ -556,7 +581,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         if (updateScroll) {
                             mScrollOffset += currScrollSpeed;
 
-                            if ( x + Size().w + mScrollOffset > w+Size().w) {
+                            if ( x + Size().w + mScrollOffset >= (w+Size().w - font->Width("  "))) {
                                 if (currScrollLoopMode == 1)
                                     // reset mScrollOffset in next step (else: string not redrawn when scroll done)
                                     mScrollLoopReached = true;
@@ -650,6 +675,20 @@ bool cSkinObject::NeedsUpdate(uint64_t CurrentTime)
             int currScrollLoopMode = 1; // default values if no setup default values available
             int currScrollTime = 500;
 
+            std::string text = "";
+
+            // is an alternative text defined + alternative condition defined and true?
+            if (mAltCondition != NULL && mAltCondition->Evaluate() && (mAltText.size() != 0)) {
+                cSkinString *result = new cSkinString(this, false);
+
+                if (result->Parse(mAltText)) {
+                    text = (std::string) result->Evaluate();
+                }
+                delete result;
+            } else { // nope: use the original text
+                text = (std::string) mText.Evaluate();
+            }
+
             // get default values from derived config-class if available
             tSkinToken token = tSkinToken();
             token.Id = mSkin->Config().GetTokenId("ScrollMode");
@@ -669,8 +708,10 @@ bool cSkinObject::NeedsUpdate(uint64_t CurrentTime)
             if (mScrollTime > 0)
                 currScrollTime = mScrollTime;
 
-            if (currScrollLoopMode > 0 && (!mScrollLoopReached || mScrollOffset) && 
-                (int)(CurrentTime-mLastChange) >= currScrollTime
+            if ( (text != mCurrText) || 
+                 ( (currScrollLoopMode > 0) && (!mScrollLoopReached || mScrollOffset) && 
+                   ((int)(CurrentTime-mLastChange) >= currScrollTime)
+                 )
                )
             {
                 return true;

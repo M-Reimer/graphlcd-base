@@ -77,9 +77,9 @@ public:
     };
 
 private:
-    cSkinDisplay * mDisplay;
+    cSkinDisplay * mDisplay;        // parent display
     cSkin * mSkin;
-    eType mType;
+    eType mType;                    // type of object, one of enum eType
     tPoint mPos1;
     tPoint mPos2;
     eColor mColor;
@@ -96,7 +96,7 @@ private:
     cSkinString mText;
     cSkinFunction * mCondition;
 
-    uint64_t mLastChange;           // last change in dynamic object (scroll, frame change, ...)
+    uint64_t mLastChange;           // timestamp: last change in dynamic object (scroll, frame change, ...)
     int mChangeDelay;               // delay between two changes (frame change, scrolling, ...)
                                     // special values: -2: no further looping (mScrollLoopMode == 'once')
                                     //                 -1: not set (ie: not an animated image)
@@ -111,7 +111,10 @@ private:
     int mScrollOffset;              // scroll offset (pixels)
     std::string mCurrText;          // current text (for checks if text has changed)
 
-    cSkinObjects * mObjects; // used for block objects such as <list>
+    std::string     mAltText;       // alternative text source for text-objects
+    cSkinFunction * mAltCondition;  // condition when alternative sources are used
+
+    cSkinObjects * mObjects;        // used for block objects such as <list>
 
 public:
     cSkinObject(cSkinDisplay * parent);
@@ -127,9 +130,11 @@ public:
     bool ParseWidth(const std::string &Text);
     bool ParseHeight(const std::string &Text);
 
-    bool ParseScrollLoopMode(const std::string & Text);
-    bool ParseScrollSpeed(const std::string & Text);
-    bool ParseScrollTime(const std::string & Text);
+    bool ParseScrollLoopMode(const std::string & Text); // parse scroll mode ([never|once|always])
+    bool ParseScrollSpeed(const std::string & Text);    // parse scroll speed
+    bool ParseScrollTime(const std::string & Text);     // parse scroll time interval
+
+    bool ParseAltCondition(const std::string &Text);    // parse condition for alternative use (eg. alternative sources)
 
     void SetListIndex(int MaxItems, int Index);
 

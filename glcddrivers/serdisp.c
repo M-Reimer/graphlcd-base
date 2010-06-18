@@ -341,7 +341,8 @@ int cDriverSerDisp::Init(void)
         fp_serdisp_feature(dd, FEATURE_REVERSE, config->invert);
     } else {
         /* standard options */
-        fp_serdisp_setoption(dd, "ROTATE", config->upsideDown);
+        if (config->upsideDown)
+            fp_serdisp_setoption(dd, "ROTATE", config->upsideDown);
         fp_serdisp_setoption(dd, "CONTRAST", config->contrast);
         fp_serdisp_setoption(dd, "BACKLIGHT", config->backlight);
         fp_serdisp_setoption(dd, "INVERT", config->invert);

@@ -217,6 +217,8 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
                 ATTRIB_OPT_FUNC("scrollmode", object->ParseScrollLoopMode);
                 ATTRIB_OPT_FUNC("scrollspeed", object->ParseScrollSpeed);
                 ATTRIB_OPT_FUNC("scrolltime", object->ParseScrollTime);
+                ATTRIB_OPT_STRING("alttext", object->mAltText);
+                ATTRIB_OPT_FUNC("altcondition", object->ParseAltCondition);
 #if 0
                 if (name == "blink")
                 {

@@ -15,6 +15,7 @@
 
 #include <string>
 
+#include <stdint.h>
 
 namespace GLCD
 {
@@ -35,6 +36,7 @@ public:
     virtual cType GetToken(const tSkinToken & Token);
     virtual int GetTokenId(const std::string & Name);
     virtual int GetTabPosition(int Index, int MaxWidth, const cFont & Font);
+    virtual uint64_t Now(void);
 };
 
 } // end of namespace
