@@ -571,9 +571,15 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         }
 
                         if (mScrollOffset) {
+                            int corr_scrolloffset = mScrollOffset;
+                            if ((int)(timestamp-mLastChange) < currScrollTime) {
+                                corr_scrolloffset -= currScrollSpeed;
+                                if (corr_scrolloffset < 0)
+                                    corr_scrolloffset = 0;
+                            }
                             w += font->Width("     ");
                             std::string textdoubled = text + "     " + text;
-                            screen->DrawText(x, Pos().y, x + Size().w - 1, textdoubled, font, mColor, true, mScrollOffset);
+                            screen->DrawText(x, Pos().y, x + Size().w - 1, textdoubled, font, mColor, true, corr_scrolloffset);
                         } else {
                             screen->DrawText(x, Pos().y, x + Size().w - 1, text, font, mColor, true, mScrollOffset);
                         }
