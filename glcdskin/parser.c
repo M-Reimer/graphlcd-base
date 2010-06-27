@@ -24,19 +24,19 @@ namespace GLCD
 {
 
 #define TAG_ERR_REMAIN(_context) do { \
-    syslog(LOG_ERR, "ERROR: Text2Skin: Unexpected tag %s within %s", \
+    syslog(LOG_ERR, "ERROR: graphlcd/skin: Unexpected tag %s within %s", \
         name.c_str(), _context); \
     return false; \
   } while (0)
 
 #define TAG_ERR_CHILD(_context) do { \
-    syslog(LOG_ERR, "ERROR: Text2Skin: No child tag %s expected within %s", \
+    syslog(LOG_ERR, "ERROR: graphlcd/skin: No child tag %s expected within %s", \
         name.c_str(), _context); \
     return false; \
   } while (0)
 
 #define TAG_ERR_END(_context) do { \
-    syslog(LOG_ERR, "ERROR: Text2Skin: Unexpected closing tag for %s within %s", \
+    syslog(LOG_ERR, "ERROR: graphlcd/skin: Unexpected closing tag for %s within %s", \
         name.c_str(), _context); \
     return false; \
   } while (0)
@@ -49,7 +49,7 @@ namespace GLCD
 #define ATTRIB_MAN_STRING(_attr,_target) \
   ATTRIB_OPT_STRING(_attr,_target) \
   else { \
-    syslog(LOG_ERR, "ERROR: Text2Skin: Mandatory attribute %s missing in tag %s", \
+    syslog(LOG_ERR, "ERROR: graphlcd/skin: Mandatory attribute %s missing in tag %s", \
         _attr, name.c_str()); \
     return false; \
   }
@@ -59,7 +59,7 @@ namespace GLCD
     char *_e; const char *_t = attrs[_attr].c_str(); \
     long _l = strtol(_t, &_e, 10); \
     if (_e ==_t || *_e != '\0') { \
-      syslog(LOG_ERR, "ERROR: Text2Skin: Invalid numeric value \"%s\" in attribute %s", \
+      syslog(LOG_ERR, "ERROR: graphlcd/skin: Invalid numeric value \"%s\" in attribute %s", \
           _t, _attr); \
       return false; \
     } else \
@@ -69,7 +69,7 @@ namespace GLCD
 #define ATTRIB_MAN_NUMBER(_attr,_target) \
   ATTRIB_OPT_NUMBER(_attr,_target) \
   else { \
-    syslog(LOG_ERR, "ERROR: Text2Skin: Mandatory attribute %s missing in tag %s", \
+    syslog(LOG_ERR, "ERROR: graphlcd/skin: Mandatory attribute %s missing in tag %s", \
         _attr, name.c_str()); \
     return false; \
   }
@@ -81,7 +81,7 @@ namespace GLCD
     else if (attrs[_attr] == "no") \
       _target = false; \
     else { \
-      syslog(LOG_ERR, "ERROR: Text2Skin: Invalid boolean value \"%s\" in attribute %s", \
+      syslog(LOG_ERR, "ERROR: graphlcd/skin: Invalid boolean value \"%s\" in attribute %s", \
           attrs[_attr].c_str(), _attr); \
       return false; \
     } \
@@ -90,7 +90,7 @@ namespace GLCD
 #define ATTRIB_MAN_BOOL(_attr,_target) \
   ATTRIB_OPT_BOOL(_attr,_target) \
   else { \
-    syslog(LOG_ERR, "ERROR: Text2Skin: Mandatory attribute %s missing in tag %s", \
+    syslog(LOG_ERR, "ERROR: graphlcd/skin: Mandatory attribute %s missing in tag %s", \
         _attr, name.c_str()); \
     return false; \
   }
@@ -98,7 +98,7 @@ namespace GLCD
 #define ATTRIB_OPT_FUNC(_attr,_func) \
   if (attrs.find(_attr) != attrs.end()) { \
     if (!_func(attrs[_attr])) { \
-      syslog(LOG_ERR, "ERROR: Text2Skin: Unexpected value %s for attribute %s", \
+      syslog(LOG_ERR, "ERROR: graphlcd/skin: Unexpected value %s for attribute %s", \
           attrs[_attr].c_str(), _attr); \
       return false; \
     } \
@@ -107,7 +107,7 @@ namespace GLCD
 #define ATTRIB_MAN_FUNC(_attr,_func) \
   ATTRIB_OPT_FUNC(_attr,_func) \
   else { \
-    syslog(LOG_ERR, "ERROR: Text2Skin: Mandatory attribute %s missing in tag %s", \
+    syslog(LOG_ERR, "ERROR: graphlcd/skin: Mandatory attribute %s missing in tag %s", \
         _attr, name.c_str()); \
     return false; \
   }
@@ -115,7 +115,7 @@ namespace GLCD
 #define ATTRIB_OPT_FUNC_PARAM(_attr,_func,_param) \
   if (attrs.find(_attr) != attrs.end()) { \
     if (!_func(attrs[_attr],_param)) { \
-      syslog(LOG_ERR, "ERROR: Text2Skin: Unexpected value %s for attribute %s", \
+      syslog(LOG_ERR, "ERROR: graphlcd/skin: Unexpected value %s for attribute %s", \
           attrs[_attr].c_str(), _attr); \
       return false; \
     } \
@@ -124,7 +124,7 @@ namespace GLCD
 #define ATTRIB_MAN_FUNC_PARAM(_attr,_func,_param) \
   ATTRIB_OPT_FUNC_PARAM(_attr,_func,_param) \
   else { \
-    syslog(LOG_ERR, "ERROR: Text2Skin: Mandatory attribute %s missing in tag %s", \
+    syslog(LOG_ERR, "ERROR: graphlcd/skin: Mandatory attribute %s missing in tag %s", \
         _attr, name.c_str()); \
     return false; \
   }
@@ -212,6 +212,7 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
             {
                 ATTRIB_OPT_FUNC("color", object->ParseColor);
                 ATTRIB_OPT_FUNC("align", object->ParseAlignment);
+                ATTRIB_OPT_FUNC("valign", object->ParseVerticalAlignment);
                 ATTRIB_OPT_FUNC("font", object->ParseFontFace);
                 ATTRIB_OPT_BOOL("multiline", object->mMultiline);
                 ATTRIB_OPT_FUNC("scrollmode", object->ParseScrollLoopMode);
@@ -377,7 +378,7 @@ cSkin * XmlParse(cSkinConfig & Config, const std::string & Name, const std::stri
     xml.SetCDataCB(CharData);
     if (xml.Parse() != 0)
     {
-        syslog(LOG_ERR, "ERROR: Text2Skin: Parse error in %s, line %d", fileName.c_str(), xml.LineNr());
+        syslog(LOG_ERR, "ERROR: graphlcd/skin: Parse error in %s, line %d", fileName.c_str(), xml.LineNr());
         delete skin;
         skin = NULL;
         delete display;

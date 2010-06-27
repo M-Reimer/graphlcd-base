@@ -36,6 +36,7 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mArc(0),
     mDirection(0),
     mAlign(taLeft),
+    mVerticalAlign(tvaTop),
     mMultiline(false),
     mPath(this, false),
     mCurrent(this, false),
@@ -71,6 +72,7 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
     mArc(Src.mArc),
     mDirection(Src.mDirection),
     mAlign(Src.mAlign),
+    mVerticalAlign(Src.mVerticalAlign),
     mMultiline(Src.mMultiline),
     mPath(Src.mPath),
     mCurrent(Src.mCurrent),
@@ -145,6 +147,19 @@ bool cSkinObject::ParseAlignment(const std::string & Text)
         mAlign = taRight;
     else if (Text == "center")
         mAlign = taCenter;
+    else
+        return false;
+    return true;
+}
+
+bool cSkinObject::ParseVerticalAlignment(const std::string & Text)
+{
+    if (Text == "top")
+        mVerticalAlign = tvaTop;
+    else if (Text == "middle")
+        mVerticalAlign = tvaMiddle;
+    else if (Text == "bottom")
+        mVerticalAlign = tvaBottom;
     else
         return false;
     return true;
@@ -478,6 +493,20 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
 
                     std::vector <std::string> lines;
                     font->WrapText(Size().w, Size().h, text, lines);
+
+                    // vertical alignment, calculate y offset
+                    int yoff = 0;
+                    int diff = Size().h - lines.size() * font->LineHeight();
+                    switch (mVerticalAlign) {
+                        case tvaMiddle:
+                            yoff = (diff > 0) ? diff >> 1 : 0;
+                        break;
+                        case tvaBottom:
+                            yoff = (diff > 0) ? diff : 0;
+                        break;
+                        default: yoff = 0;
+                    }
+
                     for (size_t i = 0; i < lines.size(); i++)
                     {
                         int w = font->Width(lines[i]);
@@ -493,11 +522,24 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                                 x += (Size().w - w) / 2;
                             }
                         }
-                        screen->DrawText(x, Pos().y + i * font->LineHeight(), x + Size().w - 1, lines[i], font, mColor);
+                        screen->DrawText(x, yoff + Pos().y + i * font->LineHeight(), x + Size().w - 1, lines[i], font, mColor);
                     }
                 }
                 else
                 {
+                    // vertical alignment, calculate y offset
+                    int yoff = 0;
+                    int diff = Size().h - font->LineHeight();
+                    switch (mVerticalAlign) {
+                        case tvaMiddle:
+                            yoff = (diff > 0) ? diff >> 1 : 0;
+                        break;
+                        case tvaBottom:
+                            yoff = (diff > 0) ? diff : 0;
+                        break;
+                        default: yoff = 0;
+                    }
+
                     if (text.find('\t') != std::string::npos
                         && mSkin->Config().GetTabPosition(0, Size().w, *font) > 0)
                     {
@@ -518,7 +560,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         {
                             str = text.substr(pos1, pos2 - pos1);
                             tabWidth = mSkin->Config().GetTabPosition(tab, Size().w, *font);
-                            screen->DrawText(x, Pos().y, x + tabWidth - 1, str, font, mColor);
+                            screen->DrawText(x, yoff + Pos().y, x + tabWidth - 1, str, font, mColor);
                             pos1 = pos2 + 1;
                             pos2 = text.find('\t', pos1);
                             tabWidth += font->Width(' ');
@@ -527,7 +569,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             tab++;
                         }
                         str = text.substr(pos1);
-                        screen->DrawText(x, Pos().y, x + w - 1, str, font, mColor);
+                        screen->DrawText(x, yoff + Pos().y, x + w - 1, str, font, mColor);
                     }
                     else
                     {
@@ -572,6 +614,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
 
                         if (mScrollOffset) {
                             int corr_scrolloffset = mScrollOffset;
+                            /* object update before scrolltime? use previous offset to avoid 'stumbling' scrolling */
                             if ((int)(timestamp-mLastChange) < currScrollTime) {
                                 corr_scrolloffset -= currScrollSpeed;
                                 if (corr_scrolloffset < 0)
@@ -579,9 +622,9 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             }
                             w += font->Width("     ");
                             std::string textdoubled = text + "     " + text;
-                            screen->DrawText(x, Pos().y, x + Size().w - 1, textdoubled, font, mColor, true, corr_scrolloffset);
+                            screen->DrawText(x, yoff + Pos().y, x + Size().w - 1, textdoubled, font, mColor, true, corr_scrolloffset);
                         } else {
-                            screen->DrawText(x, Pos().y, x + Size().w - 1, text, font, mColor, true, mScrollOffset);
+                            screen->DrawText(x, yoff + Pos().y, x + Size().w - 1, text, font, mColor, true, mScrollOffset);
                         }
 
                         if (updateScroll) {

@@ -51,6 +51,13 @@ enum eTextAlignment
     taRight
 };
 
+enum eTextVerticalAlignment
+{
+    tvaTop,
+    tvaMiddle,
+    tvaBottom
+};
+
 class cSkinObject
 {
     friend bool StartElem(const std::string & name, std::map<std::string,std::string> & attrs);
@@ -88,6 +95,7 @@ private:
     int mArc;
     int mDirection;
     eTextAlignment mAlign;
+    eTextVerticalAlignment mVerticalAlign;
     bool mMultiline;
     cSkinString mPath;
     cSkinString mCurrent;
@@ -125,6 +133,7 @@ public:
     bool ParseColor(const std::string &Text);
     bool ParseCondition(const std::string &Text);
     bool ParseAlignment(const std::string &Text);
+    bool ParseVerticalAlignment(const std::string &Text);
     bool ParseFontFace(const std::string &Text);
     bool ParseIntParam(const std::string &Text, int & Param);
     bool ParseWidth(const std::string &Text);
