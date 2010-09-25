@@ -1,0 +1,69 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The futabaMDM166A driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The Futaba MDM166A driver supports Futaba MDM166A VFD displays.
+The VFD is connected to a PC's USB port.
+
+Installation Notes
+------------------
+
+You need installed library libhid to use the futabaMDM166A driver. 
+This library libhid is used to access and interact with a USB HID device.
+
+    * http://libhid.alioth.debian.org/
+
+If Debian used, you can install them with the command :
+
+#> apt-get install libhid-dev libhid0
+
+Wirings
+-------
+The futabaMDM166A driver supports a connections on a USB port.
+
+
+Configuration Parameters
+------------------------
+The futabaMDM166A driver supports the following parameters in config file:
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 96 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 16 pixels is used.
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Invert
+ Inverts the display.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Brightness
+ Sets the brightness of your display's backlight.
+ Possible values: 0 <= x <= 100)
+ Default value: 50
+
+RefreshDisplay
+ Normally, most of the drivers do not update the whole display, but
+ only the areas that have changed since last update. So it might be,
+ that some faulty pixels would stay a longer time. To avoid this, the
+ plugin makes a complete refresh from time to time. This parameter
+ defines how often a complete refresh will be done.
+ e.g.: A value of 5 means, that the plugin will make a complete
+       refresh on every 5th update.
+ A value of 0 completely disables complete refreshs. 
+ Possible values: 0 <= x <= 50
+ Default value: 50
+
+
