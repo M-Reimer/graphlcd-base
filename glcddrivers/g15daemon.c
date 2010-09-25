@@ -33,7 +33,7 @@
 #define G15_HEIGHT 43
 
 
-static int g15_send(int sock, char *buf, int len)
+static int g15_send(int sock, const char *buf, int len)
 {
     int total = 0;
     int retval = 0;

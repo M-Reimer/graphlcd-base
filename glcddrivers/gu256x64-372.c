@@ -131,7 +131,7 @@ int cDriverGU256X64_372::Init()
                 RDLO = kStandardRDLO;
                 CDHI = kStandardCDHI;
                 CDLO = kStandardCDLO;
-                syslog(LOG_DEBUG, "%s: using standard wiring\n");
+                syslog(LOG_DEBUG, "%s: using standard wiring\n", config->name.c_str());
             }
             else if (config->options[i].value == kWiringWindows)
             {
@@ -141,7 +141,7 @@ int cDriverGU256X64_372::Init()
                 RDLO = kWindowsRDLO;
                 CDHI = kWindowsCDHI;
                 CDLO = kWindowsCDLO;
-                syslog(LOG_DEBUG, "%s: using windows wiring\n");
+                syslog(LOG_DEBUG, "%s: using windows wiring\n", config->name.c_str());
             }
             else
             {
