@@ -1,6 +1,14 @@
 GraphLCD base package Revision History
 --------------------------------------
 
+2010-11-02: version 0.1.7
+- added futuba MDM166A driver from andreas brachold: http://projects.vdr-developer.org/issues/351
+- fixed compiler warnings: http://projects.vdr-developer.org/issues/352
+- added new attribute 'valign' (vertical alignment) for text objects. 
+- text-object: fix to avoid stumbling scrolling
+- text-object: added support for alternative text / alternative condition
+- glcdskin: bugfixing and improvements
+
 2010-04-23: version 0.1.6_1
 - added additional wiring for GU256x64-372 driver (thanks to mentox, http://www.vdr-portal.de/board/thread.php?postid=895721#post895721)
 
