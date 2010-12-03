@@ -65,7 +65,7 @@ Installation and Configuration:
 -------------------------------
 1. Unpack the tarball to an arbitrary directory.
 
-  tar xzf graphlcd-base-0.1.7.tgz
+  tar xzf graphlcd-base-0.1.8.tgz
 
 2. Configure if you want FreeType2 support by commenting/uncommenting
    HAVE_FREETYPE2 in Make.config.
