@@ -18,7 +18,7 @@ all: $(PRGNAME)
 # Implicit rules:
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(DEFINES) $(INCLUDES) $<
+	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) $<
 
 # Dependencies:
 

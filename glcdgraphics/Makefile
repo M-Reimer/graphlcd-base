@@ -21,7 +21,7 @@ HEADERS = bitmap.h font.h glcd.h image.h imagefile.h pbm.h
 ### Implicit rules:
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(DEFINES) $(INCLUDES) $<
+	$(CXX) $(CXXFLAGS) -c $(DEFINES) $(INCLUDES) $<
 
 # Dependencies:
 
