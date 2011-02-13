@@ -1,6 +1,11 @@
 GraphLCD base package Revision History
 --------------------------------------
 
+2011-02-13: version 0.1.9
+- fixed compile error. http://www.vdrportal.de/board/thread.php?postid=959952#post959952
+- changed graphlcd.conf back to original: http://projects.vdr-developer.org/issues/524
+- removed unneeded LDFLAGS: http://projects.vdr-developer.org/issues/530
+
 2010-11-02: version 0.1.7
 - added futuba MDM166A driver from andreas brachold: http://projects.vdr-developer.org/issues/351
 - fixed compiler warnings: http://projects.vdr-developer.org/issues/352
