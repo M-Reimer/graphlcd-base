@@ -60,7 +60,7 @@ public:
     void DrawBitmap(int x, int y, const cBitmap & bitmap, eColor color);
     int DrawText(int x, int y, int xmax, const std::string & text, const cFont * font,
                  eColor color = clrBlack, bool proportional = true, int skipPixels = 0);
-    int DrawCharacter(int x, int y, int xmax, char c, const cFont * font,
+    int DrawCharacter(int x, int y, int xmax, int c, const cFont * font,
                       eColor color = clrBlack, int skipPixels = 0);
 
     cBitmap * SubBitmap(int x1, int y1, int x2, int y2) const;

@@ -23,8 +23,18 @@
 namespace GLCD
 {
 
+class cBitmapCache;
+
 class cFont
 {
+public:
+    enum eLoadedFntType
+    {
+        // native glcd font loaded
+        lftFNT,
+        // freetype2 font loaded
+        lftFT2
+    };
 private:
     int totalWidth;
     int totalHeight;
@@ -33,6 +43,11 @@ private:
     int lineHeight;
 
     cBitmap * characters[256];
+    eLoadedFntType loadedFontType;
+
+    cBitmapCache *characters_cache; 
+    void *ft2_library; //FT_Library
+    void *ft2_face; //FT_Face
 protected:
     void Init();
     void Unload();
@@ -56,14 +71,14 @@ public:
     void SetSpaceBetween(int width) { spaceBetween = width; };
     void SetLineHeight(int height) { lineHeight = height; };
 
-    int Width(char ch) const;
+    int Width(int ch) const;
     int Width(const std::string & str) const;
     int Width(const std::string & str, unsigned int len) const;
-    int Height(char ch) const;
+    int Height(int ch) const;
     int Height(const std::string & str) const;
     int Height(const std::string & str, unsigned int len) const;
 
-    const cBitmap * GetCharacter(char ch) const;
+    const cBitmap * GetCharacter(int ch) const;
     void SetCharacter(char ch, cBitmap * bitmapChar);
 
     void WrapText(int Width, int Height, std::string & Text,

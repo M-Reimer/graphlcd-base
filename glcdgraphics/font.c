@@ -20,6 +20,7 @@
 
 #include <cstring>
 #include <algorithm>
+#include <cstring>
 
 #include "common.h"
 #include "font.h"
@@ -27,7 +28,6 @@
 #ifdef HAVE_FREETYPE2
 #include <ft2build.h>
 #include FT_FREETYPE_H
-#include <iconv.h>
 #endif
 
 namespace GLCD
@@ -56,6 +56,64 @@ static const uint32_t kCharHeaderSize = 4;
 //};
 //#pragma pack()
 
+#ifdef HAVE_FREETYPE2
+
+class cBitmapCache
+{
+private:
+protected:
+    cBitmapCache *next;  // next  bitmap
+    cBitmap      *ptr;
+    int          charcode;
+public:
+    cBitmapCache();
+    ~cBitmapCache();
+
+    void PushBack(int ch, cBitmap *bitmap);
+    cBitmap *GetBitmap(int ch) const;
+};
+
+cBitmapCache::cBitmapCache()
+:   next(NULL),
+    ptr(NULL),
+    charcode(0)
+{
+}
+
+cBitmapCache::~cBitmapCache()
+{
+    delete ptr;
+    delete next;
+}
+
+void cBitmapCache::PushBack(int ch, cBitmap *bitmap)
+{
+    if (!ptr)
+    {
+        charcode = ch;
+        ptr = bitmap;
+    }
+    else if (!next)
+    {
+        next = new cBitmapCache();
+        next->ptr = bitmap;
+        next->charcode = ch;
+    } else
+        next->PushBack(ch, bitmap);
+}
+
+cBitmap *cBitmapCache::GetBitmap(int ch) const
+{
+    if (ptr && charcode==ch)
+        return ptr;
+    else if (next)
+        return next->GetBitmap(ch);
+    else
+        return NULL;
+}
+
+#endif
+
 cFont::cFont()
 {
     Init();
@@ -70,6 +128,7 @@ bool cFont::LoadFNT(const std::string & fileName)
 {
     // cleanup if we already had a loaded font
     Unload();
+    loadedFontType = lftFNT; //original fonts
 
     FILE * fontFile;
     int i;
@@ -186,6 +245,7 @@ bool cFont::LoadFT2(const std::string & fileName, const std::string & encoding,
 {
     // cleanup if we already had a loaded font
     Unload();
+    loadedFontType = lftFT2; // ft2 fonts
 #ifdef HAVE_FREETYPE2
     if (access(fileName.c_str(), F_OK) != 0)
     {
@@ -195,7 +255,6 @@ bool cFont::LoadFT2(const std::string & fileName, const std::string & encoding,
     // file exists
     FT_Library library;
     FT_Face face;
-    FT_GlyphSlot slot;
 
     int error = FT_Init_FreeType(&library);
     if (error)
@@ -224,140 +283,20 @@ bool cFont::LoadFT2(const std::string & fileName, const std::string & encoding,
         return false;
     }
 
-    // set slot
-    slot = face->glyph;
-
     // set Size
     FT_Set_Char_Size(face, 0, size * 64, 0, 0);
 
-    wchar_t utf_buff[256];
-    if (dingBats)
-    {
-/*
-        FT_CharMap charmap = 0;
-        for (int n = 0; n < face->num_charmaps; n++)
-        {
-            if (face->charmaps[n]->platform_id == 3 &&
-                face->charmaps[n]->encoding_id == 0)
-            {
-                charmap = face->charmaps[n];
-                //break;
-            }
-        }
-        if (charmap)
-            syslog(LOG_ERR, "cFont::LoadFT2: platform_id: %d, encoding_id: %d", charmap->platform_id, charmap->encoding_id);
-        error = FT_Set_Charmap(_face, charmap);
-        if (error)
-        {
-            syslog(LOG_ERR, "cFont::LoadFT2: FT_Select_Charmap encoding not supported: %d", charmap->encoding_id);
-        }
-*/
-    }
-    else
-    {
-        iconv_t cd;
-        if ((cd = iconv_open("WCHAR_T", encoding.c_str())) == (iconv_t) -1)
-        {
-            syslog(LOG_ERR, "cFont::LoadFT2: Iconv encoding not supported: %s", encoding.c_str());
-            error = FT_Done_Face(face);
-            syslog(LOG_ERR, "cFont::LoadFT2: FT_Done_Face(..) returned (%d)", error);
-            error = FT_Done_FreeType(library);
-            syslog(LOG_ERR, "cFont::LoadFT2: FT_Done_FreeType(..) returned (%d)", error);
-            return false;
-        }
-        for (int c = 0; c < 256; c++)
-        {
-            char char_buff = c;
-            wchar_t wchar_buff;
-            char * in_buff,* out_buff;
-            size_t in_len, out_len, count;
-
-            in_len = 1;
-            out_len = 4;
-            in_buff = (char *) &char_buff;
-            out_buff = (char *) &wchar_buff;
-            count = iconv(cd, &in_buff, &in_len, &out_buff, &out_len);
-            if ((size_t) -1 == count)
-            {
-                utf_buff[c] = 0;
-            }
-            utf_buff[c] = wchar_buff;
-        }
-        iconv_close(cd);
-    }
-
     // get some global parameters
-    totalHeight = (face->size->metrics.ascender >> 6) - (face->size->metrics.descender >> 6);
-    totalWidth = face->size->metrics.max_advance >> 6;
-    totalAscent = face->size->metrics.ascender >> 6;
-    lineHeight = face->size->metrics.height >> 6;
-    spaceBetween = 0;
-#if 0
-    syslog(LOG_DEBUG, "cFont::LoadFT2: totalHeight = %d", totalHeight);
-    syslog(LOG_DEBUG, "cFont::LoadFT2: totalWidth = %d", totalWidth);
-    syslog(LOG_DEBUG, "cFont::LoadFT2: totalAscent = %d", totalAscent);
-    syslog(LOG_DEBUG, "cFont::LoadFT2: lineHeight = %d", lineHeight);
-    syslog(LOG_DEBUG, "cFont::LoadFT2: spaceBetween = %d", spaceBetween);
-#endif
-    // render glyphs for ASCII codes 0 to 255 in our bitmap class
-    FT_UInt glyph_index;
-    int num_char;
+    SetTotalHeight( (face->size->metrics.ascender >> 6) - (face->size->metrics.descender >> 6) );
+    SetTotalWidth ( face->size->metrics.max_advance >> 6 );
+    SetTotalAscent( face->size->metrics.ascender >> 6 );
+    SetLineHeight ( face->size->metrics.height >> 6 );
+    SetSpaceBetween( 0 );
 
-    for (num_char = 0; num_char < 256; num_char++)
-    {
-        if (dingBats)
-        {
-            //Get FT char index & load the char
-            error = FT_Load_Char(face, num_char, FT_LOAD_DEFAULT);
-        }
-        else
-        {
-            //Get FT char index
-            glyph_index = FT_Get_Char_Index(face, utf_buff[num_char]);
-            //Load the char
-            error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
-        }
-        if (error)
-        {
-            syslog(LOG_ERR, "cFont::LoadFT2: ERROR when calling FT_Load_Glyph: %x", error);
-        }
+    ft2_library = library;
+    ft2_face = face;
 
-        // convert to a mono bitmap
-        error = FT_Render_Glyph(face->glyph, FT_RENDER_MODE_MONO);
-        if (error)
-        {
-            syslog(LOG_ERR, "cFont::LoadFT2: ERROR when calling FT_Render_Glyph: %x", error);
-        }
-
-        // now, fill our pixel data
-        cBitmap * charBitmap = new cBitmap(face->glyph->advance.x >> 6, totalHeight);
-        charBitmap->Clear();
-        unsigned char * bufPtr = face->glyph->bitmap.buffer;
-        unsigned char pixel;
-        for (int y = 0; y < face->glyph->bitmap.rows; y++)
-        {
-            for (int x = 0; x < face->glyph->bitmap.width; x++)
-            {
-                pixel = (bufPtr[x / 8] >> (7 - x % 8)) & 1;
-                if (pixel)
-                    charBitmap->DrawPixel((face->glyph->metrics.horiBearingX >> 6) + x,
-                                          (face->size->metrics.ascender >> 6) - (face->glyph->metrics.horiBearingY >> 6) + y,
-                                          GLCD::clrBlack);
-            }
-            bufPtr += face->glyph->bitmap.pitch;
-        }
-        SetCharacter((char) num_char, charBitmap);
-    }
-    error = FT_Done_Face(face);
-    if (error)
-    {
-        syslog(LOG_ERR, "cFont::LoadFT2: FT_Done_Face(..) returned (%d)", error);
-    }
-    error = FT_Done_FreeType(library);
-    if (error)
-    {
-        syslog(LOG_ERR, "cFont::LoadFT2: FT_Done_FreeType(..) returned (%d)", error);
-    }
+    characters_cache=new cBitmapCache(); 
     return true;
 #else
     syslog(LOG_ERR, "cFont::LoadFT2: glcdgraphics was compiled without FreeType2 support!!!");
@@ -365,10 +304,11 @@ bool cFont::LoadFT2(const std::string & fileName, const std::string & encoding,
 #endif
 }
 
-int cFont::Width(char ch) const
+int cFont::Width(int ch) const
 {
-    if (characters[(unsigned char) ch])
-        return characters[(unsigned char) ch]->Width();
+    const cBitmap *bitmap = GetCharacter(ch);
+    if (bitmap)
+        return bitmap->Width();
     else
         return 0;
 }
@@ -377,15 +317,36 @@ int cFont::Width(const std::string & str) const
 {
     unsigned int i;
     int sum = 0;
+    int c,c0,c1,c2,c3,symcount=0;
 
     for (i = 0; i < str.length(); i++)
     {
-        sum += Width(str[i]);
+        c = str[i];
+        c0 = str[i];
+        c1 = (i+1 < str.length()) ? str[i+1] : 0;
+        c2 = (i+2 < str.length()) ? str[i+2] : 0;
+        c3 = (i+3 < str.length()) ? str[i+3] : 0;
+        c0 &=0xff; c1 &=0xff; c2 &=0xff; c3 &=0xff;
+
+        if( c0 >= 0xc2 && c0 <= 0xdf && c1 >= 0x80 && c1 <= 0xbf ){ //2 byte UTF-8 sequence found
+            i+=1;
+            c = ((c0&0x1f)<<6) | (c1&0x3f);
+        }else if(  (c0 == 0xE0 && c1 >= 0xA0 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
+                || (c0 >= 0xE1 && c1 <= 0xEC && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
+                || (c0 == 0xED && c1 >= 0x80 && c1 <= 0x9f && c2 >= 0x80 && c2 <= 0xbf) 
+                || (c0 >= 0xEE && c0 <= 0xEF && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) ){  //3 byte UTF-8 sequence found
+            c = ((c0&0x0f)<<4) | ((c1&0x3f)<<6) | (c2&0x3f);
+            i+=2;
+        }else if(  (c0 == 0xF0 && c1 >= 0x90 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
+                || (c0 >= 0xF1 && c0 >= 0xF3 && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
+                || (c0 == 0xF4 && c1 >= 0x80 && c1 <= 0x8f && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) ){  //4 byte UTF-8 sequence found
+            c = ((c0&0x07)<<2) | ((c1&0x3f)<<4) | ((c2&0x3f)<<6) | (c3&0x3f);
+            i+=3;
+        }
+        symcount++;
+        sum += Width(c);
     }
-    if (str.length() > 1)
-    {
-        sum += spaceBetween * (str.length() - 1);
-    }
+    sum += spaceBetween * (symcount - 1);
     return sum;
 }
 
@@ -394,21 +355,45 @@ int cFont::Width(const std::string & str, unsigned int len) const
     unsigned int i;
     int sum = 0;
 
-    for (i = 0; i < str.length() && i < len; i++)
+    int c,c0,c1,c2,c3,symcount=0; 
+
+    for (i = 0; i < str.length() && symcount < len; i++)
     {
-        sum += Width(str[i]);
+        c = str[i];
+        c0 = str[i];
+        c1 = (i+1 < str.length()) ? str[i+1] : 0;
+        c2 = (i+2 < str.length()) ? str[i+2] : 0;
+        c3 = (i+3 < str.length()) ? str[i+3] : 0;
+        c0 &=0xff; c1 &=0xff; c2 &=0xff; c3 &=0xff;
+
+        if( c0 >= 0xc2 && c0 <= 0xdf && c1 >= 0x80 && c1 <= 0xbf ){ //2 byte UTF-8 sequence found
+            i+=1;
+            c = ((c0&0x1f)<<6) | (c1&0x3f);
+        }else if(  (c0 == 0xE0 && c1 >= 0xA0 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
+                || (c0 >= 0xE1 && c1 <= 0xEC && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
+                || (c0 == 0xED && c1 >= 0x80 && c1 <= 0x9f && c2 >= 0x80 && c2 <= 0xbf) 
+                || (c0 >= 0xEE && c0 <= 0xEF && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) ){  //3 byte UTF-8 sequence found
+            c = ((c0&0x0f)<<4) | ((c1&0x3f)<<6) | (c2&0x3f);
+            i+=2;
+        }else if(  (c0 == 0xF0 && c1 >= 0x90 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
+                || (c0 >= 0xF1 && c0 >= 0xF3 && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
+                || (c0 == 0xF4 && c1 >= 0x80 && c1 <= 0x8f && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) ){  //4 byte UTF-8 sequence found
+            c = ((c0&0x07)<<2) | ((c1&0x3f)<<4) | ((c2&0x3f)<<6) | (c3&0x3f);
+            i+=3;
+        }
+        symcount++;
+        sum += Width(c);
     }
-    if (std::min(str.length(), (size_t) len) > 1)
-    {
-        sum += spaceBetween * (std::min(str.length(), (size_t) len) - 1);
-    }
+    sum += spaceBetween * (symcount - 1);
+
     return sum;
 }
 
-int cFont::Height(char ch) const
+int cFont::Height(int ch) const
 {
-    if (characters[(unsigned char) ch])
-        return characters[(unsigned char) ch]->Height();
+    const cBitmap *bitmap = GetCharacter(ch);
+    if (bitmap)
+        return bitmap->Height();
     else
         return 0;
 }
@@ -433,13 +418,79 @@ int cFont::Height(const std::string & str, unsigned int len) const
     return sum;
 }
 
-const cBitmap * cFont::GetCharacter(char ch) const
+const cBitmap * cFont::GetCharacter(int ch) const
 {
+#ifdef HAVE_FREETYPE2
+    if ( loadedFontType == lftFT2 ) {
+        //lookup in cache
+        cBitmap *ptr=characters_cache->GetBitmap(ch);
+        if (ptr)
+            return ptr;
+
+        FT_Face face = (FT_Face) ft2_face;
+        FT_UInt glyph_index;
+        //Get FT char index
+        glyph_index = FT_Get_Char_Index(face, ch);
+
+        //Load the char
+        int error = FT_Load_Glyph(face, glyph_index, FT_LOAD_DEFAULT);
+        if (error)
+        {
+            syslog(LOG_ERR, "cFont::LoadFT2: ERROR when calling FT_Load_Glyph: %x", error);
+            return NULL;
+        }
+
+        FT_Render_Mode  rmode = FT_RENDER_MODE_MONO;
+#if ( (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 1 && FREETYPE_PATCH >= 7) || (FREETYPE_MAJOR == 2 && FREETYPE_MINOR == 2 && FREETYPE_PATCH <= 1) )
+        if (ch == 32) rmode = FT_RENDER_MODE_NORMAL;
+#endif
+
+        // convert to a mono bitmap
+        error = FT_Render_Glyph(face->glyph, rmode);
+        if (error)
+        {
+            syslog(LOG_ERR, "cFont::LoadFT2: ERROR when calling FT_Render_Glyph: %x", error);
+            return NULL;
+        } else {
+            // now, fill our pixel data
+            cBitmap *charBitmap = new cBitmap(face->glyph->advance.x >> 6, TotalHeight());
+            charBitmap->Clear();
+            unsigned char * bufPtr = face->glyph->bitmap.buffer;
+            unsigned char pixel;
+            for (int y = 0; y < face->glyph->bitmap.rows; y++)
+            {
+                for (int x = 0; x < face->glyph->bitmap.width; x++)
+                {
+                    pixel = (bufPtr[x / 8] >> (7 - x % 8)) & 1;
+                    if (pixel)
+                        charBitmap->DrawPixel((face->glyph->metrics.horiBearingX >> 6) + x,
+                                              (face->size->metrics.ascender >> 6) - (face->glyph->metrics.horiBearingY >> 6) + y,
+                                              GLCD::clrBlack);
+                }
+                bufPtr += face->glyph->bitmap.pitch;
+            }
+
+            // adjust maxwidth if necessary
+            //if (totalWidth < charBitmap->Width())
+            //    totalWidth = charBitmap->Width();
+
+            characters_cache->PushBack(ch, charBitmap);
+            return charBitmap;
+        }
+        return NULL; // if any
+    } // else
+#endif
     return characters[(unsigned char) ch];
 }
 
 void cFont::SetCharacter(char ch, cBitmap * bitmapChar)
 {
+#ifdef HAVE_FREETYPE2
+    if ( loadedFontType == lftFT2 ) {
+        syslog(LOG_ERR, "cFont::SetCharacter: is not supported with FreeType2 fonts!!!");
+        return;
+    }
+#endif
     // adjust maxwidth if necessary
     if (totalWidth < bitmapChar->Width())
         totalWidth = bitmapChar->Width();
@@ -463,6 +514,12 @@ void cFont::Init()
     {
         characters[i] = NULL;
     }
+    loadedFontType = lftFNT;
+#ifdef HAVE_FREETYPE2
+    ft2_library = NULL;
+    ft2_face = NULL;
+    characters_cache = NULL;
+#endif
 }
 
 void cFont::Unload()
@@ -475,6 +532,13 @@ void cFont::Unload()
             delete characters[i];
         }
     }
+#ifdef HAVE_FREETYPE2
+    delete characters_cache;
+    if (ft2_face)
+        FT_Done_Face((FT_Face)ft2_face);
+    if (ft2_library)
+        FT_Done_FreeType((FT_Library)ft2_library);
+#endif
     // re-init
     Init();
 }
