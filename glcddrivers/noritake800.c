@@ -27,7 +27,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Lucian Muresan <lucianm AT users.sourceforge.net>
+ * (c) 2004 - 2011 Lucian Muresan <lucianm AT users.sourceforge.net>
  */
 
 #include <errno.h>
@@ -270,18 +270,17 @@ int cDriverNoritake800::Init()
     m_pport->Claim();
     syslog(LOG_DEBUG, "%s: benchmark started.\n", m_Config->name.c_str());
     gettimeofday(&tv1, 0);
-    int nBenchFactor = 100000;
-    for (x = 0; x < nBenchFactor; x++)
+    int nBenchIterations = 10000;
+    for (x = 0; x < nBenchIterations; x++)
     {
         m_pport->WriteData(x % 0x100);
     }
     gettimeofday(&tv2, 0);
     nSleepDeInit();
-    //m_nTimingAdjustCmd = ((tv2.tv_sec - tv1.tv_sec) * 10000 + (tv2.tv_usec - tv1.tv_usec)) / 1000;
-    m_nTimingAdjustCmd = long(double((tv2.tv_sec - tv1.tv_sec) * 1000 + (tv2.tv_usec - tv1.tv_usec)) / double(nBenchFactor));
+    // calculate port command duration in nanoseconds
+    m_nTimingAdjustCmd = long(double((tv2.tv_sec - tv1.tv_sec) * 1000000000 + (tv2.tv_usec - tv1.tv_usec) * 1000) / double(nBenchIterations));
     syslog(LOG_DEBUG, "%s: benchmark stopped. Time for Port Command: %ldns\n", m_Config->name.c_str(), m_nTimingAdjustCmd);
     m_pport->Release();
-
 
     // initialize display
     N800Cmd(Init800A);
@@ -326,31 +325,34 @@ int cDriverNoritake800::Init()
 
 void cDriverNoritake800::Refresh(bool refreshAll)
 {
-    //
-    // for VFD displays, we can safely ignore refreshAll, as they are "sticky"
-    //
     int xb, yb;
 
     if (CheckSetup() > 0)
-        refreshAll = true;  // we don't use it
+        refreshAll = true;
 
     if (!m_pVFDMem || !m_pDrawMem)
         return;
 
-//  // just refresh if the time needed between refreshes is up
-//  m_nRefreshCounter = (m_nRefreshCounter + 1) % m_Config->refreshDisplay;
-//  if(!m_nRefreshCounter)
-//  {
+    if (m_Config->refreshDisplay > 0)
+    {
+        m_nRefreshCounter = (m_nRefreshCounter + 1) % m_Config->refreshDisplay;
+        if (m_nRefreshCounter == 0)
+            refreshAll = true;
+    }
+
     m_pport->Claim();
     for (xb = 0; xb < width; ++xb)
     {
         for (yb = 0; yb < m_iSizeYb; ++yb)
         {
-            if (m_pVFDMem[xb][yb] != m_pDrawMem[xb][yb])
+            // if differenet or explicitly refresh all
+            if (    m_pVFDMem[xb][yb] != m_pDrawMem[xb][yb] ||
+                    refreshAll )
             {
                 m_pVFDMem[xb][yb] = m_pDrawMem[xb][yb];
-                // reset RefreshCounter
-                m_nRefreshCounter = 0;
+                // reset RefreshCounter if doing a full refresh
+                if (refreshAll)
+                    m_nRefreshCounter = 0;
                 // actually write to display
                 N800WriteByte(
                     (m_pVFDMem[xb][yb]) ^ ((m_Config->invert != 0) ? 0xff : 0x00),
@@ -361,7 +363,6 @@ void cDriverNoritake800::Refresh(bool refreshAll)
         }
     }
     m_pport->Release();
-//  }
 }
 
 void cDriverNoritake800::N800Cmd(unsigned char data)
@@ -373,13 +374,13 @@ void cDriverNoritake800::N800Cmd(unsigned char data)
     m_pport->WriteControl(m_pWiringMaskCache[0x00]);
     // write to data port
     m_pport->WriteData(data);
-    //nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
     // set /WR on the control port
     m_pport->WriteControl(m_pWiringMaskCache[VFDSGN_WR]);
-    //nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
     // reset /WR on the control port
     m_pport->WriteControl(m_pWiringMaskCache[0x00]);
-    //nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
     // set direction to "port_input"
     m_pport->WriteControl(LPT_CTL_HI_DIR | m_pWiringMaskCache[0x00]);
 }
@@ -393,13 +394,13 @@ void cDriverNoritake800::N800Data(unsigned char data)
     m_pport->WriteControl(m_pWiringMaskCache[VFDSGN_CD]);
     // write to data port
     m_pport->WriteData(data);
-    //nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
     // set /WR on the control port
     m_pport->WriteControl(m_pWiringMaskCache[VFDSGN_CD | VFDSGN_WR]);
-    //nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
     // reset /WR on the control port
     m_pport->WriteControl(m_pWiringMaskCache[VFDSGN_CD]);
-    //nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
     // set direction to "port_input"
     m_pport->WriteControl(LPT_CTL_HI_DIR | m_pWiringMaskCache[0x00]);
 }

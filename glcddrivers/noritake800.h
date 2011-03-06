@@ -27,7 +27,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Lucian Muresan <lucianm AT users.sourceforge.net>
+ * (c) 2004 - 2011 Lucian Muresan <lucianm AT users.sourceforge.net>
  */
 
 #ifndef _GLCDDRIVERS_NORITAKE800_H_
