@@ -506,12 +506,8 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
 {
     int xt;
     int yt;
-    int i;
+    unsigned int i;
     int c;
-    int c0;
-    int c1;
-    int c2;
-    int c3;
     int start;
 
     clip(x, 0, width - 1);
@@ -551,28 +547,7 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
         }
         for (i = start; i < (int) text.length(); i++)
         {
-            c = text[i];
-            c0 = text[i];
-            c1 = (i+1 < text.length()) ? text[i+1] : 0;
-            c2 = (i+2 < text.length()) ? text[i+2] : 0;
-            c3 = (i+3 < text.length()) ? text[i+3] : 0;
-            c0 &=0xff; c1 &=0xff; c2 &=0xff; c3 &=0xff;
-
-            if( c0 >= 0xc2 && c0 <= 0xdf && c1 >= 0x80 && c1 <= 0xbf ){ //2 byte UTF-8 sequence found
-                i+=1;
-                c = ((c0&0x1f)<<6) | (c1&0x3f);
-            }else if(  (c0 == 0xE0 && c1 >= 0xA0 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
-                    || (c0 >= 0xE1 && c1 <= 0xEC && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
-                    || (c0 == 0xED && c1 >= 0x80 && c1 <= 0x9f && c2 >= 0x80 && c2 <= 0xbf) 
-                    || (c0 >= 0xEE && c0 <= 0xEF && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) ){  //3 byte UTF-8 sequence found
-                c = ((c0&0x0f)<<4) | ((c1&0x3f)<<6) | (c2&0x3f);
-                i+=2;
-            }else if(  (c0 == 0xF0 && c1 >= 0x90 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
-                    || (c0 >= 0xF1 && c0 >= 0xF3 && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
-                    || (c0 == 0xF4 && c1 >= 0x80 && c1 <= 0x8f && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) ){  //4 byte UTF-8 sequence found
-                c = ((c0&0x07)<<2) | ((c1&0x3f)<<4) | ((c2&0x3f)<<6) | (c3&0x3f);
-                i+=3;
-            }
+            cFont::Utf8CodeAdjustCounter(text, c, i);
 
             if (xt > xmax)
             {
@@ -832,3 +807,4 @@ void cBitmap::SavePBM(const std::string & fileName)
 }
 
 } // end of namespace
+
