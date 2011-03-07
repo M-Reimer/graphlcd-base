@@ -30,6 +30,7 @@ cDriverImage::cDriverImage(cDriverConfig * config)
 
 cDriverImage::~cDriverImage()
 {
+    DeInit();
     delete oldConfig;
 }
 
@@ -71,9 +72,15 @@ int cDriverImage::Init()
 int cDriverImage::DeInit()
 {
     if (newLCD)
+    {
         delete[] newLCD;
+        newLCD = 0;
+    }
     if (oldLCD)
+    {
         delete[] oldLCD;
+        oldLCD = 0;
+    }
     return 0;
 }
 

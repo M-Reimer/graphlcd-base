@@ -170,13 +170,13 @@ cDriverNoritake800::~cDriverNoritake800()
     int x;
 
     if (m_pVFDMem)
-        for (x = 0; x < (width + 7) / 8; x++)
+        for (x = 0; x < width; x++)
         {
             delete[] m_pVFDMem[x];
         }
     delete[] m_pVFDMem;
     if (m_pDrawMem)
-        for (x = 0; x < (width + 7) / 8; x++)
+        for (x = 0; x < width; x++)
         {
             delete[] m_pDrawMem[x];
         }

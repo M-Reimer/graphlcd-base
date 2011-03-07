@@ -219,6 +219,7 @@ int main(int argc, char *argv[])
 		if (glcd.Load(image, picFile) == false)
 		{
 			fprintf(stderr, "ERROR: Failed loading file %s\n", picFile.c_str());
+			delete lcd;
 			return 8;
 		}
 
