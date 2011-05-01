@@ -51,7 +51,7 @@ class cDriverGU140X32F : public cDriver
 
 protected:
     void ClearVFDMem();
-    void SetPixel(int x, int y);
+    void SetPixel(int x, int y, uint32_t data);
     void Write(unsigned char nFlags, unsigned char bData, unsigned int nMicroSecBusyTime);
 
 public:

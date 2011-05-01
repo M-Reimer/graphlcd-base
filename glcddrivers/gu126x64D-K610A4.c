@@ -417,7 +417,7 @@ int cDriverGU126X64D_K610A4::write(unsigned char data)
 } // cDriverGU126X64D_K610A4::write()
 
 //-----------------------------------------------------------------------------
-void cDriverGU126X64D_K610A4::setPixel(int x, int y)
+void cDriverGU126X64D_K610A4::setPixel(int x, int y, uint32_t data)
 {
     if (!myDrawMem          ) return;
     if (x >= width  || x < 0) return;
@@ -444,7 +444,7 @@ void cDriverGU126X64D_K610A4::Set8Pixels(int x, int y, unsigned char data)
     {
         if ((data & (0x80 >> n)) != 0) // if bit is set
         {
-            setPixel(x + n, y);
+            setPixel(x + n, y, GLCD::cColor::White);
         } // if
     } // for
 } // cDriverGU126X64D_K610A4::Set8Pixels()
@@ -796,7 +796,7 @@ int cDriverGU126X64D_K610A4::cmdWriteText(const char *theText)
 
     if (isLogEnabled(LL_VFD_CMD))
     {
-        syslog(LOG_INFO, "-%2dB: WRITE_TEXT       : '%s'", strlen(theText), theText);
+        syslog(LOG_INFO, "-%2dB: WRITE_TEXT       : '%s'", (int)strlen(theText), theText);
     } // if
 
     for (const char *p = theText; *p != '\0'; ++p)

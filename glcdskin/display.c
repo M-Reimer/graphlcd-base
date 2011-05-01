@@ -28,6 +28,32 @@ void cSkinDisplay::Render(cBitmap * screen)
 }
 
 
+bool cSkinDisplay::NeedsUpdate(uint64_t CurrentTime)
+{
+    for (uint32_t i = 0; i < NumObjects(); ++i) {
+        if ( GetObject(i)->NeedsUpdate(CurrentTime) ) {
+            return true;
+        }
+    }
+    return false;
+}
+
+
+std::string cSkinDisplay::CheckAction(cGLCDEvent * ev) {
+    std::string rv = "";
+
+    if (!ev)
+        return "";
+
+    for (uint32_t i = 0; i < NumObjects(); ++i) {
+        if ( (rv = GetObject(i)->CheckAction(ev) ) != "" ) {
+            return rv;
+        }
+    }
+    return "";
+}
+
+
 cSkinDisplays::cSkinDisplays(void)
 {
 }

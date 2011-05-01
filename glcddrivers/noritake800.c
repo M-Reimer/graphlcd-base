@@ -404,7 +404,7 @@ void cDriverNoritake800::N800Data(unsigned char data)
     m_pport->WriteControl(LPT_CTL_HI_DIR | m_pWiringMaskCache[0x00]);
 }
 
-void cDriverNoritake800::SetPixel(int x, int y)
+void cDriverNoritake800::SetPixel(int x, int y, uint32_t data)
 {
     unsigned char c;
 
@@ -437,7 +437,7 @@ void cDriverNoritake800::Set8Pixels(int x, int y, unsigned char data)
     for (n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n))      // if bit is set
-            SetPixel(x + n, y);
+            SetPixel(x + n, y, GLCD::cColor::White);
     }
 }
 

@@ -33,6 +33,7 @@ static const char * Internals[] =
     "FontTextHeight",
     "ImageWidth",
     "ImageHeight",
+    "QueryFeature",
     NULL
 };
 
@@ -247,6 +248,10 @@ bool cSkinFunction::Parse(const std::string & Text)
                                 params = 1;
                                 break;
 
+                            case funQueryFeature:
+                                params = 1;
+                                break;
+
                             default:
                                 break;
                         }
@@ -442,6 +447,15 @@ cType cSkinFunction::Evaluate(void) const
         case funImageWidth:
         case funImageHeight:
             return FunImage(mType, mParams[0]->Evaluate());
+
+        case funQueryFeature: {
+            int value;
+            if (mSkin->Config().GetDriver()->GetFeature((const std::string)(mParams[0]->Evaluate()), value)) {
+                return (value) ? true : false;
+            } else {
+                return false;
+            }
+        }
 
         default:
             //Dprintf("unknown function code\n");

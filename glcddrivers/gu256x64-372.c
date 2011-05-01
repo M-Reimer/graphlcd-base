@@ -131,7 +131,7 @@ int cDriverGU256X64_372::Init()
                 RDLO = kStandardRDLO;
                 CDHI = kStandardCDHI;
                 CDLO = kStandardCDLO;
-                syslog(LOG_DEBUG, "%s: using standard wiring\n");
+                syslog(LOG_DEBUG, "%s: using standard wiring\n", config->name.c_str());
             }
             else if (config->options[i].value == kWiringWindows)
             {
@@ -141,7 +141,7 @@ int cDriverGU256X64_372::Init()
                 RDLO = kWindowsRDLO;
                 CDHI = kWindowsCDHI;
                 CDLO = kWindowsCDLO;
-                syslog(LOG_DEBUG, "%s: using windows wiring\n");
+                syslog(LOG_DEBUG, "%s: using windows wiring\n", config->name.c_str());
             }
             else
             {
@@ -345,7 +345,7 @@ void cDriverGU256X64_372::GU256X64Data(unsigned char data)
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
 }
 
-void cDriverGU256X64_372::SetPixel(int x, int y)
+void cDriverGU256X64_372::SetPixel(int x, int y, uint32_t data)
 {
     unsigned char c;
 
@@ -378,7 +378,7 @@ void cDriverGU256X64_372::Set8Pixels(int x, int y, unsigned char data)
     for (n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n)) // if bit is set
-            SetPixel(x + n, y);
+            SetPixel(x + n, y, GLCD::cColor::White);
     }
 }
 

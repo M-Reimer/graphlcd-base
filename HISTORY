@@ -1,6 +1,57 @@
 GraphLCD base package Revision History
 --------------------------------------
 
+2011-05-01: branch touchcol, first commit
+- glcddrivers changes / enhancements:
+  - support for colour bitmap data
+  - support for colours either by using pre-defined colour names or 0xRRGGBB / 0xAARRGGBB (though no alpha channel is supported yet)
+  - adapted/added methods SetScreen(), SetPixel()-methods in base-class and driver-classes for new colour enabled bitmap data
+  - added support for events (supported for now: simple touch events)
+  - added support for requesting and setting driver features
+  - added GetBackgroundColor(), GetForegroundColor() -> gets default back/foreground colour
+  - fixed compiler warnings (missing parameters in printf(), ...)
+  - dm140glnk: bugfix: changed type for vendor and product to 'signed'
+  - serdisp:
+    - added support for touch events
+    - cut support for serdisplib version < 1.95 (-> simplifies code)
+    - added basic support for GPIs (eg. enable/disable touchpad)
+    - rotate only when graphlcd-setup says so
+  - UTF8 should work fine but is not tested very well yet
+  - vdr 1.3.x should be supported as well but support for it is deprecated and will be removed (-> cleaner code)
+- glcdskin changes / enhancements:
+  - improved update policies (update only display regions that require update) - w/o this displays like l4m320t would be unusable w/ graphlcd.
+  - new objects / attributes / features for skins:
+    - increased skin version to 1.1, version info is now verified before loading a skin
+    - objects can now trigger actions (eg. when touching an object it may trigger a VDR 'Key'-event)
+    - 'scrolltext' is deprecated and is now an aliases for 'text'
+    - new object 'button'
+    - new attribute 'valign': vertical alignment
+    - attribute 'bgcolor': sets background colour for object (whereas 'color' sets foreground colour)
+    - new attributes 'alttext' and 'altcondition' for object 'text' (if 'altcondition' is true, 'alttext' is evaluated and used)
+    - scrolling/looping attributes for 'text': 'loop', 'scrollmode', 'scrollspeed', 'scrolltime'
+    - new attribute 'default' for variables:
+      shortcut for <variable id="name" value="value1" condition="somecondition"/> <variable id="name" value="value2"/>:
+      <variable id="name" value="value1" condition="somecondition" default="value2"/> 
+      this will actually be stored in two variable entries (exactly as in the first version)
+    - new entity 'condblock': combines variables that use the same condition
+      <variable id="id1" condition="condition1" value="val1"/>
+      <variable id="id1" value="valdefault1"/>
+      <variable id="id2" condition="condition1" value="val2"/>
+      <variable id="id2" value="valdefault2"/>
+      can now be simplified to
+      <condblock condition="condition1">
+        <variable id="id1" value="val1" default="valdefault1"/>
+        <variable id="id2" value="val2" default="valdefault2"/>
+      </condblock>
+      attention: variable-definitions in a condblock must not contain condition-attributes.
+  - XML parser:
+    - parser method XmlParse() optionally may pass an error string
+    - text-objects may now contain combinations of tokens, constants, and variables
+    - evaluation of variables in text-objects is now delayed from parsing time to runtime
+  - attention: 'condblock' and attributes 'alttext', 'altcondition' are case studies for now and may be removed
+- all changes/modifications/improvements that i've missed in this list
+
+
 2010-04-23: version 0.1.6_1
 - added additional wiring for GU256x64-372 driver (thanks to mentox, http://www.vdr-portal.de/board/thread.php?postid=895721#post895721)
 

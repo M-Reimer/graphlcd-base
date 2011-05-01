@@ -16,13 +16,22 @@
 
 #include <string>
 
+#define GLCDSKIN_SKIN_VERSION    1.1
+
+
 namespace GLCD
 {
 
 class cSkin;
 class cSkinConfig;
 
-cSkin * XmlParse(cSkinConfig & Config, const std::string & name, const std::string & fileName);
+cSkin * XmlParse(cSkinConfig & Config, const std::string & name, const std::string & fileName, std::string & errorString);
+
+// provide old function for compatibility
+cSkin * XmlParse(cSkinConfig & Config, const std::string & name, const std::string & fileName)
+{ std::string errorString = "";
+  return XmlParse(Config, name, fileName, errorString);
+}
 
 } // end of namespace
 

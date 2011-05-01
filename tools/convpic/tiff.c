@@ -71,7 +71,8 @@ bool cTIFFFile::Load(GLCD::cImage & image, const std::string & fileName)
     unsigned char fLittleEndian=0;
     int j;
     int t;
-    unsigned char *bitmap = NULL;
+//    unsigned char *bitmap = NULL;
+    uint32_t *bitmap = NULL;
     bool  bInvert = false;
 
     if (fileName.length() > 0)
@@ -152,7 +153,8 @@ bool cTIFFFile::Load(GLCD::cImage & image, const std::string & fileName)
             image.SetWidth(width);
             image.SetHeight(height);
             image.SetDelay(100);
-            bitmap = new unsigned char[height * ((width + 7) / 8)];
+//            bitmap = new unsigned char[height * ((width + 7) / 8)];
+            bitmap = new uint32_t[height * width];
             if (bitmap)
             {
                 if (fread(bitmap, height*((width+7)/8), 1, fIN)!=1)

@@ -1,6 +1,8 @@
 #include "config.h"
 #include "type.h"
 
+#include <sys/time.h>
+
 namespace GLCD
 {
 
@@ -38,5 +40,14 @@ int cSkinConfig::GetTabPosition(int Index, int MaxWidth, const cFont & Font)
 {
     return 0;
 }
+
+uint64_t cSkinConfig::Now(void)
+{
+    struct timeval tv;
+
+    gettimeofday(&tv, 0);
+    return (uint64_t)(tv.tv_sec * 1000 + tv.tv_usec / 1000);
+}
+
 
 } // end of namespace

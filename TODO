@@ -1,0 +1,18 @@
+TODO:
+- add missing objects like textbox, scrollbar
+- add special objects for external data so that other plugins can draw text and bitmaps on an area of the display that will be defined in the skin. This could be used p.e. for a spectrum analyzer or displaying id3 tags.
+- add service interface for external data objects
+- DOCUMENTATION, DOCUMENTATION, DOCUMENTATION
+- fix all the small bugs that were introduced
+- all the stuff I forgot :-)
+
+- all tools (convpic, ...) are probably not functional yet
+- support for loading colour BMPs and other formats
+
+
+DONE/SOLVED/PARTIALLY SOLVED:
+- add dynamic behaviour to objects like scrolling and blinking  (done, but w/o blinking)
+- make skin variables more dynamic, p.e. evaluate positions while displaying, not only during skin loading. This should make it easier to support several display sizes with one skin (done for text-objects, but not for attributes)
+
+
+this TODO is initially based on the plans of andreas regel.

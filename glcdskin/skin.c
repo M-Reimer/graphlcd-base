@@ -79,4 +79,16 @@ cSkinVariable * cSkin::GetVariable(const std::string & Id)
 }
 
 
+bool cSkin::ParseEnable(const std::string & Text)
+{
+    cDriver * driver = config.GetDriver();
+
+    if (!driver)
+        return false;
+
+    driver->SetFeature(Text, 1);
+    return true; // always return true else loading the skin would fail if touchscreen is not available
+}
+
+
 } // end of namespace

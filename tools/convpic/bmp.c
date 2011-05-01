@@ -89,7 +89,8 @@ bool cBMPFile::Load(GLCD::cImage & image, const std::string & fileName)
     long          iSize;
     uint32_t      x, y;
     uint16_t      iRead;
-    uint8_t *  bitmap = NULL;
+//    uint8_t *  bitmap = NULL;
+    uint32_t *bitmap = NULL;
     bool  bInvert = false;
 
     if (fileName.length() > 0)
@@ -163,7 +164,8 @@ bool cBMPFile::Load(GLCD::cImage & image, const std::string & fileName)
                     image.SetWidth(bmpHeader.bmpWidth);
                     image.SetHeight(bmpHeader.bmpHeight);
                     image.SetDelay(100);
-                    bitmap = new unsigned char[bmpHeader.bmpHeight * ((bmpHeader.bmpWidth + 7) / 8)];
+//                    bitmap = new unsigned char[bmpHeader.bmpHeight * ((bmpHeader.bmpWidth + 7) / 8)];
+                    bitmap = new uint32_t [bmpHeader.bmpHeight * bmpHeader.bmpWidth];
                     if (!bitmap)
                     {
                         fprintf(stderr, "ERROR: cannot allocate memory\n");
@@ -260,7 +262,8 @@ bool cBMPFile::Save(const GLCD::cBitmap * bitmap, const std::string & fileName)
     char          Dummy = 0x00;
     uint32_t      x, y;
     uint16_t      iWrote;
-    const uint8_t * bmpdata = bitmap->Data();
+//    const uint8_t * bmpdata = bitmap->Data();
+    const uint32_t * bmpdata = bitmap->Data();
 
     if (bitmap
         && bitmap->Width() > 0

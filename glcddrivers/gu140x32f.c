@@ -326,7 +326,7 @@ void cDriverGU140X32F::Write(unsigned char nFlags, unsigned char bData, unsigned
         nSleepDeInit();
 }
 
-void cDriverGU140X32F::SetPixel(int x, int y)
+void cDriverGU140X32F::SetPixel(int x, int y, uint32_t data)
 {
     unsigned char c;
     int n;
@@ -361,7 +361,7 @@ void cDriverGU140X32F::Set8Pixels(int x, int y, unsigned char data)
     for (n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n))      // if bit is set
-            SetPixel(x + n, y);
+            SetPixel(x + n, y, GLCD::cColor::White);
     }
 }
 

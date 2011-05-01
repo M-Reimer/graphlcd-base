@@ -92,7 +92,7 @@ int cDriverDM140GINK::SendReport(const char *cbuf, size_t size)
 	//**************************************************************
 	if((err	= ioctl(fd, HIDIOCSUSAGE, &uref)) < 0)
 	{
-		syslog(LOG_INFO, "%s: Error with sending the USAGE ioctl %d,0x%02X;size:%d\n", config->name.c_str(), i, (int)buf[i],size);
+		syslog(LOG_INFO, "%s: Error with sending the USAGE ioctl %d,0x%02X;size:%d\n", config->name.c_str(), (int)i, (int)buf[i], (int)size);
 		return err;
 	}
 	uref.usage_code = 0xffa10006; //unused?
@@ -130,8 +130,8 @@ int cDriverDM140GINK::Init()
     if (height <= 0)
         height = 16;
 
-    vendor = 0x040b;
-    product = 0x7001;
+    signed short vendor = 0x040b;
+    signed short product = 0x7001;
 
     for (unsigned int i = 0; i < config->options.size(); i++)
     {
@@ -254,7 +254,7 @@ int cDriverDM140GINK::CheckSetup()
     return 0;
 }
 
-void cDriverDM140GINK::SetPixel(int x, int y)
+void cDriverDM140GINK::SetPixel(int x, int y, uint32_t data)
 {
     if (x >= width || y >= height)
         return;
@@ -282,7 +282,7 @@ void cDriverDM140GINK::Set8Pixels(int x, int y, unsigned char data)
     for (int n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n))      // if bit is set
-            SetPixel(x + n, y);
+            SetPixel(x + n, y, GLCD::cColor::White);
     }
 }
 

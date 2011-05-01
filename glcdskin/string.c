@@ -85,6 +85,13 @@ void cSkinString::Reparse(void)
     }
 }
 
+
+// copied from xml.c (should be valid for parsing variable names too ...)
+static bool IsTokenChar(bool start, int c) {
+    return isalpha(c) || c == '_' || (!start && isdigit(c));
+}
+
+
 bool cSkinString::Parse(const std::string & Text, bool Translate)
 {
     std::string trans = Translate ? mSkin->Config().Translate(Text) : Text;
@@ -92,16 +99,6 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
     bool inToken = false;
     bool inAttrib = false;
     int offset = 0;
-
-    if (trans[0] == '#')
-    {
-        cSkinVariable * variable = mSkin->GetVariable(trans.substr(1));
-        if (variable)
-        {
-            trans = (std::string) variable->Value();
-            syslog(LOG_ERR, "string variable %s", trans.c_str());
-        }
-    }
 
     //Dprintf("parsing: %s\n", Text.c_str());
     mOriginal = Text;
@@ -119,6 +116,29 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
 
             ++ptr;
             continue;
+        }
+        else if (*ptr == '#') {
+          if (inToken) {
+              syslog(LOG_ERR, "ERROR: Unexpected '#' in token");
+              return false;
+          }
+
+          mText.append(last, ptr - last);
+
+          bool isStartChar = true;
+          const char * varNameStart = ptr;
+          ptr++;
+          while (*ptr && IsTokenChar(isStartChar, *ptr)) {
+            isStartChar = false;
+            ptr++;
+            offset++;
+          }
+          // add #VARNAME#
+          mText.append(varNameStart, (ptr - varNameStart));
+          mText.append("#");
+          offset ++; // # adds one character -> fix offset
+          ptr--; // we'd be at the correct position now but the for-loop does a ++ptr -> fix it by stepping back one char
+          last = ptr + 1;
         }
         else if (*ptr == '{') {
             if (inToken) {
@@ -179,8 +199,10 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
                 {
                     std::string tmp;
                     tmp.assign(last, ptr - last);
-                    tSkinToken token(mSkin->Config().GetTokenId(tmp), tmp, offset, "");
-                    mTokens.push_back(token);
+                    if (tmp != "") { // ignore empty token
+                      tSkinToken token(mSkin->Config().GetTokenId(tmp), tmp, offset, "");
+                      mTokens.push_back(token);
+                    }
                 }
                 else
                 {
@@ -214,19 +236,35 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
 
 cType cSkinString::Evaluate(void) const
 {
-    std::string result;
+    std::string result_raw = "", result_trans = "";
     int offset = 0;
 
     if (mText.length() == 0 && mTokens.size() == 1)
         return mSkin->Config().GetToken(mTokens[0]);
 
     for (uint32_t i = 0; i < mTokens.size(); ++i) {
-        result.append(mText.c_str() + offset, mTokens[i].Offset - offset);
-        result.append(mSkin->Config().GetToken(mTokens[i]));
+        result_raw.append(mText.c_str() + offset, mTokens[i].Offset - offset);
+        result_raw.append(mSkin->Config().GetToken(mTokens[i]));
         offset = mTokens[i].Offset;
     }
-    result.append(mText.c_str() + offset);
-    return result;
+    result_raw.append(mText.c_str() + offset);
+
+    // replace variable placeholders (#VARNAME#) with corresponding values
+    size_t idxstart = 0, idxend = 0;
+    size_t pos = 0;
+    while ( (idxstart=result_raw.find("#", idxstart)) != std::string::npos ) {
+      result_trans.append(result_raw.substr(pos, idxstart-pos));
+      idxend = result_raw.find("#", idxstart+1);
+      cSkinVariable * variable = mSkin->GetVariable(result_raw.substr(idxstart+1, idxend-idxstart-1));
+      if (variable) {
+         result_trans.append ((std::string) variable->Value());
+         //   syslog(LOG_ERR, "string variable %s", trans.c_str());
+      }
+      idxstart = idxend+1;
+      pos = idxstart;
+    }
+    result_trans.append(result_raw.substr(pos));
+    return result_trans;
 }
 
 } // end of namespace

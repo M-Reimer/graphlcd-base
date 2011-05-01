@@ -80,7 +80,7 @@ public:
     virtual int DeInit();
 
     virtual void Clear();
-    virtual void SetPixel(int x, int y);
+    virtual void SetPixel(int x, int y, uint32_t data);
     virtual void Set8Pixels(int x, int y, unsigned char data);
     virtual void Refresh(bool refreshAll = false);
 

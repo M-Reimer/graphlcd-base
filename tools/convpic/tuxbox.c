@@ -118,15 +118,19 @@ bool cTuxBoxFile::Load(GLCD::cImage & image, const std::string & fileName)
         for (unsigned int n=0;n<ntohs(header.count);++n)
         {
             ret = false;
-            unsigned int nBmpSize = image.Height() * ((image.Width() + 7) / 8);
-            unsigned char *bitmap = new unsigned char[nBmpSize];
+//            unsigned int nBmpSize = image.Height() * ((image.Width() + 7) / 8);
+            unsigned int nBmpSize = image.Height() * image.Width();
+//            unsigned char *bitmap = new unsigned char[nBmpSize];
+            uint32_t *bitmap = new uint32_t [nBmpSize];
             if (!bitmap)
             {
                 fprintf(stderr, "ERROR: malloc failed.");
                 break;
             }
-            unsigned int nAniSize = image.Width() * ((image.Height() + 7) / 8);
-            unsigned char *pAni = new unsigned char[nAniSize];
+//            unsigned int nAniSize = image.Width() * ((image.Height() + 7) / 8);
+            unsigned int nAniSize = image.Width() * image.Height();
+//            unsigned char *pAni = new unsigned char[nAniSize];
+            uint32_t *pAni = new uint32_t [nAniSize];
             if (!pAni)
             {
                 delete[] bitmap;
@@ -200,7 +204,8 @@ bool cTuxBoxFile::Save(GLCD::cImage & image, const std::string & fileName)
         {
             bRet = false;
             unsigned int nAniSize = image.Width() * ((image.Height() + 7) / 8);
-            unsigned char *pAni = new unsigned char[nAniSize];
+//            unsigned char *pAni = new unsigned char[nAniSize];
+            uint32_t *pAni = new uint32_t [nAniSize];
             if (!pAni)
             {
                 fprintf(stderr, "ERROR: malloc failed.");
@@ -233,7 +238,8 @@ rotate from {Byte} to {Byte}
 {o}[o][o][o][o][o][o][o] => [ oooooooo ]
 {o}[o][o][o][o][o][o][o] => [ oooooooo ]
 {o}[o][o][o][o][o][o][o] => [ oooooooo ]*/
-void cTuxBoxFile::vert2horz(const unsigned char* source, unsigned char* dest, int width, int height) {
+//void cTuxBoxFile::vert2horz(const unsigned char* source, unsigned char* dest, int width, int height) {
+void cTuxBoxFile::vert2horz(const uint32_t *source, uint32_t *dest, int width, int height) {
     int x, y, off;
     memset(dest,0,height*((width+7)/8));
 
@@ -261,7 +267,8 @@ rotate from {Byte} to {Byte}
 [ oooooooo ] => {o}[o][o][o][o][o][o][o]
 [ oooooooo ] => {o}[o][o][o][o][o][o][o]
 [ oooooooo ] => {o}[o][o][o][o][o][o][o]*/
-void cTuxBoxFile::horz2vert(const unsigned char* source, unsigned char* dest, int width, int height) {
+//void cTuxBoxFile::horz2vert(const unsigned char* source, unsigned char* dest, int width, int height) {
+void cTuxBoxFile::horz2vert(const uint32_t *source, uint32_t *dest, int width, int height) {
     int x, y, off;
     memset(dest,0,width*((height+7)/8));
 

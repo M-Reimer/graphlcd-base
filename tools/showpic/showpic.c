@@ -9,7 +9,9 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ *               Andreas 'randy' Weinberger
  */
 
 #include <stdio.h>
@@ -227,7 +229,8 @@ int main(int argc, char *argv[])
 
 		while ((bitmap = image.GetBitmap()) != NULL && !stopProgramm)
 		{
-			lcd->SetScreen(bitmap->Data(), bitmap->Width(), bitmap->Height(), bitmap->LineSize());
+//			lcd->SetScreen(bitmap->Data(), bitmap->Width(), bitmap->Height(), bitmap->LineSize());
+			lcd->SetScreen(bitmap->Data(), bitmap->Width(), bitmap->Height());
 			lcd->Refresh(true);
 
 			if (image.Next(0)) // Select next image

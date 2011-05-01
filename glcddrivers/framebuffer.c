@@ -150,7 +150,7 @@ int cDriverFramebuffer::CheckSetup()
     return 0;
 }
 
-void cDriverFramebuffer::SetPixel(int x, int y)
+void cDriverFramebuffer::SetPixel(int x, int y, uint32_t data)
 {
     int location;
     int outcol;
@@ -239,7 +239,7 @@ void cDriverFramebuffer::Set8Pixels(int x, int y, unsigned char data)
     for (n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n))      // if bit is set
-            SetPixel(x + n, y);
+            SetPixel(x + n, y, GLCD::cColor::White);
     }
 }
 

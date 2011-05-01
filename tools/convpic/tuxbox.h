@@ -32,8 +32,10 @@
 class cTuxBoxFile : public GLCD::cImageFile
 {
 private:
-    void vert2horz(const unsigned char* source, unsigned char* dest, int width, int height);
-    void horz2vert(const unsigned char* source, unsigned char* dest, int width, int height);
+//    void vert2horz(const unsigned char* source, unsigned char* dest, int width, int height);
+//    void horz2vert(const unsigned char* source, unsigned char* dest, int width, int height);
+    void vert2horz(const uint32_t *source, uint32_t *dest, int width, int height);
+    void horz2vert(const uint32_t *source, uint32_t *dest, int width, int height);
 public:
     cTuxBoxFile();
     virtual ~cTuxBoxFile();

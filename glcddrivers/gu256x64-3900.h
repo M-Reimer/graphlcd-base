@@ -59,7 +59,7 @@ class cDriverGU256X64_3900 : public cDriver
 
 protected:
     void ClearVFDMem();
-    void SetPixel(int x, int y);
+    void SetPixel(int x, int y, uint32_t data);
     int InitSerialPort();
     int InitParallelPort();
     void InitNormalDisplay();

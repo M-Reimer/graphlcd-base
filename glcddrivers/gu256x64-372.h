@@ -57,7 +57,7 @@ class cDriverGU256X64_372 : public cDriver
 
 protected:
     void ClearVFDMem();
-    void SetPixel(int x, int y);
+    void SetPixel(int x, int y, uint32_t data);
     void GU256X64Cmd(unsigned char data);
     void GU256X64Data(unsigned char data);
 

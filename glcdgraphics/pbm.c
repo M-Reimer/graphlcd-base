@@ -6,7 +6,9 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2006 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2006-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ *               Andreas 'randy' Weinberger
  */
 
 #include <stdio.h>
@@ -113,18 +115,35 @@ bool cPBMFile::Load(cImage & image, const std::string & fileName)
     image.SetWidth(w);
     image.SetHeight(h);
     image.SetDelay(100);
-    unsigned char * bmpdata = new unsigned char[h * ((w + 7) / 8)];
-    if (bmpdata)
+
+    unsigned char * bmpdata_raw = new unsigned char[h * ((w + 7) / 8)];
+    uint32_t * bmpdata = new uint32_t[h * w];
+    if (bmpdata && bmpdata_raw)
     {
-        if (fread(bmpdata, h * ((w + 7) / 8), 1, pbmFile) != 1)
-        {
+            if (fread(bmpdata_raw, h * ((w + 7) / 8), 1, pbmFile) != 1)
+            {
+                delete[] bmpdata;
+                fclose(pbmFile);
+                image.Clear();
+                return false;
+            }
+            int colsize = (w+7)/8;
+            for (int j = 0; j < h; j++) {
+                for (int i = 0; i < w; i++) {
+                    if (  bmpdata_raw[j*colsize + (i>>3)] & (1 << (7-(i%8))) ) {
+                        bmpdata[j*w+i] = cColor::Black;
+                    } else {
+                        bmpdata[j*w+i] = cColor::White;
+                    }
+                }
+            }
+            delete [] bmpdata_raw;
+
+            cBitmap * b = new cBitmap(w, h, bmpdata);
+            b->SetMonochrome(true);
+            //image.AddBitmap(new cBitmap(width, height, bmpdata));
+            image.AddBitmap(b);
             delete[] bmpdata;
-            fclose(pbmFile);
-            image.Clear();
-            return false;
-        }
-        image.AddBitmap(new cBitmap(w, h, bmpdata));
-        delete[] bmpdata;
     }
     else
     {
@@ -154,7 +173,8 @@ bool cPBMFile::Save(cImage & image, const std::string & fileName)
             {
                 sprintf(str, "P4\n%d %d\n", bitmap->Width(), bitmap->Height());
                 fwrite(str, strlen(str), 1, fp);
-                fwrite(bitmap->Data(), bitmap->LineSize() * bitmap->Height(), 1, fp);
+//                fwrite(bitmap->Data(), bitmap->LineSize() * bitmap->Height(), 1, fp);
+                fwrite(bitmap->Data(), bitmap->Width() * bitmap->Height(), 1, fp);
             }
             fclose(fp);
         }
@@ -175,7 +195,8 @@ bool cPBMFile::Save(cImage & image, const std::string & fileName)
                 {
                     sprintf(str, "P4\n%d %d\n", bitmap->Width(), bitmap->Height());
                     fwrite(str, strlen(str), 1, fp);
-                    fwrite(bitmap->Data(), bitmap->LineSize() * bitmap->Height(), 1, fp);
+//                    fwrite(bitmap->Data(), bitmap->LineSize() * bitmap->Height(), 1, fp);
+                    fwrite(bitmap->Data(), bitmap->Width() * bitmap->Height(), 1, fp);
                 }
                 fclose(fp);
             }

@@ -70,7 +70,9 @@ public:
         funFontTextHeight,
 
         funImageWidth,
-        funImageHeight
+        funImageHeight,
+
+        funQueryFeature
     };
 
 private:

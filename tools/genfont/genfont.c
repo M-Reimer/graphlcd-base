@@ -7,7 +7,9 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ *               Andreas 'randy' Weinberger
  */
 
 #include <getopt.h>
@@ -142,7 +144,7 @@ int main(int argc, char *argv[])
             if (charBitmap == NULL)
                 continue;
 
-            bitmap->DrawBitmap(posX, posY, *charBitmap, GLCD::clrBlack);
+            bitmap->DrawBitmap(posX, posY, *charBitmap);
             fprintf(descFile, "%d %d ", posX, i);
             posX += charBitmap->Width();
             if ((i % 32) == 31)

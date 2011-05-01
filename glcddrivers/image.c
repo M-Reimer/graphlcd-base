@@ -7,7 +7,9 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+                 Andreas 'randy' Weinberger 
  */
 
 #include <stdio.h>
@@ -50,12 +52,13 @@ int cDriverImage::Init()
         }
     }
 
-    newLCD = new unsigned char[lineSize * height];
+//    newLCD = new unsigned char[lineSize * height];
+    newLCD = new uint32_t[width * height];
     if (newLCD)
-        memset(newLCD, 0, lineSize * height);
-    oldLCD = new unsigned char[lineSize * height];
+        memset(newLCD, 0, width * height);
+    oldLCD = new uint32_t[width * height];
     if (oldLCD)
-        memset(oldLCD, 0, lineSize * height);
+        memset(oldLCD, 0, width * height);
 
     counter = 0;
 
@@ -118,6 +121,29 @@ void cDriverImage::Set8Pixels(int x, int y, unsigned char data)
         x = width - 1 - x;
         y = height - 1 - y;
         newLCD[lineSize * y + x / 8] |= ReverseBits(data);
+    }
+}
+
+void cDriverImage::SetPixel(int x, int y, uint32_t data)
+{
+    if (x >= width || y >= height)
+        return;
+
+    if ((data | 0xFF000000) != cColor::Black) {
+      data = cColor::White;
+    }
+
+    if (!config->upsideDown)
+    {
+        // normal orientation
+        newLCD[y * x] |= data;
+    }
+    else
+    {
+        // upside down orientation
+        x = width - 1 - x;
+        y = height - 1 - y;
+        newLCD[y * x] |= ReverseBits(data);
     }
 }
 

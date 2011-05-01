@@ -30,7 +30,7 @@ private:
     int zoom;
 
     int CheckSetup();
-    void SetPixel(int x, int y);
+    void SetPixel(int x, int y, uint32_t data);
 
 public:
     cDriverG15daemon(cDriverConfig * config);

@@ -9,7 +9,9 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ *               Andreas 'randy' Weinberger
  */
 
 #include <stdio.h>
@@ -163,30 +165,53 @@ bool cGLCDFile::Load(cImage & image, const string & fileName)
     image.SetWidth(width);
     image.SetHeight(height);
     image.SetDelay(delay);
-    unsigned char * bmpdata = new unsigned char[height * ((width + 7) / 8)];
-    if (bmpdata)
+    unsigned char * bmpdata_raw = new unsigned char[height * ((width + 7) / 8)];
+    uint32_t * bmpdata = new uint32_t[height * width];
+    if (bmpdata && bmpdata_raw)
     {
         for (unsigned int n = 0; n < count; n++)
         {
-            if (fread(bmpdata, height * ((width + 7) / 8), 1, fp) != 1)
+            if (fread(bmpdata_raw, height * ((width + 7) / 8), 1, fp) != 1)
             {
                 delete[] bmpdata;
                 fclose(fp);
                 image.Clear();
                 return false;
             }
-            image.AddBitmap(new cBitmap(width, height, bmpdata));
+            int colsize = (width+7)/8;
+            for (int j = 0; j < height; j++) {
+                for (int i = 0; i < width; i++) {
+                    if (  bmpdata_raw[j*colsize + (i>>3)] & (1 << (7-(i%8))) ) {
+                        bmpdata[j*width+i] = cColor::Black;
+                    } else {
+                        bmpdata[j*width+i] = cColor::White;
+                    }
+                }
+            }
+#ifdef DEBUG
+    printf("%s:%s(%d) - filename: '%s', count %d\n", __FILE__, __FUNCTION__, __LINE__, fileName.c_str(), n);
+#endif
+            cBitmap * b = new cBitmap(width, height, bmpdata);
+            b->SetMonochrome(true);
+            //image.AddBitmap(new cBitmap(width, height, bmpdata));
+            image.AddBitmap(b);
         }
         delete[] bmpdata;
     }
     else
     {
         syslog(LOG_ERR, "glcdgraphics: malloc failed (cGLCDFile::Load).");
+        if (bmpdata)
+            delete[] bmpdata;
+        if (bmpdata_raw)
+            delete[] bmpdata_raw;
         fclose(fp);
         image.Clear();
         return false;
     }
     fclose(fp);
+    if (bmpdata_raw)
+        delete[] bmpdata_raw;
 
     syslog(LOG_DEBUG, "glcdgraphics: image %s loaded.", fileName.c_str());
     return true;
@@ -260,7 +285,8 @@ bool cGLCDFile::Save(cImage & image, const string & fileName)
         {
             if (bitmap->Width() == width && bitmap->Height() == height)
             {
-                if (fwrite(bitmap->Data(), height * ((width + 7) / 8), 1, fp) != 1)
+//                if (fwrite(bitmap->Data(), height * ((width + 7) / 8), 1, fp) != 1)
+                if (fwrite(bitmap->Data(), height * width, 1, fp) != 1)
                 {
                     fclose(fp);
                     return false;

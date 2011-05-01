@@ -33,7 +33,7 @@
 #define G15_HEIGHT 43
 
 
-static int g15_send(int sock, char *buf, int len)
+static int g15_send(int sock, const char *buf, int len)
 {
     int total = 0;
     int retval = 0;
@@ -180,7 +180,7 @@ int cDriverG15daemon::CheckSetup()
     return 0;
 }
 
-void cDriverG15daemon::SetPixel(int x, int y)
+void cDriverG15daemon::SetPixel(int x, int y, uint32_t data)
 {
     if (x >= width || y >= height)
         return;
@@ -208,7 +208,7 @@ void cDriverG15daemon::Set8Pixels(int x, int y, unsigned char data)
     for (n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n))      // if bit is set
-            SetPixel(x + n, y);
+            SetPixel(x + n, y, GLCD::cColor::White);
     }
 }
 

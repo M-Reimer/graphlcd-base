@@ -9,7 +9,9 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ *               Andreas 'randy' Weinberger
  */
 
 #ifndef _GLCDGRAPHICS_FONT_H_
@@ -23,6 +25,8 @@
 namespace GLCD
 {
 
+class cBitmapCache;
+
 class cFont
 {
 private:
@@ -33,6 +37,14 @@ private:
     int lineHeight;
 
     cBitmap * characters[256];
+    int fontType; //original or FT2 font, 1-original, 2-ft2
+
+    bool isutf8;
+    wchar_t iconv_lut[256]; // lookup table needed if encoding != UTF-8
+
+    cBitmapCache *characters_cache; 
+    void *ft2_library; //FT_Library
+    void *ft2_face; //FT_Face
 protected:
     void Init();
     void Unload();
@@ -40,7 +52,7 @@ public:
     cFont();
     ~cFont();
 
-    bool LoadFNT(const std::string & fileName);
+    bool LoadFNT(const std::string & fileName, const std::string & encoding = "UTF-8");
     bool SaveFNT(const std::string & fileName) const;
     bool LoadFT2(const std::string & fileName, const std::string & encoding,
                  int size, bool dingBats = false);
@@ -56,18 +68,19 @@ public:
     void SetSpaceBetween(int width) { spaceBetween = width; };
     void SetLineHeight(int height) { lineHeight = height; };
 
-    int Width(char ch) const;
+    int Width(uint32_t ch) const;
     int Width(const std::string & str) const;
     int Width(const std::string & str, unsigned int len) const;
-    int Height(char ch) const;
+    int Height(uint32_t ch) const;
     int Height(const std::string & str) const;
     int Height(const std::string & str, unsigned int len) const;
 
-    const cBitmap * GetCharacter(char ch) const;
+    const cBitmap * GetCharacter(uint32_t ch) const;
     void SetCharacter(char ch, cBitmap * bitmapChar);
 
     void WrapText(int Width, int Height, std::string & Text,
                   std::vector <std::string> & Lines, int * TextWidth = NULL) const;
+    bool IsUTF8(void) const { return isutf8; }
 };
 
 } // end of namespace

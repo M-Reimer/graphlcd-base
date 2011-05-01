@@ -15,6 +15,9 @@
 
 #include <string>
 
+#include <stdint.h>
+
+#include "../glcddrivers/driver.h"
 
 namespace GLCD
 {
@@ -22,6 +25,7 @@ namespace GLCD
 class cType;
 class cFont;
 struct tSkinToken;
+class cDriver;
 
 class cSkinConfig
 {
@@ -35,6 +39,8 @@ public:
     virtual cType GetToken(const tSkinToken & Token);
     virtual int GetTokenId(const std::string & Name);
     virtual int GetTabPosition(int Index, int MaxWidth, const cFont & Font);
+    virtual uint64_t Now(void);
+    virtual cDriver * GetDriver(void) const { return NULL; }
 };
 
 } // end of namespace

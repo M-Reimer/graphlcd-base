@@ -38,7 +38,7 @@ private:
 
     int SendReport(const char *buf, size_t size);
     int CheckSetup();
-    void SetPixel(int x, int y);
+    void SetPixel(int x, int y, uint32_t data);
 
 public:
     cDriverDM140GINK(cDriverConfig * config);

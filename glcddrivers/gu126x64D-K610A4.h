@@ -68,7 +68,7 @@ public:
     ,   FONT_FIX_BIG
     };
 
-    void setPixel        (int x, int y);
+    void setPixel        (int x, int y, uint32_t data);
 
     int  cmdReset        ();
     int  cmdPower        (bool fOn);

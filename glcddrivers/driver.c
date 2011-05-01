@@ -9,7 +9,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #include "common.h"
@@ -19,13 +20,18 @@
 namespace GLCD
 {
 
+cSimpleTouchEvent::cSimpleTouchEvent() : x(0), y(0), touch(0)
+{
+}
+
 cDriver::cDriver()
 :   width(0),
     height(0)
 {
 }
 
-void cDriver::SetScreen(const unsigned char * data, int wid, int hgt, int lineSize)
+//void cDriver::SetScreen(const unsigned char * data, int wid, int hgt, int lineSize)
+void cDriver::SetScreen(const uint32_t * data, int wid, int hgt)
 {
     int x, y;
 
@@ -34,11 +40,19 @@ void cDriver::SetScreen(const unsigned char * data, int wid, int hgt, int lineSi
     if (hgt > height)
         hgt = height;
 
-    Clear();
+    //Clear();
     if (data)
     {
         for (y = 0; y < hgt; y++)
         {
+          for (x = 0; x < wid; x++)
+          {
+//            printf("%s:%s(%d) - %03d * %03d (linesize %02d), %08x\n", __FILE__, __FUNCTION__, __LINE__, x, y, lineSize, data[y * lineSize + x]);
+            SetPixel(x, y, data[y * wid + x]);
+          }
+        }
+    }
+/*
             for (x = 0; x < (wid / 8); x++)
             {
                 Set8Pixels(x * 8, y, data[y * lineSize + x]);
@@ -48,7 +62,7 @@ void cDriver::SetScreen(const unsigned char * data, int wid, int hgt, int lineSi
                 Set8Pixels((wid / 8) * 8, y, data[y * lineSize + wid / 8] & bitmaskl[wid % 8 - 1]);
             }
         }
-    }
+*/
 }
 
 } // end of namespace

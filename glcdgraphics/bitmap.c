@@ -9,7 +9,9 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ *               Andreas 'randy' Weinberger 
  */
 
 #include <stdio.h>
@@ -25,21 +27,75 @@
 namespace GLCD
 {
 
+
+cColor cColor::ParseColor(std::string col) {
+    if (col == "black")            return cColor(cColor::Black);
+    else if (col == "white")       return cColor(cColor::White);
+    else if (col == "red")         return cColor(cColor::Red);
+    else if (col == "green")       return cColor(cColor::Green);
+    else if (col == "blue")        return cColor(cColor::Blue);
+    else if (col == "magenta")     return cColor(cColor::Magenta);
+    else if (col == "cyan")        return cColor(cColor::Cyan);
+    else if (col == "yellow")      return cColor(cColor::Yellow);
+    else if (col == "transparent") return cColor(cColor::Transparent);
+    else if (col.substr(0, 2) == "0x" || col.substr(0, 2) == "0X") {
+        if (col.length() <= 2 || col.length() > 10)
+            return cColor(cColor::ERRCOL);
+
+        char* tempptr;
+        const char* str = col.c_str();
+        uint32_t rv = (uint32_t) strtol(str, &tempptr, 16);
+
+        if ((str == tempptr) || (*tempptr != '\0'))
+            return cColor(cColor::ERRCOL);
+
+        if (col.length() <= 8) // eg. 0xRRGGBB -> 0xFFRRGGBB
+            rv |= 0xFF000000;
+        return cColor(rv);
+    }
+    return cColor(cColor::ERRCOL);
+}
+
+cColor cColor::Invert(void)
+{
+    return cColor( (uint32_t)(color ^ 0x00FFFFFF) ) ;
+}
+
+
 const unsigned char bitmask[8]  = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
 const unsigned char bitmaskl[8] = {0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe, 0xff};
 const unsigned char bitmaskr[8] = {0xff, 0x7f, 0x3f, 0x1f, 0x0f, 0x07, 0x03, 0x01};
 
-cBitmap::cBitmap(int width, int height, unsigned char * data)
+cBitmap::cBitmap(int width, int height, uint32_t * data)
 :   width(width),
     height(height),
-    bitmap(NULL)
+    bitmap(NULL),
+    ismonochrome(false)
 {
-    // lines are byte aligned
-    lineSize = (width + 7) / 8;
+#ifdef DEBUG
+    printf("%s:%s(%d) cBitmap Size %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, width, height);
+#endif
 
-    bitmap = new unsigned char[lineSize * height];
-    if (data)
-        memcpy(bitmap, data, lineSize * height);
+    bitmap = new uint32_t[width * height];
+    if (data) {
+        memcpy(bitmap, data, width * height * sizeof(uint32_t));
+    }
+    backgroundColor = cColor::White;
+}
+
+
+cBitmap::cBitmap(int width, int height, uint32_t initcol)
+:   width(width),
+    height(height),
+    bitmap(NULL),
+    ismonochrome(false)
+{
+#ifdef DEBUG
+    printf("%s:%s(%d) cBitmap Size %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, width, height);
+#endif
+
+    bitmap = new uint32_t[width * height];
+    Clear(initcol);
 }
 
 cBitmap::cBitmap(const cBitmap & b)
@@ -47,9 +103,12 @@ cBitmap::cBitmap(const cBitmap & b)
     width = b.width;
     height = b.height;
     lineSize = b.lineSize;
-    bitmap = new unsigned char[lineSize * height];
-    if (b.bitmap)
-        memcpy(bitmap, b.bitmap, lineSize * height);
+    backgroundColor = b.backgroundColor;
+    ismonochrome = b.ismonochrome;
+    bitmap = new uint32_t[b.width * b.height];
+    if (b.bitmap) {
+        memcpy(bitmap, b.bitmap, b.width * b.height * sizeof(uint32_t));
+    }
 }
 
 cBitmap::~cBitmap()
@@ -57,35 +116,41 @@ cBitmap::~cBitmap()
     delete[] bitmap;
 }
 
-void cBitmap::Clear()
+void cBitmap::Clear(uint32_t initcol)
 {
-    memset(bitmap, 0, lineSize * height);
+#ifdef DEBUG
+    printf("%s:%s(%d) %03d * %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, width, height, color);
+#endif
+    uint32_t col = (initcol == cColor::Transparent) ? backgroundColor : initcol;
+    for (int i = 0; i < width * height; i++)
+        bitmap[i] = col;
+    backgroundColor = col;
 }
 
 void cBitmap::Invert()
 {
     int i;
 
-    for (i = 0; i < lineSize * height; i++)
+    for (i = 0; i < width * height; i++)
     {
-        bitmap[i] ^= 0xFF;
+        bitmap[i] ^= 0xFFFFFF;
     }
 }
 
-void cBitmap::DrawPixel(int x, int y, eColor color)
+void cBitmap::DrawPixel(int x, int y, uint32_t color)
 {
     if (x < 0 || x > width - 1)
         return;
     if (y < 0 || y > height - 1)
         return;
 
-    unsigned char c = 0x80 >> (x % 8);
-    if (color == clrBlack)
-        bitmap[lineSize * y + x / 8] |= c;
+    if (color != GLCD::cColor::Transparent)
+        bitmap[x + (width * y)] = cColor::AlignAlpha(color);
     else
-        bitmap[lineSize * y + x / 8] &= ~c;
+        bitmap[x + (width * y)] = cColor::AlignAlpha(backgroundColor);
 }
 
+/*
 void cBitmap::Draw8Pixels(int x, int y, unsigned char pixels, eColor color)
 {
     if (x < 0 || x > width - 1)
@@ -98,11 +163,14 @@ void cBitmap::Draw8Pixels(int x, int y, unsigned char pixels, eColor color)
     else
         bitmap[lineSize * y + x / 8] &= ~pixels;
 }
+*/
 
-void cBitmap::DrawLine(int x1, int y1, int x2, int y2, eColor color)
+void cBitmap::DrawLine(int x1, int y1, int x2, int y2, uint32_t color)
 {
     int d, sx, sy, dx, dy;
     unsigned int ax, ay;
+
+    color = cColor::AlignAlpha(color);
 
     dx = x2 - x1;
     ax = abs(dx) << 1;
@@ -151,42 +219,42 @@ void cBitmap::DrawLine(int x1, int y1, int x2, int y2, eColor color)
     }
 }
 
-void cBitmap::DrawHLine(int x1, int y, int x2, eColor color)
+void cBitmap::DrawHLine(int x1, int y, int x2, uint32_t color)
 {
-    sort(x1,x2);
+#ifdef DEBUG
+    printf("%s:%s(%d) %03d -> %03d, %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, x1, x2, y, color);
+#endif
+    color = cColor::AlignAlpha(color);
 
-    if (x1 / 8 == x2 / 8)
-    {
-        // start and end in the same byte
-        Draw8Pixels(x1, y, bitmaskr[x1 % 8] & bitmaskl[x2 % 8], color);
-    }
-    else
-    {
-        // start and end in different bytes
-        Draw8Pixels(x1, y, bitmaskr[x1 % 8], color);
-        x1 = ((x1 + 8) / 8) * 8;
-        while (x1 < (x2 / 8) * 8)
-        {
-            Draw8Pixels(x1, y, 0xff, color);
-            x1 += 8;
-        }
-        Draw8Pixels(x2, y, bitmaskl[x2 % 8], color);
-    }
+    sort(x1,x2);
+    while (x1 <= x2) {
+      DrawPixel(x1, y, color);
+      x1++;
+    };
 }
 
-void cBitmap::DrawVLine(int x, int y1, int y2, eColor color)
+void cBitmap::DrawVLine(int x, int y1, int y2, uint32_t color)
 {
-    int y;
+#ifdef DEBUG
+    printf("%s:%s(%d) %03d, %03d -> %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, x, y1, y2, color);
+#endif
+    color = cColor::AlignAlpha(color);
 
     sort(y1,y2);
-
-    for (y = y1; y <= y2; y++)
-        DrawPixel(x, y, color);
+    while (y1 <= y2) {
+      DrawPixel(x, y1, color);
+      y1++;
+    }
 }
 
-void cBitmap::DrawRectangle(int x1, int y1, int x2, int y2, eColor color, bool filled)
+void cBitmap::DrawRectangle(int x1, int y1, int x2, int y2, uint32_t color, bool filled)
 {
+#ifdef DEBUG
+    printf("%s:%s(%d) %03d * %03d -> %03d * %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, x1, y1, x2, y2, color);
+#endif
     int y;
+
+    color = cColor::AlignAlpha(color);
 
     sort(x1,x2);
     sort(y1,y2);
@@ -207,8 +275,13 @@ void cBitmap::DrawRectangle(int x1, int y1, int x2, int y2, eColor color, bool f
     }
 }
 
-void cBitmap::DrawRoundRectangle(int x1, int y1, int x2, int y2, eColor color, bool filled, int type)
+void cBitmap::DrawRoundRectangle(int x1, int y1, int x2, int y2, uint32_t color, bool filled, int type)
 {
+#ifdef DEBUG
+    printf("%s:%s(%d) %03d * %03d -> %03d * %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, x1, y1, x2, y2, color);
+#endif
+    color = cColor::AlignAlpha(color);
+
     sort(x1,x2);
     sort(y1,y2);
 
@@ -230,10 +303,14 @@ void cBitmap::DrawRoundRectangle(int x1, int y1, int x2, int y2, eColor color, b
         if (type == 4)
         {
             // round the ugly fat box...
-            DrawPixel(x1 + 1, y1 + 1, color == clrWhite ? clrBlack : clrWhite);
-            DrawPixel(x1 + 1, y2 - 1, color == clrWhite ? clrBlack : clrWhite);
-            DrawPixel(x2 - 1, y1 + 1, color == clrWhite ? clrBlack : clrWhite);
-            DrawPixel(x2 - 1, y2 - 1, color == clrWhite ? clrBlack : clrWhite);
+//            DrawPixel(x1 + 1, y1 + 1, color == clrWhite ? clrBlack : clrWhite);
+//            DrawPixel(x1 + 1, y2 - 1, color == clrWhite ? clrBlack : clrWhite);
+//            DrawPixel(x2 - 1, y1 + 1, color == clrWhite ? clrBlack : clrWhite);
+//            DrawPixel(x2 - 1, y2 - 1, color == clrWhite ? clrBlack : clrWhite);
+            DrawPixel(x1 + 1, y1 + 1, backgroundColor);
+            DrawPixel(x1 + 1, y2 - 1, backgroundColor);
+            DrawPixel(x2 - 1, y1 + 1, backgroundColor);
+            DrawPixel(x2 - 1, y2 - 1, backgroundColor);
         }
     }
     else
@@ -256,8 +333,13 @@ void cBitmap::DrawRoundRectangle(int x1, int y1, int x2, int y2, eColor color, b
     }
 }
 
-void cBitmap::DrawEllipse(int x1, int y1, int x2, int y2, eColor color, bool filled, int quadrants)
+void cBitmap::DrawEllipse(int x1, int y1, int x2, int y2, uint32_t color, bool filled, int quadrants)
 {
+#ifdef DEBUG
+    printf("%s:%s(%d) %03d * %03d -> %03d * %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, x1, y1, x2, y2, color);
+#endif
+    color = cColor::AlignAlpha(color);
+
     // Algorithm based on http://homepage.smc.edu/kennedy_john/BELIPSE.PDF
     int rx = x2 - x1;
     int ry = y2 - y1;
@@ -397,8 +479,13 @@ void cBitmap::DrawEllipse(int x1, int y1, int x2, int y2, eColor color, bool fil
     }
 }
 
-void cBitmap::DrawSlope(int x1, int y1, int x2, int y2, eColor color, int type)
+void cBitmap::DrawSlope(int x1, int y1, int x2, int y2, uint32_t color, int type)
 {
+#ifdef DEBUG
+    printf("%s:%s(%d) %03d * %03d -> %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, x1, y1, x2, y2);
+#endif
+    color = cColor::AlignAlpha(color);
+
     bool upper    = type & 0x01;
     bool falling  = type & 0x02;
     bool vertical = type & 0x04;
@@ -410,7 +497,7 @@ void cBitmap::DrawSlope(int x1, int y1, int x2, int y2, eColor color, int type)
             if (falling)
                 c = -c;
             int x = int((x2 - x1 + 1) * c / 2);
-            if (upper && !falling || !upper && falling)
+            if ((upper && !falling) || (!upper && falling))
                 DrawRectangle(x1, y, (x1 + x2) / 2 + x, y, color, true);
             else
                 DrawRectangle((x1 + x2) / 2 + x, y, x2, y, color, true);
@@ -432,82 +519,55 @@ void cBitmap::DrawSlope(int x1, int y1, int x2, int y2, eColor color, int type)
     }
 }
 
-void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, eColor color)
+void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, uint32_t bgcolor)
 {
-    unsigned char cl = 0;
-    int xt, yt;
-    const unsigned char * data = bitmap.Data();
-    unsigned short temp;
-    int h, w;
+#ifdef DEBUG
+    printf("%s:%s(%d) '%03d' x '%03d' \n", __FILE__, __FUNCTION__, __LINE__, x, y);
+#endif
+    color = cColor::AlignAlpha(color);
+    bgcolor = cColor::AlignAlpha(bgcolor);
 
-    w = bitmap.Width();
-    h = bitmap.Height();
+    uint32_t cl = 0;
+    const uint32_t * data = bitmap.Data();
+    bool ismonochrome = bitmap.IsMonochrome();
+
+    int xt, yt;
 
     if (data)
     {
-        if (!(x % 8))
+      for (yt = 0; yt < bitmap.Height(); yt++)
         {
-            // Bitmap is byte alligned (0,8,16,...)
-            for (yt = 0; yt < h; yt++)
-            {
-                for (xt = 0; xt < (w / 8); xt++)
-                {
-                    cl = *data;
-                    Draw8Pixels(x + (xt * 8), y + yt, cl, color);
-                    data++;
-                }
-                if (w % 8)
-                {
-                    cl = *data;
-                    Draw8Pixels(x + ((w / 8) * 8), y + yt, cl & bitmaskl[w % 8 - 1], color);
-                    data++;
-                }
+          for (xt = 0; xt < bitmap.Width(); xt++)
+          {
+            cl = data[(yt * bitmap.Width())+xt];
+            if (ismonochrome) {
+                DrawPixel(xt+x, yt+y, (cl == cColor::Black) ? color : bgcolor);
+            } else {
+                DrawPixel(xt+x, yt+y, cl);
             }
-        }
-        else
-        {
-            // Bitmap is not byte alligned
-            for (yt = 0; yt < h; yt++)
-            {
-                temp = 0;
-                for (xt = 0; xt < (w + (x % 8)) / 8; xt++)
-                {
-                    cl = *(data + yt * ((w + 7) / 8) + xt);
-                    temp = temp | ((unsigned short) cl << (8 - (x % 8)));
-                    cl = (temp & 0xff00) >> 8;
-                    if (!xt)
-                    {
-                        // first byte
-                        Draw8Pixels(x - (x % 8) + (xt * 8), y + yt, cl & bitmaskr[x % 8], color);
-                    }
-                    else
-                    {
-                        // not the first byte
-                        Draw8Pixels(x - (x % 8) + (xt * 8), y + yt, cl, color);
-                    }
-                    temp <<= 8;
-                }
-                if ((w + (x % 8) + 7) / 8 != (w + (x % 8)) / 8)
-                {
-                    // print the rest
-                    cl = *(data + (yt + 1) * ((w + 7) / 8) - 1);
-                    temp = temp | ((unsigned short) cl << (8 - (x % 8)));
-                    cl = (temp & 0xff00) >> 8;
-                    Draw8Pixels(x - (x % 8) + (((w + (x % 8)) / 8) * 8), y + yt, cl & bitmaskl[(w + x) % 8 - 1], color);
-                }
-            }
-        }
+          }
+       }
     }
 }
 
 int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cFont * font,
-                      eColor color, bool proportional, int skipPixels)
+                      uint32_t color, uint32_t bgcolor, bool proportional, int skipPixels)
 {
+#ifdef DEBUG
+    printf("%s:%s(%d) text '%s', color '%08x'/'%08x'\n", __FILE__, __FUNCTION__, __LINE__, text.c_str(), color, bgcolor);
+#endif
     int xt;
     int yt;
     int i;
-    char c;
+    uint32_t c;
+    uint32_t c0;
+    uint32_t c1;
+    uint32_t c2;
+    uint32_t c3;
     int start;
+
+    color = cColor::AlignAlpha(color);
+    bgcolor = cColor::AlignAlpha(bgcolor);
 
     clip(x, 0, width - 1);
     clip(y, 0, height - 1);
@@ -544,9 +604,41 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
                     }
             }
         }
-        for (i = start; i < (int) text.length(); i++)
+
+        i = start;
+        while (i < (int) text.length())
+//        for (i = start; i < (int) text.length(); i++)
         {
             c = text[i];
+
+            if ( font->IsUTF8() ) {
+                c0 = text[i];
+                c1 = (i+1 < (int)text.length()) ? text[i+1] : 0;
+                c2 = (i+2 < (int)text.length()) ? text[i+2] : 0;
+                c3 = (i+3 < (int)text.length()) ? text[i+3] : 0;
+                c0 &=0xff; c1 &=0xff; c2 &=0xff; c3 &=0xff;
+
+                if( c0 >= 0xc2 && c0 <= 0xdf && c1 >= 0x80 && c1 <= 0xbf ) {
+                    //2 byte UTF-8 sequence found
+                    i+=1;
+                    c = ((c0&0x1f)<<6) | (c1&0x3f);
+                } else if ((c0 == 0xE0 && c1 >= 0xA0 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf)
+                        || (c0 >= 0xE1 && c1 <= 0xEC && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf)
+                        || (c0 == 0xED && c1 >= 0x80 && c1 <= 0x9f && c2 >= 0x80 && c2 <= 0xbf)
+                        || (c0 >= 0xEE && c0 <= 0xEF && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) ) {
+                    //3 byte UTF-8 sequence found
+                    c = ((c0&0x0f)<<4) | ((c1&0x3f)<<6) | (c2&0x3f);
+                    i+=2;
+                } else if ( (c0 == 0xF0 && c1 >= 0x90 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf)
+                         || (c0 >= 0xF1 && c0 >= 0xF3 && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf &&
+                             c3 >= 0x80 && c3 <= 0xbf)
+                         || (c0 == 0xF4 && c1 >= 0x80 && c1 <= 0x8f && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) ) {
+                    //4 byte UTF-8 sequence found
+                    c = ((c0&0x07)<<2) | ((c1&0x3f)<<4) | ((c2&0x3f)<<6) | (c3&0x3f);
+                    i+=3;
+                }
+            }
+
             if (xt > xmax)
             {
                 i = text.length();
@@ -557,13 +649,13 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
                 {
                     if (skipPixels > 0)
                     {
-                        DrawCharacter(xt, yt, xmax, c, font, color, skipPixels);
+                        DrawCharacter(xt, yt, xmax, c, font, color, bgcolor, skipPixels);
                         xt += font->TotalWidth() - skipPixels;
                         skipPixels = 0;
                     }
                     else
                     {
-                        DrawCharacter(xt, yt, xmax, c, font, color);
+                        DrawCharacter(xt, yt, xmax, c, font, color, bgcolor);
                         xt += font->TotalWidth();
                     }
                 }
@@ -571,12 +663,12 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
                 {
                     if (skipPixels > 0)
                     {
-                        xt += DrawCharacter(xt, yt, xmax, c, font, color, skipPixels);
+                        xt += DrawCharacter(xt, yt, xmax, c, font, color, bgcolor, skipPixels);
                         skipPixels = 0;
                     }
                     else
                     {
-                        xt += DrawCharacter(xt, yt, xmax, c, font, color);
+                        xt += DrawCharacter(xt, yt, xmax, c, font, color, bgcolor);
                     }
                     if (xt <= xmax)
                     {
@@ -584,15 +676,26 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
                     }
                 }
             }
+            i++;
         }
     }
     return xt;
 }
 
-int cBitmap::DrawCharacter(int x, int y, int xmax, char c, const cFont * font,
-                           eColor color, int skipPixels)
+int cBitmap::DrawCharacter(int x, int y, int xmax, uint32_t c, const cFont * font,
+                           uint32_t color, uint32_t bgcolor, int skipPixels)
 {
+#ifdef DEBUG
+    printf("%s:%s(%d) %03d * %03d char '%c' color '%08x' bgcolor '%08x'\n", __FILE__, __FUNCTION__, __LINE__, x, y, c, color, bgcolor);
+#endif
     const cBitmap * charBitmap;
+    cBitmap * drawBitmap;
+
+    color = cColor::AlignAlpha(color);
+    bgcolor = cColor::AlignAlpha(bgcolor);
+
+    uint32_t dot = 0;
+    int xt, yt;
 
     clip(x, 0, width - 1);
     clip(y, 0, height - 1);
@@ -600,32 +703,43 @@ int cBitmap::DrawCharacter(int x, int y, int xmax, char c, const cFont * font,
     charBitmap = font->GetCharacter(c);
     if (charBitmap)
     {
-        cBitmap * drawBitmap = charBitmap->SubBitmap(skipPixels, 0, xmax - x + skipPixels, charBitmap->Height() - 1);
-        if (drawBitmap)
-            DrawBitmap(x, y, *drawBitmap, color);
-        delete drawBitmap;
+        drawBitmap = new cBitmap(charBitmap->Width()-skipPixels,charBitmap->Height());
+        drawBitmap->Clear(bgcolor);
+        if (drawBitmap) {
+          for (xt=0;xt<charBitmap->Width();xt++) {
+            for (yt=0;yt<charBitmap->Height();yt++) {
+              dot = charBitmap->GetPixel(xt+skipPixels,yt);
+              if ((dot | 0xFF000000) == cColor::Black) { // todo: does not work with antialising?
+                drawBitmap->DrawPixel(xt, yt, color);
+              } else {
+                drawBitmap->DrawPixel(xt, yt, bgcolor);
+              }
+            }
+          }
+          DrawBitmap(x, y, *drawBitmap);
+          delete drawBitmap;
+        }
         return charBitmap->Width() - skipPixels;
     }
     return 0;
 }
 
-unsigned char cBitmap::GetPixel(int x, int y) const
+uint32_t cBitmap::GetPixel(int x, int y) const
 {
-    unsigned char value;
-
-    value = bitmap[y * lineSize + x / 8];
-    value = (value >> (7 - (x % 8))) & 1;
+    uint32_t value;
+    value = bitmap[y * width + x];
     return value;
 }
 
 cBitmap * cBitmap::SubBitmap(int x1, int y1, int x2, int y2) const
 {
+#ifdef DEBUG
+    printf("%s:%s(%d) %03d * %03d / %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, x1, y1, x2, y2);
+#endif
     int w, h;
     int xt, yt;
     cBitmap * bmp;
-    unsigned char cl;
-    unsigned char * data;
-    unsigned short temp;
+    uint32_t cl;
 
     sort(x1,x2);
     sort(y1,y2);
@@ -642,62 +756,23 @@ cBitmap * cBitmap::SubBitmap(int x1, int y1, int x2, int y2) const
     if (!bmp || !bmp->Data())
         return NULL;
     bmp->Clear();
-    if (x1 % 8 == 0)
+
+    for (yt = 0; yt < h; yt++)
     {
-        // Bitmap is byte alligned (0,8,16,...)
-        for (yt = 0; yt < h; yt++)
-        {
-            data = &bitmap[(y1 + yt) * lineSize + x1 / 8];
-            for (xt = 0; xt < (w / 8) * 8; xt += 8)
-            {
-                cl = *data;
-                bmp->Draw8Pixels(xt, yt, cl, clrBlack);
-                data++;
-            }
-            if (w % 8 != 0)
-            {
-                cl = *data;
-                bmp->Draw8Pixels(xt, yt, cl & bitmaskl[w % 8 - 1], clrBlack);
-            }
-        }
-    }
-    else
-    {
-        // Bitmap is not byte alligned
-        for (yt = 0; yt < h; yt++)
-        {
-            temp = 0;
-            data = &bitmap[(y1 + yt) * lineSize + x1 / 8];
-            for (xt = 0; xt <= ((w / 8)) * 8; xt += 8)
-            {
-                cl = *data;
-                temp = temp | ((unsigned short) cl << (x1 % 8));
-                cl = (temp & 0xff00) >> 8;
-                if (xt > 0)
-                {
-                    bmp->Draw8Pixels(xt - 8, yt, cl, clrBlack);
-                }
-                temp <<= 8;
-                data++;
-            }
-            if (w % 8 != 0)
-            {
-                // print the rest
-                if (8 - (x1 % 8) < w % 8)
-                {
-                    cl = *data;
-                    temp = temp | ((unsigned short) cl << (x1 % 8));
-                }
-                cl = (temp & 0xff00) >> 8;
-                bmp->Draw8Pixels(xt - 8, yt, cl & bitmaskl[(w % 8) - 1], clrBlack);
-            }
-        }
+      for (xt = 0; xt < w; xt++)
+      {
+        cl = bitmap[(w*yt+y1)+xt+x1];
+        bmp->DrawPixel(xt,yt, cl);
+      }
     }
     return bmp;
 }
 
 bool cBitmap::LoadPBM(const std::string & fileName)
 {
+#ifdef DEBUG
+    printf("%s:%s(%d)\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
     FILE * pbmFile;
     char str[32];
     int i;
@@ -776,10 +851,8 @@ bool cBitmap::LoadPBM(const std::string & fileName)
     delete[] bitmap;
     width = w;
     height = h;
-    // lines are byte aligned
-    lineSize = (width + 7) / 8;
-    bitmap = new unsigned char[lineSize * height];
-    fread(bitmap, lineSize * height, 1, pbmFile);
+    bitmap = new uint32_t [width * height];
+    fread(bitmap, width * height, 1, pbmFile);
     fclose(pbmFile);
 
     return true;
@@ -787,6 +860,9 @@ bool cBitmap::LoadPBM(const std::string & fileName)
 
 void cBitmap::SavePBM(const std::string & fileName)
 {
+#ifdef DEBUG
+    printf("%s:%s(%d)\n", __FILE__, __FUNCTION__, __LINE__);
+#endif
     int i;
     char str[32];
     FILE * fp;

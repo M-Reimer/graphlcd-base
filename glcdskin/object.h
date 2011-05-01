@@ -24,6 +24,8 @@
 #include "type.h"
 #include "string.h"
 
+#include <glcddrivers/driver.h>
+
 namespace GLCD
 {
 
@@ -51,6 +53,13 @@ enum eTextAlignment
     taRight
 };
 
+enum eTextVerticalAlignment
+{
+    tvaTop,
+    tvaMiddle,
+    tvaBottom
+};
+
 class cSkinObject
 {
     friend bool StartElem(const std::string & name, std::map<std::string,std::string> & attrs);
@@ -70,6 +79,7 @@ public:
         text,
         scrolltext,
         scrollbar,
+        button,
         block,
         list,
         item,
@@ -77,17 +87,19 @@ public:
     };
 
 private:
-    cSkinDisplay * mDisplay;
+    cSkinDisplay * mDisplay;        // parent display
     cSkin * mSkin;
-    eType mType;
+    eType mType;                    // type of object, one of enum eType
     tPoint mPos1;
     tPoint mPos2;
-    eColor mColor;
+    cColor mColor;
+    cColor mBackgroundColor;
     bool mFilled;
     int mRadius;
     int mArc;
     int mDirection;
     eTextAlignment mAlign;
+    eTextVerticalAlignment mVerticalAlign;
     bool mMultiline;
     cSkinString mPath;
     cSkinString mCurrent;
@@ -96,7 +108,26 @@ private:
     cSkinString mText;
     cSkinFunction * mCondition;
 
-    cSkinObjects * mObjects; // used for block objects such as <list>
+    uint64_t mLastChange;           // timestamp: last change in dynamic object (scroll, frame change, ...)
+    int mChangeDelay;               // delay between two changes (frame change, scrolling, ...)
+                                    // special values: -2: no further looping (mScrollLoopMode == 'once')
+                                    //                 -1: not set (ie: not an animated image)
+
+    std::string mStoredImagePath;   // stored image path
+    int  mImageFrameId;             // frame ID of image
+
+    int mScrollLoopMode;            // scroll (text) or loop (image) mode: -1: default, 0: never, 1: once, 2: always
+    bool mScrollLoopReached;        // if scroll/loop == once: already looped once?
+    int mScrollSpeed;               // scroll speed: 0: default, [1 - 10]: speed
+    int mScrollTime;                // scroll time interval: 0: default, [100 - 2000]: time interval
+    int mScrollOffset;              // scroll offset (pixels)
+    std::string mCurrText;          // current text (for checks if text has changed)
+
+    std::string     mAltText;       // alternative text source for text-objects
+    cSkinFunction * mAltCondition;  // condition when alternative sources are used
+    std::string     mAction;        // action attached to this object
+
+    cSkinObjects * mObjects;        // used for block objects such as <list>
 
 public:
     cSkinObject(cSkinDisplay * parent);
@@ -104,19 +135,26 @@ public:
     ~cSkinObject();
 
     bool ParseType(const std::string &Text);
-    bool ParseColor(const std::string &Text);
+    bool ParseColor(const std::string &Text, cColor & ParamColor);
     bool ParseCondition(const std::string &Text);
     bool ParseAlignment(const std::string &Text);
+    bool ParseVerticalAlignment(const std::string &Text);
     bool ParseFontFace(const std::string &Text);
     bool ParseIntParam(const std::string &Text, int & Param);
     bool ParseWidth(const std::string &Text);
     bool ParseHeight(const std::string &Text);
 
+    bool ParseScrollLoopMode(const std::string & Text); // parse scroll mode ([never|once|always])
+    bool ParseScrollSpeed(const std::string & Text);    // parse scroll speed
+    bool ParseScrollTime(const std::string & Text);     // parse scroll time interval
+
+    bool ParseAltCondition(const std::string &Text);    // parse condition for alternative use (eg. alternative sources)
+
     void SetListIndex(int MaxItems, int Index);
 
     eType Type(void) const { return mType; }
     cSkinFunction * Condition(void) const { return mCondition; }
-	cSkinDisplay * Display(void) const { return mDisplay; }
+    cSkinDisplay * Display(void) const { return mDisplay; }
     cSkin * Skin(void) const { return mSkin; }
 
     const std::string & TypeName(void) const;
@@ -127,6 +165,12 @@ public:
     cSkinObject * GetObject(uint32_t Index) const;
 
     void Render(cBitmap * screen);
+
+    // check if update is required for dynamic objects (image, text, progress, pane)
+    // false: no update required, true: update required
+    bool NeedsUpdate(uint64_t CurrentTime);
+
+    std::string CheckAction(cGLCDEvent * ev);
 };
 
 class cSkinObjects: public std::vector<cSkinObject *>

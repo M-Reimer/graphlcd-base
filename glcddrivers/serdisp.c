@@ -7,7 +7,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2003-2010 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2003-2011 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <stdio.h>
@@ -18,6 +18,9 @@
 #include "common.h"
 #include "config.h"
 #include "serdisp.h"
+
+// for memcpy
+#include <string.h>
 
 #define SERDISP_VERSION(a,b) ((long)(((a) << 8) + (b)))
 #define SERDISP_VERSION_GET_MAJOR(_c)  ((int)( (_c) >> 8 ))
@@ -32,8 +35,17 @@
 #define SD_COL_BLACK      0xFF000000
 #define SD_COL_WHITE      0xFFFFFFFF
 
+// taken from serdisp_gpevents.h
+#define SDGPT_SIMPLETOUCH  0x10  /* simple touch screen event, type: SDGP_evpkt_simpletouch_t */
+
 namespace GLCD
 {
+
+static void wrapEventListener(void* dd, SDGP_event_t* recylce);
+
+static int simpleTouchX=0, simpleTouchY=0, simpleTouchT=0;
+static bool simpleTouchChanged=false;
+
 
 cDriverSerDisp::cDriverSerDisp(cDriverConfig * config)
 :   config(config)
@@ -41,6 +53,7 @@ cDriverSerDisp::cDriverSerDisp(cDriverConfig * config)
     oldConfig = new cDriverConfig(*config);
 
     dd = (void *) NULL;
+    simpleTouchChanged = false;
 }
 
 cDriverSerDisp::~cDriverSerDisp(void)
@@ -83,95 +96,57 @@ int cDriverSerDisp::Init(void)
     fp_serdisp_getversioncode = (long int (*)()) dlsym(sdhnd, "serdisp_getversioncode");
 
     if (dlerror()) { // no serdisp_getversioncode() -> version of serdisplib is < 1.95
-        syslog(LOG_DEBUG, "%s: INFO: symbol serdisp_getversioncode unknown: autodetecting pre 1.95 serdisplib version (cDriver::Init)\n",
-        config->name.c_str());
-
-        fp_SDCONN_open = (void*(*)(const char*)) dlsym(sdhnd, "SDCONN_open");
-        if (dlerror()) { // no SDCONN_open() -> version of serdisplib is < 1.93
-            serdisp_version = SERDISP_VERSION(1,92);
-            syslog(LOG_DEBUG, "%s: INFO: detected serdisplib version <= 1.92 (cDriver::Init)\n", config->name.c_str());
-
-            fp_PP_open = (void*(*)(const char*))dlsym(sdhnd, "PP_open");
-            if ( (errmsg = dlerror()) != NULL  ) { // should not happen
-                syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
-                    config->name.c_str(), "PP_open", errmsg);
-                return -1;
-            }
-            fp_PP_close = (void*(*)(void*))dlsym(sdhnd, "PP_close");
-            if ( (errmsg = dlerror()) != NULL  ) { // should not happen
-                syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
-                    config->name.c_str(), "PP_close", errmsg);
-                return -1;
-            }
-        } else {
-            serdisp_version = SERDISP_VERSION(1,94);  // no serdisp_getversioncode, but SDCONN_open: 1.93 or 1.94
-            syslog(LOG_DEBUG, "%s: INFO: detected serdisplib version 1.93 or 1.94 (cDriver::Init)\n", config->name.c_str());
-
-            fp_serdisp_quit = (void (*)(void*)) dlsym(sdhnd, "serdisp_quit");
-            if ( (errmsg = dlerror()) != NULL  ) { // should not happen
-                syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
-                    config->name.c_str(), "serdisp_quit", errmsg);
-                return -1;
-            }
-        }
-
-        fp_serdisp_setpixcol = (void (*)(void*, int, int, long int)) dlsym(sdhnd, "serdisp_setpixel");
-        if ( (errmsg = dlerror()) != NULL  ) { // should not happen
-            syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
-                config->name.c_str(), "serdisp_setpixel", errmsg);
-            return -1;
-        }
-        fg_colour = 1; /* set foreground to 'pixel on' */
-
-    } else {  // serdisp version >= 1.95
-        serdisp_version = fp_serdisp_getversioncode();
-        syslog(LOG_DEBUG, "%s: INFO: detected serdisplib version %d.%d (cDriver::Init)\n",
-            config->name.c_str(), SERDISP_VERSION_GET_MAJOR(serdisp_version), SERDISP_VERSION_GET_MINOR(serdisp_version));
-
-
-        fp_SDCONN_open = (void*(*)(const char*)) dlsym(sdhnd, "SDCONN_open");
-        if ( (errmsg = dlerror()) != NULL  ) { // should not happen
-            syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
-                config->name.c_str(), "SDCONN_open", errmsg);
-            return -1;
-        }
-        fp_serdisp_quit = (void (*)(void*)) dlsym(sdhnd, "serdisp_quit");
-        if ( (errmsg = dlerror()) != NULL  ) { // should not happen
-            syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
-                config->name.c_str(), "serdisp_quit", errmsg);
-            return -1;
-        }
-        fp_serdisp_setpixcol = (void (*)(void*, int, int, long int)) dlsym(sdhnd, "serdisp_setcolour");
-        if ( (errmsg = dlerror()) != NULL  ) { // should not happen
-            syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
-                config->name.c_str(), "serdisp_setcolour", errmsg);
-            return -1;
-        }
-        fg_colour = SD_COL_BLACK; /* set foreground colour to black */
-
-        if (serdisp_version >= SERDISP_VERSION(1,96) ) {
-            supports_options = 1;
-
-            fp_serdisp_isoption = (int (*)(void*, const char*)) dlsym(sdhnd, "serdisp_isoption");
-            if ( (errmsg = dlerror()) != NULL  ) { // should not happen
-                syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
-                    config->name.c_str(), "serdisp_isoption", errmsg);
-                return -1;
-            }
-            fp_serdisp_setoption = (void (*)(void*, const char*, long int)) dlsym(sdhnd, "serdisp_setoption");
-            if ( (errmsg = dlerror()) != NULL  ) { // should not happen
-                syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
-                    config->name.c_str(), "serdisp_setoption", errmsg);
-                return -1;
-            }
-            fp_serdisp_getoption = (long int (*)(void*, const char*, int*)) dlsym(sdhnd, "serdisp_getoption");
-            if ( (errmsg = dlerror()) != NULL  ) { // should not happen
-                syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
-                    config->name.c_str(), "serdisp_getoption", errmsg);
-                return -1;
-            }
-        } /* >= 1.96 */
+        syslog(LOG_ERR, "%s: error: serdisplib version >= 1.95 required\n", config->name.c_str());
+        return -1;
     }
+
+    serdisp_version = fp_serdisp_getversioncode();
+    syslog(LOG_DEBUG, "%s: INFO: detected serdisplib version %d.%d (cDriver::Init)\n",
+        config->name.c_str(), SERDISP_VERSION_GET_MAJOR(serdisp_version), SERDISP_VERSION_GET_MINOR(serdisp_version));
+
+
+    fp_SDCONN_open = (void*(*)(const char*)) dlsym(sdhnd, "SDCONN_open");
+    if ( (errmsg = dlerror()) != NULL  ) { // should not happen
+        syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
+            config->name.c_str(), "SDCONN_open", errmsg);
+        return -1;
+    }
+    fp_serdisp_quit = (void (*)(void*)) dlsym(sdhnd, "serdisp_quit");
+    if ( (errmsg = dlerror()) != NULL  ) { // should not happen
+        syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
+            config->name.c_str(), "serdisp_quit", errmsg);
+        return -1;
+    }
+    fp_serdisp_setcolour = (void (*)(void*, int, int, long int)) dlsym(sdhnd, "serdisp_setcolour");
+    if ( (errmsg = dlerror()) != NULL  ) { // should not happen
+        syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
+            config->name.c_str(), "serdisp_setcolour", errmsg);
+        return -1;
+    }
+    fg_colour = SD_COL_BLACK; /* set foreground colour to black */
+
+    if (serdisp_version >= SERDISP_VERSION(1,96) ) {
+        supports_options = 1;
+
+        fp_serdisp_isoption = (int (*)(void*, const char*)) dlsym(sdhnd, "serdisp_isoption");
+        if ( (errmsg = dlerror()) != NULL  ) { // should not happen
+            syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
+                config->name.c_str(), "serdisp_isoption", errmsg);
+            return -1;
+        }
+        fp_serdisp_setoption = (void (*)(void*, const char*, long int)) dlsym(sdhnd, "serdisp_setoption");
+        if ( (errmsg = dlerror()) != NULL  ) { // should not happen
+            syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
+                config->name.c_str(), "serdisp_setoption", errmsg);
+            return -1;
+        }
+        fp_serdisp_getoption = (long int (*)(void*, const char*, int*)) dlsym(sdhnd, "serdisp_getoption");
+        if ( (errmsg = dlerror()) != NULL  ) { // should not happen
+            syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
+                config->name.c_str(), "serdisp_getoption", errmsg);
+            return -1;
+        }
+    } /* >= 1.96 */
 
     // load other symbols that will be required
     fp_serdisp_init = (void*(*)(void*, const char*, const char*)) dlsym(sdhnd, "serdisp_init");
@@ -229,6 +204,22 @@ int cDriverSerDisp::Init(void)
             config->name.c_str(), "serdisp_getheight", errmsg);
         return -1;
     }
+
+    fp_serdisp_getcolours = (int (*)(void*)) dlsym(sdhnd, "serdisp_getcolours");
+    if ( (errmsg = dlerror()) != NULL  ) { // should not happen
+        syslog(LOG_ERR, "%s: error: cannot load symbol %s. Err:%s (cDriver::Init)\n",
+            config->name.c_str(), "serdisp_getcolours", errmsg);
+        return -1;
+    }
+
+    // don't care if the following functions are not available
+    fp_serdisp_getdepth = (int (*)(void*)) dlsym(sdhnd, "serdisp_getdepth");
+
+    fp_SDGPI_search    = (uint8_t (*)(void*, const char*))  dlsym(sdhnd, "SDGPI_search");
+    fp_SDGPI_isenabled = (int     (*)(void*, uint8_t))      dlsym(sdhnd, "SDGPI_isenabled");
+    fp_SDGPI_enable    = (int     (*)(void*, uint8_t, int)) dlsym(sdhnd, "SDGPI_enable");
+    fp_SDEVLP_add_listener = (int (*)(void*, uint8_t, fp_eventlistener_t)) dlsym(sdhnd, "SDEVLP_add_listener");
+
 
     // done loading all required symbols
 
@@ -341,7 +332,8 @@ int cDriverSerDisp::Init(void)
         fp_serdisp_feature(dd, FEATURE_REVERSE, config->invert);
     } else {
         /* standard options */
-        fp_serdisp_setoption(dd, "ROTATE", config->upsideDown);
+        if (config->upsideDown)
+            fp_serdisp_setoption(dd, "ROTATE", config->upsideDown);
         fp_serdisp_setoption(dd, "CONTRAST", config->contrast);
         fp_serdisp_setoption(dd, "BACKLIGHT", config->backlight);
         fp_serdisp_setoption(dd, "INVERT", config->invert);
@@ -433,6 +425,7 @@ int cDriverSerDisp::CheckSetup()
         update = true;
     }
 
+#if 0
     /* driver dependend options */
     if ( supports_options ) {
         for (unsigned int i = 0; i < config->options.size(); i++) {
@@ -447,7 +440,7 @@ int cDriverSerDisp::CheckSetup()
             }
         }
     }
-
+#endif
 
     if (update)
         return 1;
@@ -462,7 +455,7 @@ void cDriverSerDisp::Clear(void)
         int x,y;
         for (y = 0; y < fp_serdisp_getheight(dd); y++)
             for (x = 0; x < fp_serdisp_getwidth(dd); x++)
-                fp_serdisp_setpixcol(dd, x, y, bg_colour);   /* >= 1.95: serdisp_setcolour(), < 1.95: serdisp_setpixel() */
+                fp_serdisp_setcolour(dd, x, y, bg_colour);
     }
 }
 
@@ -475,12 +468,49 @@ void cDriverSerDisp::Set8Pixels(int x, int y, unsigned char data) {
 
     for (i = 0; i < 8; i++) {
         pixel = data & (1 << i);
-        if (pixel)
-            fp_serdisp_setpixcol(dd, start + i, y, fg_colour);   /* >= 1.95: serdisp_setcolour(), < 1.95: serdisp_setpixel() */
-        else if (!pixel && bg_colour != -1)  /* if bg_colour is set: use it if pixel is not set */
-            fp_serdisp_setpixcol(dd, start + i, y, bg_colour);   /* >= 1.95: serdisp_setcolour(), < 1.95: serdisp_setpixel() */
+        if (pixel) {
+          SetPixel(start + i, y, fg_colour);
+        } else if (!pixel && bg_colour != -1) { /* if bg_colour is set: use it if pixel is not set */
+          SetPixel(start + i, y, bg_colour);
+        }
     }
 }
+
+void cDriverSerDisp::SetPixel(int x, int y, uint32_t data)
+{
+    fp_serdisp_setcolour(dd, x, y, data);
+}
+
+#if 0
+// temporarily overwrite SetScreen() until problem with 'to Clear() or not to Clear()' is solved
+void cDriverSerDisp::SetScreen(const unsigned char * data, int wid, int hgt, int lineSize)
+{
+    int x, y;
+
+    if (wid > width)
+        wid = width;
+    if (hgt > height)
+        hgt = height;
+
+    //Clear();
+    if (data)
+    {
+        for (y = 0; y < hgt; y++)
+        {
+            for (x = 0; x < (wid / 8); x++)
+            {
+                Set8Pixels(x * 8, y, data[y * lineSize + x]);
+            }
+            if (width % 8)
+            {
+                Set8Pixels((wid / 8) * 8, y, data[y * lineSize + wid / 8] & bitmaskl[wid % 8 - 1]);
+            }
+        }
+    } else {
+      Clear();
+    }
+}
+#endif
 
 void cDriverSerDisp::Refresh(bool refreshAll)
 {
@@ -494,9 +524,93 @@ void cDriverSerDisp::Refresh(bool refreshAll)
 }
 
 void cDriverSerDisp::SetBrightness(unsigned int percent)
-{   
+{
     if ( supports_options && (fp_serdisp_isoption(dd, "BRIGHTNESS") == 1) )  /* if == 1: option is existing AND r/w */
-         fp_serdisp_setoption(dd, "BRIGHTNESS", (long)percent);
+        fp_serdisp_setoption(dd, "BRIGHTNESS", (long)percent);
+}
+
+GLCD::cColor cDriverSerDisp::GetBackgroundColor(void) {
+    if ( supports_options && fp_serdisp_isoption(dd, "SELFEMITTING") && (fp_serdisp_getoption(dd, "SELFEMITTING", 0)) ) {
+       return GLCD::cColor::Black;
+    }
+    return GLCD::cColor::White;
+}
+
+
+bool cDriverSerDisp::SetFeature (const std::string & Feature, int value)
+{
+    if (strcasecmp(Feature.c_str(), "TOUCHSCREEN") == 0 || strcasecmp(Feature.c_str(), "TOUCH") == 0) {
+        if (fp_SDGPI_search && fp_SDGPI_isenabled && fp_SDGPI_enable) {
+            uint8_t gpid = fp_SDGPI_search(dd, Feature.c_str());
+            if (gpid == 0xFF)
+                return false;
+
+            int ena = fp_SDGPI_isenabled(dd, gpid);
+            bool enable = (value == 1) ? true : false;
+            if (ena == enable) { // already enabled or disabled
+                return true;
+            } else {
+                bool rc = (fp_SDGPI_enable(dd, gpid, ((enable) ? 1 : 0)) >= 0) ? true : false;
+
+                if (enable && rc && fp_SDEVLP_add_listener) {
+                    fp_SDEVLP_add_listener(dd, gpid, wrapEventListener);
+                }
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
+bool cDriverSerDisp::GetDriverFeature  (const std::string & Feature, int & value) {
+    if (dd) {
+        if (strcasecmp(Feature.c_str(), "depth") == 0) {
+            value = fp_serdisp_getdepth(dd);
+            return true;
+        } else if (strcasecmp(Feature.c_str(), "ismonochrome") == 0) {
+            value = (fp_serdisp_getdepth(dd) == 1) ? 1 : 0;
+            return true;
+        } else if (strcasecmp(Feature.c_str(), "isgreyscale") == 0 || strcasecmp(Feature.c_str(), "isgrayscale") == 0) {
+            value = (fp_serdisp_getdepth(dd) > 1 && fp_serdisp_getdepth(dd) < 8) ? 1 : 0;
+            return true;
+        } else if (strcasecmp(Feature.c_str(), "iscolour") == 0 || strcasecmp(Feature.c_str(), "iscolor") == 0) {
+            value = (fp_serdisp_getdepth(dd) >= 8) ? 1 : 0;
+            return true;
+        } else if (strcasecmp(Feature.c_str(), "touch") == 0 || strcasecmp(Feature.c_str(), "touchscreen") == 0) {
+            if (fp_SDGPI_search && fp_SDGPI_isenabled) {
+                uint8_t gpid = fp_SDGPI_search(dd, Feature.c_str());
+                value = (gpid != 0xFF && fp_SDGPI_isenabled(dd, gpid)) ? 1 : 0;
+            }
+            return true;
+        }
+    }
+    value = 0;
+    return false;
+}
+
+cGLCDEvent * cDriverSerDisp::GetEvent(void) {
+    if (GLCD::simpleTouchChanged == false)
+        return NULL;
+
+    cSimpleTouchEvent * ev = new cSimpleTouchEvent();
+
+    ev->x = simpleTouchX;
+    ev->y = simpleTouchY;
+    ev->touch = simpleTouchT;
+    simpleTouchChanged = false;
+    return ev;
+}
+
+static void wrapEventListener(void* dd, SDGP_event_t* event) {
+    if (!event) return;
+    if (event->type == SDGPT_SIMPLETOUCH) {
+        SDGP_evpkt_simpletouch_t  simpletouch;
+        memcpy(&simpletouch, &event->data, sizeof(SDGP_evpkt_simpletouch_t));
+        simpleTouchChanged = true;
+        simpleTouchX = simpletouch.norm_x;
+        simpleTouchY = simpletouch.norm_y;
+        simpleTouchT = simpletouch.norm_touch;
+    }
 }
 
 } // end of namespace
