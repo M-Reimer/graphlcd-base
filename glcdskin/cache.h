@@ -46,6 +46,7 @@ private:
     cSkin * skin;
     size_t size;
     std::vector <cImageItem *> images;
+    std::vector <std::string> failedpaths;
 
     cImageItem * LoadImage(const std::string & path);
 public:

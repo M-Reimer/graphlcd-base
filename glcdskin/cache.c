@@ -48,6 +48,7 @@ cImageCache::~cImageCache()
         delete images[i];
     }
     images.clear();
+    failedpaths.clear();
 }
 
 cImage * cImageCache::Get(const std::string & path)
@@ -56,6 +57,14 @@ cImage * cImageCache::Get(const std::string & path)
     cImageItem * item;
     uint64_t maxCounter;
     std::vector <cImageItem *>::iterator oldest;
+
+    // test if this path has already been stored as invalid path / invalid/non-existent image
+    for (size_t i = 0; i < failedpaths.size(); i++) {
+      if (failedpaths[i] == path) {
+        return NULL;
+      }
+    }
+    
 
     maxCounter = 0;
     item = NULL;
@@ -90,6 +99,8 @@ cImage * cImageCache::Get(const std::string & path)
         }
         images.push_back(item);
         return item->Image();
+    } else {
+      failedpaths.push_back(path);
     }
     return NULL;
 }
