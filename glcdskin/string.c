@@ -257,8 +257,18 @@ cType cSkinString::Evaluate(void) const
       idxend = result_raw.find("#", idxstart+1);
       cSkinVariable * variable = mSkin->GetVariable(result_raw.substr(idxstart+1, idxend-idxstart-1));
       if (variable) {
-         result_trans.append ((std::string) variable->Value());
-         //   syslog(LOG_ERR, "string variable %s", trans.c_str());
+        std::string val = (std::string) variable->Value();
+
+        // if value of variable contains token definions: reparse value
+        if (val.find("{") != std::string::npos) {
+          cSkinString *result = new cSkinString(Object(), false);
+          if (result->Parse(val)) {
+            val = (std::string) result->Evaluate();
+          }
+          delete result;
+        }
+        result_trans.append (val);
+        //   syslog(LOG_ERR, "string variable %s", trans.c_str());
       }
       idxstart = idxend+1;
       pos = idxstart;
