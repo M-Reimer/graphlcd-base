@@ -4,6 +4,11 @@
 
 -include ../Make.config
 
+# External image lib to use: imagemagick, graphicsmagick, or none
+# taken from text2skin
+IMAGELIB =
+
+
 CXXFLAGS += -fPIC
 
 VERMAJOR = 2
@@ -14,9 +19,9 @@ BASENAME = libglcdgraphics.so
 
 LIBNAME = $(BASENAME).$(VERMAJOR).$(VERMINOR).$(VERMICRO)
 
-OBJS = bitmap.o common.o font.o glcd.o image.o imagefile.o pbm.o
+OBJS = bitmap.o common.o font.o glcd.o image.o imagefile.o pbm.o extformats.o
 
-HEADERS = bitmap.h font.h glcd.h image.h imagefile.h pbm.h
+HEADERS = bitmap.h font.h glcd.h image.h imagefile.h pbm.h extformats.h
 
 ### Implicit rules:
 
@@ -42,6 +47,18 @@ ifdef HAVE_FREETYPE2
 	endif
 	DEFINES += -DHAVE_FREETYPE2
 endif### Targets:
+
+
+ifeq ($(IMAGELIB), imagemagick)
+	DEFINES += -DHAVE_IMAGEMAGICK
+	INCLUDES += $(shell pkg-config --cflags ImageMagick++)
+	LIBS += $(shell pkg-config --libs ImageMagick++)
+else ifeq ($(IMAGELIB), graphicsmagick)
+	DEFINES += -DHAVE_IMAGEMAGICK # yep, really HAVE_IMAGEMAGICK here
+	INCLUDES += $(shell pkg-config --cflags GraphicsMagick++)
+	LIBS += $(shell pkg-config --libs GraphicsMagick++)
+endif
+
 
 all: $(LIBNAME)
 

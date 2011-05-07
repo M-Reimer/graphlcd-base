@@ -12,6 +12,7 @@
 #include <glcdgraphics/image.h>
 #include <glcdgraphics/glcd.h>
 #include <glcdgraphics/pbm.h>
+#include <glcdgraphics/extformats.h>
 
 #include <stdlib.h>
 #include <string.h>
@@ -171,8 +172,13 @@ cImageItem * cImageCache::LoadImage(const std::string & path)
     }
     else
     {
-        delete image;
-        return NULL;
+        cExtFormatFile extformat;
+
+        if (extformat.Load(*image, file) == false)
+        {
+          delete image;
+          return NULL;
+        }
     }
 
     item = new cImageItem(path, image);
