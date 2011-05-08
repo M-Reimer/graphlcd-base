@@ -76,9 +76,6 @@ private:
 
     void* (*fp_SDCONN_open)            (const char sdcdev[]);
 
-    void* (*fp_PP_open)                (const char sdcdev[]);
-    void* (*fp_PP_close)               (void* sdcd);
-
     void* (*fp_serdisp_init)           (void* sdcd, const char dispname[], const char extra[]);
     void  (*fp_serdisp_rewrite)        (void* dd);
     void  (*fp_serdisp_update)         (void* dd);

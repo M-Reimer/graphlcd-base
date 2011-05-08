@@ -268,11 +268,7 @@ int cDriverSerDisp::Init(void)
         char temp[10];
         snprintf(temp, 8, "0x%x", config->port);
 
-        if (serdisp_version < SERDISP_VERSION(1,93) ) {
-            sdcd = fp_PP_open(temp);
-        } else {
-            sdcd = fp_SDCONN_open(temp);
-        }
+        sdcd = fp_SDCONN_open(temp);
 
         if (sdcd == 0) {
             syslog(LOG_ERR, "%s: error: unable to open port 0x%x for display %s. (cDriver::Init)\n",
@@ -284,12 +280,7 @@ int cDriverSerDisp::Init(void)
     }
     else
     {
-        // use ppdev
-        if (serdisp_version < SERDISP_VERSION(1,93) ) {
-            sdcd = fp_PP_open(config->device.c_str());
-        } else {
-            sdcd = fp_SDCONN_open(config->device.c_str());
-        }
+        sdcd = fp_SDCONN_open(config->device.c_str());
 
         if (sdcd == 0) {
             syslog(LOG_ERR, "%s: error: unable to open device %s for display %s. (cDriver::Init)\n",
@@ -298,10 +289,7 @@ int cDriverSerDisp::Init(void)
         }
     }
 
-    if (serdisp_version < SERDISP_VERSION(1,95) )
-        dd = fp_serdisp_init(sdcd, controller.c_str(), "");
-    else
-        dd = fp_serdisp_init(sdcd, controller.c_str(), optionstring.c_str());
+    dd = fp_serdisp_init(sdcd, controller.c_str(), optionstring.c_str());
 
     if (!dd)
     {
@@ -364,15 +352,10 @@ int cDriverSerDisp::Init(void)
 
 int cDriverSerDisp::DeInit(void)
 {
-    if (serdisp_version < SERDISP_VERSION(1,93) ) {
-        fp_serdisp_close(dd);
-        fp_PP_close(sdcd);
-        sdcd = NULL;
-    } else {
-        //fp_serdisp_quit(dd);
-        /* use serdisp_close instead of serdisp_quit so that showpic and showtext are usable together with serdisplib */
-        fp_serdisp_close(dd);
-    }
+    //fp_serdisp_quit(dd);
+    /* use serdisp_close instead of serdisp_quit so that showpic and showtext are usable together with serdisplib */
+    fp_serdisp_close(dd);
+
     (int) dlclose(sdhnd);
     sdhnd = NULL;
 
