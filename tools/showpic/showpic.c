@@ -31,6 +31,7 @@
 #include <glcddrivers/config.h>
 #include <glcddrivers/driver.h>
 #include <glcddrivers/drivers.h>
+#include <glcdgraphics/extformats.h>
 
 static const char *prgname = "showpic";
 static const char *version = "0.1.2";
@@ -201,7 +202,7 @@ int main(int argc, char *argv[])
 		delete lcd;
 		return 7;
 	}
-  lcd->SetBrightness(GLCD::Config.driverConfigs[displayNumber].brightness);
+	lcd->SetBrightness(GLCD::Config.driverConfigs[displayNumber].brightness);
 
 	signal(SIGINT, sighandler);
 	signal(SIGQUIT, sighandler);
@@ -211,6 +212,8 @@ int main(int argc, char *argv[])
 	const GLCD::cBitmap * bitmap;
 	GLCD::cImage image;
 	GLCD::cGLCDFile glcd;
+	GLCD::cExtFormatFile extformat;
+
 	int optFile;
 	std::string picFile;
 
@@ -218,20 +221,22 @@ int main(int argc, char *argv[])
 	while (optFile < argc && !stopProgramm)
 	{
 		picFile = argv[optFile++];
-		if (glcd.Load(image, picFile) == false)
-		{
-			fprintf(stderr, "ERROR: Failed loading file %s\n", picFile.c_str());
-			return 8;
+		if (glcd.Load(image, picFile) == false) {
+			if (extformat.Load(image, picFile) == false) {
+				fprintf(stderr, "ERROR: Failed loading file %s\n", picFile.c_str());
+				return 8;
+			}
 		}
 
 		if (delay)
 			image.SetDelay(sleepMs);
 
+		lcd->Refresh(true);
 		while ((bitmap = image.GetBitmap()) != NULL && !stopProgramm)
 		{
 //			lcd->SetScreen(bitmap->Data(), bitmap->Width(), bitmap->Height(), bitmap->LineSize());
 			lcd->SetScreen(bitmap->Data(), bitmap->Width(), bitmap->Height());
-			lcd->Refresh(true);
+			lcd->Refresh(false);
 
 			if (image.Next(0)) // Select next image
 			{
