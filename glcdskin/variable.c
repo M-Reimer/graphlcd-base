@@ -11,6 +11,7 @@ cSkinVariable::cSkinVariable(cSkin * Parent)
 :   mSkin(Parent),
     mValue(0),
     mCondition(NULL),
+    mFunction(NULL),
     mDummyDisplay(mSkin),
     mDummyObject(&mDummyDisplay)
 {
@@ -20,14 +21,16 @@ bool cSkinVariable::ParseValue(const std::string & Text)
 {
     if (isalpha(Text[0]) || Text[0] == '#')
     {
-        cSkinFunction * func = new cSkinFunction(&mDummyObject);
-        if (func->Parse(Text))
+        delete mFunction;
+        mFunction = new cSkinFunction(&mDummyObject);
+        if (mFunction->Parse(Text))
         {
-            mValue = func->Evaluate();
-            delete func;
+            //mValue = func->Evaluate();
+            //delete func;
             return true;
         }
-        delete func;
+        delete mFunction;
+        mFunction = NULL;
     }
     else if (Text[0] == '\'')
     {

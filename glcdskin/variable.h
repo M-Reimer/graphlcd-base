@@ -18,6 +18,7 @@
 
 #include "display.h"
 #include "object.h"
+#include "function.h"
 
 namespace GLCD
 {
@@ -34,6 +35,7 @@ private:
     std::string mId;
     cType mValue;
     cSkinFunction * mCondition;
+    cSkinFunction * mFunction;
     cSkinDisplay mDummyDisplay;
     cSkinObject mDummyObject;
 
@@ -45,7 +47,8 @@ public:
 
     cSkin * Skin(void) const { return mSkin; }
     const std::string & Id(void) const { return mId; }
-    const cType & Value(void) const { return mValue; }
+//    const cType & Value(void) const { return mValue; }
+    const cType & Value(void) { if (mFunction != NULL) { mValue = mFunction->Evaluate(); } return mValue; } ;
     cSkinFunction * Condition(void) const { return mCondition; }
 };
 
