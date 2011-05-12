@@ -19,7 +19,7 @@ cSkinVariable::cSkinVariable(cSkin * Parent)
 
 bool cSkinVariable::ParseValue(const std::string & Text)
 {
-    if (isalpha(Text[0]) || Text[0] == '#')
+    if (isalpha(Text[0]) || Text[0] == '#' || Text[0] == '{')
     {
         delete mFunction;
         mFunction = new cSkinFunction(&mDummyObject);
