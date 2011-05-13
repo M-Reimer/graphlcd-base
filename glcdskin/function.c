@@ -137,9 +137,17 @@ bool cSkinFunction::Parse(const std::string & Text)
     }
     else
     {
+        bool inToken = false;
+
         // expression
         for (; *ptr; ++ptr)
         {
+
+            if (*ptr == '{')
+                inToken = true;
+            else if (inToken && *ptr == '}')
+                inToken = false;
+
             if (*ptr == '(')
             {
                 if (inExpr++ == 0)
@@ -163,7 +171,7 @@ bool cSkinFunction::Parse(const std::string & Text)
                     last = ptr + 1;
                 }
             }
-            else if (*ptr == ',' || *ptr == ')')
+            else if ( ( (!inToken) && (*ptr == ',') ) || *ptr == ')')
             {
                 if (inExpr == 0)
                 {
