@@ -45,9 +45,10 @@ enum eColor
 
 class cColor
 {
-public:
-   uint32_t color;
+protected:
+  uint32_t color;
 
+public:
    cColor(uint32_t col) { color = col; }
    cColor(const cColor & col) { color = col.color; }
 
@@ -62,12 +63,12 @@ public:
    static const uint32_t Transparent = 0x00FFFFFF;
    static const uint32_t ERRCOL      = 0x00000000;
 
-   operator uint32_t(void) { return color; }
-
    uint32_t GetColor (void)         { return color; }
    void     SetColor (uint32_t col) { color = col; }
 
    cColor Invert   (void);
+
+   operator uint32_t(void) { return GetColor(); }
 
    static cColor ParseColor (std::string col);
    static uint32_t AlignAlpha  (uint32_t col) { return (col & 0xFF000000) ? col : (col | 0xFF000000); }
