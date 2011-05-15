@@ -60,6 +60,29 @@ enum eTextVerticalAlignment
     tvaBottom
 };
 
+
+class cSkinColor
+{
+private:
+    cSkinObject *  mObject;
+    uint32_t       mColor;
+    std::string    mVarId;
+public:
+    cSkinColor(cSkinObject *Parent, uint32_t color):mVarId("") { mObject = Parent; mColor = color; }
+    cSkinColor(cSkinObject *Parent, cColor color):mVarId("") { mObject = Parent; mColor = (uint32_t)color; }
+    cSkinColor(cSkinObject *Parent, const std::string varId) { mObject = Parent; mVarId = varId; }
+    ~cSkinColor() {};
+    
+    void SetColor(uint32_t color) { mVarId = ""; mColor = color; }
+    void SetColor(cColor color) { mVarId = ""; mColor = (uint32_t)color; }
+    void SetVarId(const std::string varId) { mVarId = varId; }
+    
+    uint32_t GetColor(void);
+
+    operator uint32_t(void) { return GetColor(); }
+};
+    
+
 class cSkinObject
 {
     friend bool StartElem(const std::string & name, std::map<std::string,std::string> & attrs);
@@ -92,8 +115,8 @@ private:
     eType mType;                    // type of object, one of enum eType
     tPoint mPos1;
     tPoint mPos2;
-    cColor mColor;
-    cColor mBackgroundColor;
+    cSkinColor mColor;
+    cSkinColor mBackgroundColor;
     bool mFilled;
     int mRadius;
     int mArc;
@@ -135,7 +158,7 @@ public:
     ~cSkinObject();
 
     bool ParseType(const std::string &Text);
-    bool ParseColor(const std::string &Text, cColor & ParamColor);
+    bool ParseColor(const std::string &Text, cSkinColor & ParamColor);
     bool ParseCondition(const std::string &Text);
     bool ParseAlignment(const std::string &Text);
     bool ParseVerticalAlignment(const std::string &Text);

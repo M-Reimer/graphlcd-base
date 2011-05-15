@@ -34,8 +34,8 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mType((eType) __COUNT_OBJECT__),
     mPos1(0, 0),
     mPos2(-1, -1),
-    mColor(cColor(cColor::Black)),
-    mBackgroundColor(cColor(cColor::Transparent)),
+    mColor(this, cColor(cColor::Black)),
+    mBackgroundColor(this, cColor(cColor::Transparent)),
     mFilled(false),
     mRadius(0),
     mArc(0),
@@ -64,8 +64,8 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mAction(""),                    // action (e.g. touchscreen action)
     mObjects(NULL)
 {
-    mColor = Parent->Skin()->Config().GetDriver()->GetForegroundColor();
-    mBackgroundColor = Parent->Skin()->Config().GetDriver()->GetBackgroundColor();
+    mColor.SetColor(Parent->Skin()->Config().GetDriver()->GetForegroundColor());
+    mBackgroundColor.SetColor(Parent->Skin()->Config().GetDriver()->GetBackgroundColor());
 }
 
 cSkinObject::cSkinObject(const cSkinObject & Src)
@@ -126,17 +126,28 @@ bool cSkinObject::ParseType(const std::string & Text)
     return false;
 }
 
-bool cSkinObject::ParseColor(const std::string & Text, cColor & ParamColor)
+bool cSkinObject::ParseColor(const std::string & Text, cSkinColor & ParamColor)
 {
     std::string text = (std::string) Text;
+    cColor color = cColor::ERRCOL;
     if (text[0] == '#') {
         cSkinVariable * variable = mSkin->GetVariable(text.substr(1));
         if (variable) {
-            text = variable->Value().String();
+            color = cColor::ParseColor(variable->Value().String());
+            if (color == cColor::ERRCOL) {
+                return false;
+            }
+            ParamColor.SetVarId(text.substr(1));
+            return true;
         }
+        return false;
     }
-    ParamColor = cColor::ParseColor(text);
-    return (ParamColor == cColor::ERRCOL) ? false : true;
+    color = cColor::ParseColor(text);
+    if (color == cColor::ERRCOL) {
+        return false;
+    }
+    ParamColor.SetColor(color);
+    return true;
 }
 
 bool cSkinObject::ParseCondition(const std::string & Text)
@@ -671,7 +682,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
             cSkinFont * skinFont = mSkin->GetFont(mFont.Evaluate());
 
             if (mBackgroundColor == mColor || mBackgroundColor == cColor::Transparent)
-                mBackgroundColor = cColor(mColor).Invert();
+                mBackgroundColor.SetColor( (cColor(mColor).Invert()) );
 
             if (mRadius == 0)
                 screen->DrawRectangle(Pos().x, Pos().y, Pos().x + Size().w - 1, Pos().y + Size().h - 1, mBackgroundColor, true);
@@ -891,6 +902,19 @@ std::string cSkinObject::CheckAction(cGLCDEvent * ev)
             return "";
     }
     return "";
+}
+
+
+
+uint32_t cSkinColor::GetColor(void) {
+    if (mVarId != "") {
+        cSkinVariable * variable = mObject->Skin()->GetVariable(mVarId);
+        if (variable) {
+            return cColor::ParseColor(variable->Value().String());
+        }
+        return cColor::ERRCOL;
+    }
+    return (uint32_t) mColor;
 }
 
 
