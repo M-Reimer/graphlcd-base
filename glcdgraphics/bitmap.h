@@ -71,7 +71,15 @@ public:
    operator uint32_t(void) { return GetColor(); }
 
    static cColor ParseColor (std::string col);
-   static uint32_t AlignAlpha  (uint32_t col) { return (col & 0xFF000000) ? col : (col | 0xFF000000); }
+   static uint32_t AlignAlpha  (uint32_t col) { 
+       switch (col) {
+           case Transparent:
+           case ERRCOL:
+               return col;
+           default:
+               return (col & 0xFF000000) ? col : (col | 0xFF000000);
+       }
+   }
 };
 
 

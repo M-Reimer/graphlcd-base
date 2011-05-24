@@ -75,10 +75,11 @@ cBitmap::cBitmap(int width, int height, uint32_t * data)
 #ifdef DEBUG
     printf("%s:%s(%d) cBitmap Size %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, width, height);
 #endif
-
-    bitmap = new uint32_t[width * height];
-    if (data) {
-        memcpy(bitmap, data, width * height * sizeof(uint32_t));
+    if (width > 0 && height > 0) {
+        bitmap = new uint32_t[width * height];
+        if (data && bitmap) {
+            memcpy(bitmap, data, width * height * sizeof(uint32_t));
+        }
     }
     backgroundColor = cColor::White;
 }
@@ -106,7 +107,7 @@ cBitmap::cBitmap(const cBitmap & b)
     backgroundColor = b.backgroundColor;
     ismonochrome = b.ismonochrome;
     bitmap = new uint32_t[b.width * b.height];
-    if (b.bitmap) {
+    if (b.bitmap && bitmap) {
         memcpy(bitmap, b.bitmap, b.width * b.height * sizeof(uint32_t));
     }
 }
@@ -121,7 +122,7 @@ void cBitmap::Clear(uint32_t initcol)
 #ifdef DEBUG
     printf("%s:%s(%d) %03d * %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, width, height, color);
 #endif
-    uint32_t col = (initcol == cColor::Transparent) ? backgroundColor : initcol;
+    uint32_t col = initcol; //(initcol == cColor::Transparent) ? backgroundColor : initcol;
     for (int i = 0; i < width * height; i++)
         bitmap[i] = col;
     backgroundColor = col;
@@ -540,10 +541,12 @@ void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, u
           for (xt = 0; xt < bitmap.Width(); xt++)
           {
             cl = data[(yt * bitmap.Width())+xt];
-            if (ismonochrome) {
+            if (cl != cColor::Transparent) {
+              if (ismonochrome) {
                 DrawPixel(xt+x, yt+y, (cl == cColor::Black) ? color : bgcolor);
-            } else {
+              } else {
                 DrawPixel(xt+x, yt+y, cl);
+              }
             }
           }
        }
@@ -691,8 +694,8 @@ int cBitmap::DrawCharacter(int x, int y, int xmax, uint32_t c, const cFont * fon
     const cBitmap * charBitmap;
     cBitmap * drawBitmap;
 
-    color = cColor::AlignAlpha(color);
-    bgcolor = cColor::AlignAlpha(bgcolor);
+    //color = cColor::AlignAlpha(color);
+    //bgcolor = cColor::AlignAlpha(bgcolor);
 
     uint32_t dot = 0;
     int xt, yt;

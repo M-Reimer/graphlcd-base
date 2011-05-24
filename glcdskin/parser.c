@@ -249,6 +249,10 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
         }
 
         object = new cSkinObject(display);
+
+        /* default settings */
+        object->ParseColor("transparent", object->mBackgroundColor);
+
         if (object->ParseType(name))
         {
             ATTRIB_OPT_FUNC_PARAM("x1", object->ParseIntParam, object->mPos1.x);
