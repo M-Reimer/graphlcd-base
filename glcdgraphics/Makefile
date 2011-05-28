@@ -5,8 +5,12 @@
 -include ../Make.config
 
 # External image lib to use: imagemagick, graphicsmagick, or none
-# taken from text2skin
-IMAGELIB =
+IMAGELIB = 
+ifdef HAVE_IMAGEMAGICK
+	IMAGELIB = imagemagick
+else ifdef HAVE_GRAPHICSMAGICK
+	IMAGELIB = graphicsmagick
+endif
 
 
 CXXFLAGS += -fPIC
