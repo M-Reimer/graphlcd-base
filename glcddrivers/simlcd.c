@@ -19,6 +19,13 @@
 #include "config.h"
 #include "simlcd.h"
 
+#define DISPLAY_REFRESH_FILE "/tmp/simlcd.sem"
+#define DISPLAY_DATA_FILE    "/tmp/simlcd.dat"
+#define TOUCH_REFRESH_FILE   "/tmp/simtouch.sem"
+#define TOUCH_DATA_FILE      "/tmp/simtouch.dat"
+
+#define FG_CHAR "#"
+#define BG_CHAR "."
 
 namespace GLCD
 {
@@ -29,12 +36,12 @@ cDriverSimLCD::cDriverSimLCD(cDriverConfig * config)
     oldConfig = new cDriverConfig(*config);
 }
 
-cDriverSimLCD::~cDriverSimLCD()
+cDriverSimLCD::~cDriverSimLCD(void)
 {
     delete oldConfig;
 }
 
-int cDriverSimLCD::Init()
+int cDriverSimLCD::Init(void)
 {
     width = config->width;
     if (width <= 0)
@@ -51,13 +58,13 @@ int cDriverSimLCD::Init()
     }
 
     // setup lcd array
-    LCD = new unsigned char *[(width + 7) / 8];
+    LCD = new uint32_t *[width];
     if (LCD)
     {
-        for (int x = 0; x < (width + 7) / 8; x++)
+        for (int x = 0; x < width; x++)
         {
-            LCD[x] = new unsigned char[height];
-            memset(LCD[x], 0, height);
+            LCD[x] = new uint32_t[height];
+            //memset(LCD[x], 0, height);
         }
     }
 
@@ -70,12 +77,12 @@ int cDriverSimLCD::Init()
     return 0;
 }
 
-int cDriverSimLCD::DeInit()
+int cDriverSimLCD::DeInit(void)
 {
     // free lcd array
     if (LCD)
     {
-        for (int x = 0; x < (width + 7) / 8; x++)
+        for (int x = 0; x < width; x++)
         {
             delete[] LCD[x];
         }
@@ -85,7 +92,7 @@ int cDriverSimLCD::DeInit()
     return 0;
 }
 
-int cDriverSimLCD::CheckSetup()
+int cDriverSimLCD::CheckSetup(void)
 {
     if (config->width != oldConfig->width ||
         config->height != oldConfig->height)
@@ -105,29 +112,29 @@ int cDriverSimLCD::CheckSetup()
     return 0;
 }
 
-void cDriverSimLCD::Clear()
+void cDriverSimLCD::Clear(void)
 {
-    for (int x = 0; x < (width + 7) / 8; x++)
-        memset(LCD[x], 0, height);
+    for (int y = 0; y < height; y++)
+    {
+        for (int x = 0; x < width; x++)
+        {
+            LCD[x][y] = GLCD::cColor::White; 
+        }
+    }
 }
 
-void cDriverSimLCD::Set8Pixels(int x, int y, unsigned char data)
+void cDriverSimLCD::SetPixel(int x, int y, uint32_t data)
 {
     if (x >= width || y >= height)
         return;
 
-    if (!config->upsideDown)
-    {
-        // normal orientation
-        LCD[x / 8][y] = LCD[x / 8][y] | data;
-    }
-    else
+    if (config->upsideDown)
     {
         // upside down orientation
         x = width - 1 - x;
         y = height - 1 - y;
-        LCD[x / 8][y] = LCD[x / 8][y] | ReverseBits(data);
     }
+    LCD[x][y] = data;
 }
 
 void cDriverSimLCD::Refresh(bool refreshAll)
@@ -135,36 +142,41 @@ void cDriverSimLCD::Refresh(bool refreshAll)
     FILE * fp = NULL;
     int x;
     int y;
-    int i;
-    unsigned char c;
 
     if (CheckSetup() > 0)
         refreshAll = true;
 
-    fp = fopen("/tmp/simlcd.sem", "r");
+    fp = fopen(DISPLAY_REFRESH_FILE, "r");
     if (!fp || refreshAll)
     {
         if (fp)
             fclose(fp);
-        fp = fopen("/tmp/simlcd.dat", "w");
+        fp = fopen(DISPLAY_DATA_FILE, "w");
         if (fp)
         {
             for (y = 0; y < height; y++)
             {
-                for (x = 0; x < (width + 7) / 8; x++)
+                for (x = 0; x < width; x++)
                 {
-                    c = LCD[x][y] ^ (config->invert ? 0xff : 0x00);
-                    for (i = 0; i < 8; i++)
+                    if (LCD[x][y] == GLCD::cColor::Black)
                     {
-                        if (c & 0x80)
+                        if (!config->invert)
                         {
-                            fprintf(fp,"#");
-                        }
-                        else
+                            fprintf(fp,FG_CHAR);
+                        } else
                         {
-                            fprintf(fp,".");
+                            fprintf(fp,BG_CHAR);
                         }
-                        c = c << 1;
+                    }
+                    else
+                    {
+                        if (!config->invert)
+                        {
+                            fprintf(fp,BG_CHAR);
+                        } else
+                        {
+                            fprintf(fp,FG_CHAR);
+                        }
                     }
                 }
                 fprintf(fp,"\n");
@@ -172,13 +184,40 @@ void cDriverSimLCD::Refresh(bool refreshAll)
             fclose(fp);
         }
 
-        fp = fopen("/tmp/simlcd.sem", "w");
+        fp = fopen(DISPLAY_REFRESH_FILE, "w");
         fclose(fp);
     }
     else
     {
         fclose(fp);
     }
+}
+
+GLCD::cColor cDriverSimLCD::GetBackgroundColor(void)
+{
+    return GLCD::cColor::White;
+}
+
+bool cDriverSimLCD::GetDriverFeature(const std::string & Feature, int & value)
+{
+    if (strcasecmp(Feature.c_str(), "depth") == 0) {
+        value = 1;
+        return true;
+    } else if (strcasecmp(Feature.c_str(), "ismonochrome") == 0) {
+        value = true;
+        return true;
+    } else if (strcasecmp(Feature.c_str(), "isgreyscale") == 0 || strcasecmp(Feature.c_str(), "isgrayscale") == 0) {
+        value = false;
+        return true;
+    } else if (strcasecmp(Feature.c_str(), "iscolour") == 0 || strcasecmp(Feature.c_str(), "iscolor") == 0) {
+        value = false;
+        return true;
+    } else if (strcasecmp(Feature.c_str(), "touch") == 0 || strcasecmp(Feature.c_str(), "touchscreen") == 0) {
+        value = false;
+        return true;
+    }
+    value = 0;
+    return false;
 }
 
 } // end of namespace

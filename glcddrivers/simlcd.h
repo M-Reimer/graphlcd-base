@@ -25,7 +25,7 @@ class cDriverConfig;
 class cDriverSimLCD : public cDriver
 {
 private:
-    unsigned char ** LCD;
+    uint32_t ** LCD;
     cDriverConfig * config;
     cDriverConfig * oldConfig;
 
@@ -39,8 +39,10 @@ public:
     virtual int DeInit();
 
     virtual void Clear();
-    virtual void Set8Pixels(int x, int y, unsigned char data);
+    virtual void SetPixel(int x, int y, uint32_t data);
     virtual void Refresh(bool refreshAll = false);
+    virtual GLCD::cColor GetBackgroundColor(void);
+    virtual bool GetDriverFeature  (const std::string & Feature, int & value);
 };
 
 } // end of namespace
