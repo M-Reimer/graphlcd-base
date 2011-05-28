@@ -65,4 +65,21 @@ void cDriver::SetScreen(const uint32_t * data, int wid, int hgt)
 */
 }
 
+void cDriver::Set8Pixels(int x, int y, unsigned char data)
+{
+    int n;
+    // calling GetForegroundColor() and GetBackgroundColor() is slow in some situations.
+    // will be replaced through setting object-wide (incl. derived objs) class members
+    uint32_t fg = GetForegroundColor();
+    uint32_t bg = GetBackgroundColor();
+    
+    // guarante that x starts at a position divisible by 8
+    x &= 0xFFF8;
+
+    for (n = 0; n < 8; ++n) {
+        SetPixel(x + n, y, (data & (0x80 >> n)) ? fg : bg);
+    }
+}
+
+
 } // end of namespace

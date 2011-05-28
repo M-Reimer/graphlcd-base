@@ -65,8 +65,8 @@ private:
     long  serdisp_version;
 
     int   supports_options;
-    long  fg_colour;
-    long  bg_colour;
+    uint32_t  fg_colour;
+    uint32_t  bg_colour;
 
     void* sdhnd; // serdisplib handle
     void* dd;    // display descriptor
@@ -113,7 +113,7 @@ public:
 
     virtual void Clear();
     virtual void SetPixel(int x, int y, uint32_t data);
-    virtual void Set8Pixels(int x, int y, unsigned char data);
+    //virtual void Set8Pixels(int x, int y, unsigned char data);
 #if 0
     virtual void SetScreen(const unsigned char * data, int width, int height, int lineSize);
 #endif
