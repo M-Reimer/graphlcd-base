@@ -16,6 +16,8 @@
 #include <vector>
 #include <string>
 
+#include <clocale>
+
 #include "parser.h"
 #include "xml.h"
 #include "skin.h"
@@ -146,7 +148,12 @@ static bool CheckSkinVersion(const std::string & version) {
   float currv;
   char* ecptr = NULL;
   const char* verscstr = version.c_str();
+  // only accept floating point numbers with '.' as separator, no ','
+  char* curr_locale = setlocale(LC_NUMERIC, "C");
+
   currv = strtof(verscstr, &ecptr);
+  setlocale(LC_NUMERIC, curr_locale);
+
   if ( (*ecptr != '\0') || (ecptr == NULL) /*|| (ecptr != verscstr)*/ || 
        ((int)(GLCDSKIN_SKIN_VERSION * 100.0) < (int)(currv * 100.0))
      )
