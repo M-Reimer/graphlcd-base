@@ -21,6 +21,7 @@
 #include <inttypes.h>
 
 // graphlcd-base uses ARGB bitmaps instead of 1bit ones
+// this flag will be checked in current versions of vdr-graphlcd-plugin
 #define GRAPHLCD_CBITMAP_ARGB
 
 namespace GLCD

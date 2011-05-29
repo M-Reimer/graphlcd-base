@@ -64,13 +64,8 @@ public:
 
     bool ParseEnable(const std::string &Text);
 
-#ifdef GRAPHLCD_CBITMAP_ARGB
     cColor GetBackgroundColor(void) { return config.GetDriver()->GetBackgroundColor(); }
     cColor GetForegroundColor(void) { return config.GetDriver()->GetForegroundColor(); }
-#else
-    eColor GetBackgroundColor(void) { return config.GetDriver()->GetBackgroundColor(); }
-    eColor GetForegroundColor(void) { return config.GetDriver()->GetForegroundColor(); }
-#endif
 };
 
 } // end of namespace

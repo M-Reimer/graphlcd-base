@@ -32,7 +32,7 @@ $(DEPFILE): Makefile
 # The main program:
 
 $(PRGNAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -rdynamic $(OBJS) $(LIBS) $(LIBDIRS) -lglcdgraphics -lglcddrivers -lstdc++ -o $(PRGNAME)
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -rdynamic $(OBJS) $(LIBS) $(LIBDIRS) -lglcddrivers -lglcdgraphics -lstdc++ -o $(PRGNAME)
 
 install: $(PRGNAME)
 	install -d $(BINDIR)
