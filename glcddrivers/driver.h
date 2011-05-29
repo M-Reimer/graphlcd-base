@@ -42,10 +42,14 @@ public:
 class cDriver
 {
 protected:
-    int width;
-    int height;
+    int      width;
+    int      height;
+    uint32_t bgcol;
+    uint32_t fgcol;
 
     virtual bool GetDriverFeature  (const std::string & Feature, int & value) { return false; }
+    virtual GLCD::cColor GetDefaultBackgroundColor(void) { return GLCD::cColor(GLCD::cColor::Black); }
+            GLCD::cColor GetDefaultForegroundColor(void) { return GLCD::cColor(GetBackgroundColor()).Invert(); }
 public:
     cDriver();
     virtual ~cDriver() {}
@@ -65,13 +69,11 @@ public:
 
     virtual void SetBrightness(unsigned int percent) {}
 
-    virtual GLCD::cColor GetBackgroundColor(void) { return GLCD::cColor(GLCD::cColor::White); }
 
     virtual bool SetFeature  (const std::string & Feature, int value)   { return false; }
 
-    GLCD::cColor GetForegroundColor(void) {
-        return GLCD::cColor(GetBackgroundColor()).Invert();
-    }
+    GLCD::cColor GetBackgroundColor(bool driverdefault=false) { return (driverdefault) ? GetDefaultBackgroundColor() : (GLCD::cColor)bgcol; }
+    GLCD::cColor GetForegroundColor(bool driverdefault=false) { return (driverdefault) ? GetDefaultForegroundColor() : (GLCD::cColor)fgcol; }
 
     // not to be overridden, override GetDriverFeature() instead
     // the following feature names (case insensitive!) are guaranteed to give results:

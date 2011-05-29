@@ -28,6 +28,8 @@ cDriver::cDriver()
 :   width(0),
     height(0)
 {
+    fgcol = GetDefaultForegroundColor();
+    bgcol = GetDefaultBackgroundColor();
 }
 
 //void cDriver::SetScreen(const unsigned char * data, int wid, int hgt, int lineSize)

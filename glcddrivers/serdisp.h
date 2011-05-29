@@ -65,8 +65,6 @@ private:
     long  serdisp_version;
 
     int   supports_options;
-    uint32_t  fg_colour;
-    uint32_t  bg_colour;
 
     void* sdhnd; // serdisplib handle
     void* dd;    // display descriptor
@@ -102,6 +100,7 @@ private:
 
 protected:
     virtual bool GetDriverFeature  (const std::string & Feature, int & value);
+    virtual GLCD::cColor GetDefaultBackgroundColor(void);
 
 public:
 
@@ -119,8 +118,6 @@ public:
 #endif
     virtual void Refresh(bool refreshAll = false);
     virtual void SetBrightness(unsigned int percent);
-
-    virtual GLCD::cColor GetBackgroundColor(void);
 
     virtual bool SetFeature  (const std::string & Feature, int value);
 

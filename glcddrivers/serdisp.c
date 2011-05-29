@@ -86,8 +86,8 @@ int cDriverSerDisp::Init(void)
 
     /* pre-init some flags, function pointers, ... */
     supports_options = 0;
-    fg_colour = GLCD::cColor::Black;  /* set foreground colour to black */
-    bg_colour = GLCD::cColor::ERRCOL;
+    fgcol = GLCD::cColor::Black;  /* set foreground colour to black */
+    bgcol = GLCD::cColor::ERRCOL;
 
     // get serdisp version
     fp_serdisp_getversioncode = (long int (*)()) dlsym(sdhnd, "serdisp_getversioncode");
@@ -232,12 +232,12 @@ int cDriverSerDisp::Init(void)
         } else if (config->options[i].name == "Wiring") {
             wiringstring = config->options[i].value;
         } else if (config->options[i].name == "FGColour") {
-            fg_colour = (uint32_t)strtoul(config->options[i].value.c_str(), (char **)NULL, 0);
-            fg_colour |= 0xFF000000;  /* force alpha to 0xFF */
+            fgcol = (uint32_t)strtoul(config->options[i].value.c_str(), (char **)NULL, 0);
+            fgcol |= 0xFF000000;  /* force alpha to 0xFF */
             fg_forced = 1;
         } else if (config->options[i].name == "BGColour") {
-            bg_colour = (uint32_t)strtoul(config->options[i].value.c_str(), (char **)NULL, 0);
-            bg_colour |= 0xFF000000;  /* force alpha to 0xFF */
+            bgcol = (uint32_t)strtoul(config->options[i].value.c_str(), (char **)NULL, 0);
+            bgcol |= 0xFF000000;  /* force alpha to 0xFF */
             bg_forced = 1;
         }
     }
@@ -297,9 +297,9 @@ int cDriverSerDisp::Init(void)
     // self-emitting displays (like OLEDs): default background colour => black
     if ( supports_options && fp_serdisp_isoption(dd, "SELFEMITTING") && (fp_serdisp_getoption(dd, "SELFEMITTING", 0)) ) {
        if (!bg_forced)
-         bg_colour = GLCD::cColor::Black; /* set background colour to black */
+         bgcol = GLCD::cColor::Black; /* set background colour to black */
        if (!fg_forced)
-         fg_colour = GLCD::cColor::White; /* set foreground colour to white */
+         fgcol = GLCD::cColor::White; /* set foreground colour to white */
     }
 
     width = config->width;
@@ -428,13 +428,13 @@ int cDriverSerDisp::CheckSetup()
 
 void cDriverSerDisp::Clear(void)
 {
-    if (bg_colour == GLCD::cColor::ERRCOL) // bg_colour not set
+    if (bgcol == GLCD::cColor::ERRCOL) // bgcol not set
         fp_serdisp_clearbuffer(dd);
-    else {  /* if bg_colour is set, draw background 'by hand' */
+    else {  /* if bgcol is set, draw background 'by hand' */
         int x,y;
         for (y = 0; y < fp_serdisp_getheight(dd); y++)
             for (x = 0; x < fp_serdisp_getwidth(dd); x++)
-                fp_serdisp_setcolour(dd, x, y, (long)bg_colour);
+                fp_serdisp_setcolour(dd, x, y, (long)bgcol);
     }
 }
 
@@ -449,9 +449,9 @@ void cDriverSerDisp::Set8Pixels(int x, int y, unsigned char data) {
     for (i = 0; i < 8; i++) {
         pixel = data & (1 << i);
         if (pixel) {
-          SetPixel(start + i, y, (long)fg_colour);
-        } else if (!pixel && bg_colour != GLCD::cColor::ERRCOL) { /* if bg_colour is set: use it if pixel is not set */
-          SetPixel(start + i, y, (long)bg_colour);
+          SetPixel(start + i, y, (long)fgcol);
+        } else if (!pixel && bgcol != GLCD::cColor::ERRCOL) { /* if bgcol is set: use it if pixel is not set */
+          SetPixel(start + i, y, (long)bgcol);
         }
     }
 }
@@ -510,7 +510,7 @@ void cDriverSerDisp::SetBrightness(unsigned int percent)
         fp_serdisp_setoption(dd, "BRIGHTNESS", (long)percent);
 }
 
-GLCD::cColor cDriverSerDisp::GetBackgroundColor(void) {
+GLCD::cColor cDriverSerDisp::GetDefaultBackgroundColor(void) {
     if ( supports_options && fp_serdisp_isoption(dd, "SELFEMITTING") && (fp_serdisp_getoption(dd, "SELFEMITTING", 0)) ) {
        return GLCD::cColor::Black;
     }
