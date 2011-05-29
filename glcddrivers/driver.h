@@ -49,7 +49,7 @@ protected:
 
     virtual bool GetDriverFeature  (const std::string & Feature, int & value) { return false; }
     virtual GLCD::cColor GetDefaultBackgroundColor(void) { return GLCD::cColor(GLCD::cColor::Black); }
-            GLCD::cColor GetDefaultForegroundColor(void) { return GLCD::cColor(GetBackgroundColor()).Invert(); }
+            GLCD::cColor GetDefaultForegroundColor(void) { return GLCD::cColor(GetDefaultBackgroundColor()).Invert(); }
 public:
     cDriver();
     virtual ~cDriver() {}
@@ -72,8 +72,20 @@ public:
 
     virtual bool SetFeature  (const std::string & Feature, int value)   { return false; }
 
-    GLCD::cColor GetBackgroundColor(bool driverdefault=false) { return (driverdefault) ? GetDefaultBackgroundColor() : (GLCD::cColor)bgcol; }
-    GLCD::cColor GetForegroundColor(bool driverdefault=false) { return (driverdefault) ? GetDefaultForegroundColor() : (GLCD::cColor)fgcol; }
+    GLCD::cColor GetBackgroundColor(bool driverdefault=false) {
+        return (
+            (driverdefault || bgcol == GLCD::cColor::ERRCOL || bgcol == GLCD::cColor::Transparent)
+            ? GetDefaultBackgroundColor()
+            : GLCD::cColor(bgcol)
+        );
+    }
+    GLCD::cColor GetForegroundColor(bool driverdefault=false) {
+        return (
+            (driverdefault || fgcol == GLCD::cColor::ERRCOL || fgcol == GLCD::cColor::Transparent)
+            ? GetDefaultForegroundColor()
+            : GLCD::cColor(fgcol)
+        );
+    }
 
     // not to be overridden, override GetDriverFeature() instead
     // the following feature names (case insensitive!) are guaranteed to give results:
