@@ -105,13 +105,15 @@ bool cExtFormatFile::Load(cImage & image, const string & fileName)
         //Dprintf("this image has %d colors\n", (*it).totalColors());
 
         const PixelPacket *pix = (*it).getConstPixels(0, 0, (int)width, (int)height);
+        //uint8_t trans = 0;
         for (int iy = 0; iy < (int)height; ++iy) {
           for (int ix = 0; ix < (int)width; ++ix) {
-            if ( (int(pix->opacity * 255 / MaxRGB)) < 225 ) { // just an arbitrary border ...
-                bmpdata[iy*width+ix] = (uint32_t)((~int(pix->opacity * 255 / MaxRGB) << 24) | (int(pix->red * 255 / MaxRGB) << 16) | (int(pix->green * 255 / MaxRGB) << 8) | int(pix->blue * 255 / MaxRGB));
-            } else {
-                bmpdata[iy*width+ix] = cColor::Transparent;
-            }
+            //trans = (uint8_t)(~int(pix->opacity * 255 / MaxRGB));
+            //if ( trans == 0 ) {
+            //    bmpdata[iy*width+ix] = cColor::Transparent;
+            //} else {
+                bmpdata[iy*width+ix] = (uint32_t)( 0xFF000000 | (int(pix->red * 255 / MaxRGB) << 16) | (int(pix->green * 255 / MaxRGB) << 8) | int(pix->blue * 255 / MaxRGB));
+            //}
             ++pix;
           }
         }
