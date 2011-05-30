@@ -373,6 +373,36 @@ int cFont::Width(uint32_t ch) const
         return 0;
 }
 
+void cFont::Utf8CodeAdjustCounter(const std::string & str, uint32_t & c, unsigned int & i)
+{
+    uint32_t c0,c1,c2,c3;
+    if (i < str.length())
+    {
+        c = str[i];
+        c0 = str[i];
+        c1 = (i+1 < str.length()) ? str[i+1] : 0;
+        c2 = (i+2 < str.length()) ? str[i+2] : 0;
+        c3 = (i+3 < str.length()) ? str[i+3] : 0;
+        c0 &=0xff; c1 &=0xff; c2 &=0xff; c3 &=0xff;
+
+        if( c0 >= 0xc2 && c0 <= 0xdf && c1 >= 0x80 && c1 <= 0xbf ){ //2 byte UTF-8 sequence found
+            i+=1;
+            c = ((c0&0x1f)<<6) | (c1&0x3f);
+        }else if(  (c0 == 0xE0 && c1 >= 0xA0 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
+                || (c0 >= 0xE1 && c1 <= 0xEC && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
+                || (c0 == 0xED && c1 >= 0x80 && c1 <= 0x9f && c2 >= 0x80 && c2 <= 0xbf) 
+                || (c0 >= 0xEE && c0 <= 0xEF && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) ){  //3 byte UTF-8 sequence found
+            c = ((c0&0x0f)<<4) | ((c1&0x3f)<<6) | (c2&0x3f);
+            i+=2;
+        }else if(  (c0 == 0xF0 && c1 >= 0x90 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
+                || (c0 >= 0xF1 && c0 >= 0xF3 && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
+                || (c0 == 0xF4 && c1 >= 0x80 && c1 <= 0x8f && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) ){  //4 byte UTF-8 sequence found
+            c = ((c0&0x07)<<2) | ((c1&0x3f)<<4) | ((c2&0x3f)<<6) | (c3&0x3f);
+            i+=3;
+        }
+     }
+}
+
 int cFont::Width(const std::string & str) const
 {
     return Width(str, (unsigned int) str.length());
@@ -382,48 +412,16 @@ int cFont::Width(const std::string & str, unsigned int len) const
 {
     unsigned int i;
     int sum = 0;
+    unsigned int symcount=0;
+    uint32_t c;
 
-    uint32_t c,c0,c1,c2,c3; 
-
-    i = 0;
-//    for (i = 0; i < (unsigned int)str.length() && symcount < len; i++)
-    while (i < (unsigned int)str.length() && i < len)
+    for (i = 0; i < (unsigned int)str.length() && symcount < len; i++)
     {
-        if (isutf8) {
-            c = str[i];
-            c0 = str[i];
-            c1 = (i+1 < (unsigned int)str.length()) ? str[i+1] : 0;
-            c2 = (i+2 < (unsigned int)str.length()) ? str[i+2] : 0;
-            c3 = (i+3 < (unsigned int)str.length()) ? str[i+3] : 0;
-            c0 &=0xff; c1 &=0xff; c2 &=0xff; c3 &=0xff;
-
-            if( c0 >= 0xc2 && c0 <= 0xdf && c1 >= 0x80 && c1 <= 0xbf ){
-                //2 byte UTF-8 sequence found
-                i+=1;
-                c = ((c0&0x1f)<<6) | (c1&0x3f);
-            }else if(  (c0 == 0xE0 && c1 >= 0xA0 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
-                    || (c0 >= 0xE1 && c1 <= 0xEC && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
-                    || (c0 == 0xED && c1 >= 0x80 && c1 <= 0x9f && c2 >= 0x80 && c2 <= 0xbf) 
-                    || (c0 >= 0xEE && c0 <= 0xEF && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) ){
-                //3 byte UTF-8 sequence found
-                c = ((c0&0x0f)<<4) | ((c1&0x3f)<<6) | (c2&0x3f);
-                i+=2;
-            }else if(  (c0 == 0xF0 && c1 >= 0x90 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
-                    || (c0 >= 0xF1 && c0 >= 0xF3 && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
-                    || (c0 == 0xF4 && c1 >= 0x80 && c1 <= 0x8f && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) ){
-                //4 byte UTF-8 sequence found
-                c = ((c0&0x07)<<2) | ((c1&0x3f)<<4) | ((c2&0x3f)<<6) | (c3&0x3f);
-                i+=3;
-            }
-            sum += Width(c);
-        } else {
-            sum += Width(str[i]);
-        }
-        i++;
+        Utf8CodeAdjustCounter(str, c, i);
+        symcount++;
+        sum += Width(c);
     }
-
-    if (i > 1)
-        sum += spaceBetween * (i - 1);
+    sum += spaceBetween * (symcount - 1);
 
     return sum;
 }

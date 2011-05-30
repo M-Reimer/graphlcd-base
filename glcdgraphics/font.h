@@ -81,6 +81,7 @@ public:
     void WrapText(int Width, int Height, std::string & Text,
                   std::vector <std::string> & Lines, int * TextWidth = NULL) const;
     bool IsUTF8(void) const { return isutf8; }
+    static void Utf8CodeAdjustCounter(const std::string & str, uint32_t & c, unsigned int & i);
 };
 
 } // end of namespace
