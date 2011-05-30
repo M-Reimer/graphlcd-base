@@ -49,6 +49,8 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mFont(this, false),
     mText(this, false),
     mCondition(NULL),
+    mEffect(tfxNone),
+    mEffectColor(this, cColor(cColor::White)),
     mLastChange(0),
     mChangeDelay(-1),               // delay between two images frames: -1: not animated / don't care
     mStoredImagePath(""),
@@ -89,6 +91,8 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
     mFont(Src.mFont),
     mText(Src.mText),
     mCondition(Src.mCondition),
+    mEffect(Src.mEffect),
+    mEffectColor(Src.mEffectColor),
     mLastChange(0),
     mChangeDelay(-1),
     mStoredImagePath(Src.mStoredImagePath),
@@ -183,6 +187,19 @@ bool cSkinObject::ParseVerticalAlignment(const std::string & Text)
         mVerticalAlign = tvaMiddle;
     else if (Text == "bottom")
         mVerticalAlign = tvaBottom;
+    else
+        return false;
+    return true;
+}
+
+bool cSkinObject::ParseEffect(const std::string & Text)
+{
+    if (Text == "none")
+        mEffect = tfxNone;
+    else if (Text == "shadow")
+        mEffect = tfxShadow;
+    else if (Text == "outline")
+        mEffect = tfxOutline;
     else
         return false;
     return true;
@@ -488,6 +505,29 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                 currScrollTime = (int)(t);
             }
 
+            // amount of loops for effects (no effect: 1 loop)
+            int loop;
+            int loops = 1;
+            int varx[5]  = {0, 0, 0, 0, 0};
+            int vary[5]  = {0, 0, 0, 0, 0};
+            
+            switch (mEffect) {
+                case tfxShadow:
+                    loops = 2;
+                    varx[0] =  1;  vary[0] =  1;
+                break;
+                case tfxOutline:
+                    loops = 5;
+                    varx[0] = -1;  vary[0] =  0;
+                    varx[1] =  1;  vary[1] =  0;
+                    varx[2] =  0;  vary[2] = -1;
+                    varx[3] =  0;  vary[3] =  1;
+                break;
+                case tfxNone:  // no-one gets forgotten here, so make g++ happy
+                default:
+                    loops = 1;
+            }
+
             if (skinFont)
             {
                 const cFont * font = skinFont->Font();
@@ -548,7 +588,13 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                                 x += (Size().w - w) / 2;
                             }
                         }
-                        screen->DrawText(x, yoff + Pos().y + i * font->LineHeight(), x + Size().w - 1, lines[i], font, mColor, mBackgroundColor);
+                        for (loop = 0; loop < loops; loop++) {
+                            screen->DrawText(
+                                varx[loop] + x, vary[loop] + yoff + Pos().y + i * font->LineHeight(), 
+                                x + Size().w - 1, lines[i], font,
+                                ((loop+1 == loops) ? mColor : mEffectColor), mBackgroundColor
+                            );
+                        }
                     }
                 }
                 else
@@ -586,7 +632,12 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         {
                             str = text.substr(pos1, pos2 - pos1);
                             tabWidth = mSkin->Config().GetTabPosition(tab, Size().w, *font);
-                            screen->DrawText(x, yoff + Pos().y, x + tabWidth - 1, str, font, mColor, mBackgroundColor);
+                            for (loop = 0; loop < loops; loop++) {
+                                screen->DrawText(
+                                    varx[loop] + x, vary[loop] + yoff + Pos().y, x + tabWidth - 1, str, font, 
+                                    ((loop+1 == loops) ? mColor : mEffectColor), mBackgroundColor
+                                );
+                            }
                             pos1 = pos2 + 1;
                             pos2 = text.find('\t', pos1);
                             tabWidth += font->Width(' ');
@@ -595,7 +646,12 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             tab++;
                         }
                         str = text.substr(pos1);
-                        screen->DrawText(x, yoff + Pos().y, x + w - 1, str, font, mColor, mBackgroundColor);
+                        for (loop = 0; loop < loops; loop++) {
+                            screen->DrawText(
+                                varx[loop] + x, vary[loop] + yoff + Pos().y, x + w - 1, str, font,
+                                ((loop+1 == loops) ? mColor : mEffectColor), mBackgroundColor
+                            );
+                        }
                     }
                     else
                     {
@@ -648,9 +704,19 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             }
                             w += font->Width("     ");
                             std::string textdoubled = text + "     " + text;
-                            screen->DrawText(x, yoff + Pos().y, x + Size().w - 1, textdoubled, font, mColor, mBackgroundColor, true, corr_scrolloffset);
+                            for (loop = 0; loop < loops; loop++) {
+                                screen->DrawText(
+                                    varx[loop] + x, vary[loop] + yoff + Pos().y, x + Size().w - 1, textdoubled, font, 
+                                    ((loop+1 == loops) ? mColor : mEffectColor), mBackgroundColor, true, corr_scrolloffset
+                                );
+                            }
                         } else {
-                            screen->DrawText(x, yoff + Pos().y, x + Size().w - 1, text, font, mColor, mBackgroundColor, true, mScrollOffset);
+                            for (loop = 0; loop < loops; loop++) {
+                                screen->DrawText(
+                                    varx[loop] + x, vary[loop] + yoff + Pos().y, x + Size().w - 1, text, font,
+                                    ((loop+1 == loops) ? mColor : mEffectColor), mBackgroundColor, true, mScrollOffset
+                                );
+                            }
                         }
 
                         if (updateScroll) {

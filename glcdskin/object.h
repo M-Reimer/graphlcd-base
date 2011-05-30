@@ -60,6 +60,14 @@ enum eTextVerticalAlignment
     tvaBottom
 };
 
+enum eEffect
+{
+    tfxNone,
+    tfxShadow,
+    tfxOutline
+};
+
+
 
 class cSkinColor
 {
@@ -130,6 +138,8 @@ private:
     cSkinString mFont;
     cSkinString mText;
     cSkinFunction * mCondition;
+    eEffect mEffect;                // effect: none, shadow, or outline
+    cSkinColor mEffectColor;        // effect colour (= shadow colour or colour of outline)
 
     uint64_t mLastChange;           // timestamp: last change in dynamic object (scroll, frame change, ...)
     int mChangeDelay;               // delay between two changes (frame change, scrolling, ...)
@@ -162,6 +172,7 @@ public:
     bool ParseCondition(const std::string &Text);
     bool ParseAlignment(const std::string &Text);
     bool ParseVerticalAlignment(const std::string &Text);
+    bool ParseEffect(const std::string &Text);
     bool ParseFontFace(const std::string &Text);
     bool ParseIntParam(const std::string &Text, int & Param);
     bool ParseWidth(const std::string &Text);
