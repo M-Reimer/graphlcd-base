@@ -388,16 +388,20 @@ void cFont::Utf8CodeAdjustCounter(const std::string & str, uint32_t & c, unsigne
         if( c0 >= 0xc2 && c0 <= 0xdf && c1 >= 0x80 && c1 <= 0xbf ){ //2 byte UTF-8 sequence found
             i+=1;
             c = ((c0&0x1f)<<6) | (c1&0x3f);
+            // syslog(LOG_ERR, "GraphLCD Debug: 2 byte UTF-8 sequence found. Found: 0x%.3X (%d)\n", c, c);
         }else if(  (c0 == 0xE0 && c1 >= 0xA0 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
                 || (c0 >= 0xE1 && c1 <= 0xEC && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
                 || (c0 == 0xED && c1 >= 0x80 && c1 <= 0x9f && c2 >= 0x80 && c2 <= 0xbf) 
                 || (c0 >= 0xEE && c0 <= 0xEF && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) ){  //3 byte UTF-8 sequence found
-            c = ((c0&0x0f)<<4) | ((c1&0x3f)<<6) | (c2&0x3f);
+            c = ((c0&0x0f)<<12) | ((c1&0x3f)<<14) | (c2&0x3f);
+            // syslog(LOG_ERR, "GraphLCD Debug: 3 byte UTF-8 sequence found. Found: 0x%.4X (%d)\n", c, c);
             i+=2;
         }else if(  (c0 == 0xF0 && c1 >= 0x90 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
                 || (c0 >= 0xF1 && c0 >= 0xF3 && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
                 || (c0 == 0xF4 && c1 >= 0x80 && c1 <= 0x8f && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) ){  //4 byte UTF-8 sequence found
+            // Fix me!
             c = ((c0&0x07)<<2) | ((c1&0x3f)<<4) | ((c2&0x3f)<<6) | (c3&0x3f);
+            // syslog(LOG_ERR, "GraphLCD Debug: 4 byte UTF-8 sequence found. Found: 0x%.6X (%d)\n", c, c);
             i+=3;
         }
      }
