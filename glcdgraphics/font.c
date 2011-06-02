@@ -373,38 +373,60 @@ int cFont::Width(uint32_t ch) const
         return 0;
 }
 
-void cFont::Utf8CodeAdjustCounter(const std::string & str, uint32_t & c, unsigned int & i)
+// character to return when erraneous utf-8 sequence  (for now: '_')
+#define UTF8_ERRCODE 0x005F
+void cFont::EncodedCharAdjustCounter(const bool isutf8, const std::string & str, uint32_t & c, unsigned int & i)
 {
-    uint32_t c0,c1,c2,c3;
-    if (i < str.length())
-    {
+    if (i >= str.length())
+        return;
+        
+    if ( isutf8 ) {
+        uint8_t c0,c1,c2,c3;
         c = str[i];
         c0 = str[i];
         c1 = (i+1 < str.length()) ? str[i+1] : 0;
         c2 = (i+2 < str.length()) ? str[i+2] : 0;
         c3 = (i+3 < str.length()) ? str[i+3] : 0;
-        c0 &=0xff; c1 &=0xff; c2 &=0xff; c3 &=0xff;
+        //c0 &=0xff; c1 &=0xff; c2 &=0xff; c3 &=0xff;
 
-        if( c0 >= 0xc2 && c0 <= 0xdf && c1 >= 0x80 && c1 <= 0xbf ){ //2 byte UTF-8 sequence found
-            i+=1;
-            c = ((c0&0x1f)<<6) | (c1&0x3f);
-            // syslog(LOG_ERR, "GraphLCD Debug: 2 byte UTF-8 sequence found. Found: 0x%.3X (%d)\n", c, c);
-        }else if(  (c0 == 0xE0 && c1 >= 0xA0 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
-                || (c0 >= 0xE1 && c1 <= 0xEC && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) 
-                || (c0 == 0xED && c1 >= 0x80 && c1 <= 0x9f && c2 >= 0x80 && c2 <= 0xbf) 
-                || (c0 >= 0xEE && c0 <= 0xEF && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf) ){  //3 byte UTF-8 sequence found
-            c = ((c0&0x0f)<<12) | ((c1&0x3f)<<14) | (c2&0x3f);
-            // syslog(LOG_ERR, "GraphLCD Debug: 3 byte UTF-8 sequence found. Found: 0x%.4X (%d)\n", c, c);
-            i+=2;
-        }else if(  (c0 == 0xF0 && c1 >= 0x90 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
-                || (c0 >= 0xF1 && c0 >= 0xF3 && c1 >= 0x80 && c1 <= 0xbf && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) 
-                || (c0 == 0xF4 && c1 >= 0x80 && c1 <= 0x8f && c2 >= 0x80 && c2 <= 0xbf && c3 >= 0x80 && c3 <= 0xbf) ){  //4 byte UTF-8 sequence found
-            // Fix me!
-            c = ((c0&0x07)<<2) | ((c1&0x3f)<<4) | ((c2&0x3f)<<6) | (c3&0x3f);
-            // syslog(LOG_ERR, "GraphLCD Debug: 4 byte UTF-8 sequence found. Found: 0x%.6X (%d)\n", c, c);
-            i+=3;
+        if ( (c0 & 0x80) == 0x00) {
+            // one byte: 0xxxxxx
+            c = c0;
+        } else if ( (c0 & 0xE0) == 0xC0 ) {
+            // two byte utf8: 110yyyyy 10xxxxxx -> 00000yyy yyxxxxxx
+            if ( (c1 & 0xC0) == 0x80 ) {
+                c = ( (c0 & 0x1F) << 6 ) | ( (c1 & 0x3F) );
+            } else {
+                syslog(LOG_INFO, "GraphLCD: illegal 2-byte UTF-8 sequence found: 0x%02x 0x%02x\n", c0, c1);
+                c = UTF8_ERRCODE;
+            }
+            i += 1;
+        } else if ( (c0 & 0xF0) == 0xE0 ) {
+            // three byte utf8: 1110zzzz 10yyyyyy 10xxxxxx -> zzzzyyyy yyxxxxxx
+            if ( ((c2 & 0xE0) == 0xC0) && ((c1 & 0xE0) == 0xC0) ) {
+                c = ( (c0 & 0x0F) << 12 ) | ( (c1 & 0x3F) << 6 ) | ( c2 & 0x3F );
+            } else {
+                syslog(LOG_INFO, "GraphLCD: illegal 3-byte UTF-8 sequence found: 0x%02x 0x%02x 0x%02x\n", c0, c1, c2);
+                c = UTF8_ERRCODE;
+            }
+            i += 2;
+        } else if ( (c0 & 0xF8) == 0xF0 ) {
+            // four byte utf8: 11110www 10zzzzzz 10yyyyyy 10xxxxxx -> 000wwwzz zzzzyyyy yyxxxxxx
+            if ( ((c3 & 0xE0) == 0xC0) && ((c2 & 0xE0) == 0xC0) && ((c1 & 0xE0) == 0xC0) ) {
+                c = ( (c0 & 0x07) << 18 ) | ( (c1 & 0x3F) << 12 ) | ( (c2 & 0x3F) << 6 ) | (c3 & 0x3F);
+            } else {
+                syslog(LOG_INFO, "GraphLCD: illegal 4-byte UTF-8 sequence found: 0x%02x 0x%02x 0x%02x 0x%02x\n", c0, c1, c2, c3);
+                c = UTF8_ERRCODE;
+            }
+            i += 3;
+        } else {
+            // 1xxxxxxx is invalid!
+            syslog(LOG_INFO, "GraphLCD: illegal 1-byte UTF-8 char found: 0x%02x\n", c0);
+            c = UTF8_ERRCODE;
         }
-     }
+    } else {
+        c = str[i];
+    }
 }
 
 int cFont::Width(const std::string & str) const
@@ -421,7 +443,8 @@ int cFont::Width(const std::string & str, unsigned int len) const
 
     for (i = 0; i < (unsigned int)str.length() && symcount < len; i++)
     {
-        Utf8CodeAdjustCounter(str, c, i);
+        unsigned int tmp = i;
+        EncodedCharAdjustCounter(IsUTF8(), str, c, tmp);
         symcount++;
         sum += Width(c);
     }

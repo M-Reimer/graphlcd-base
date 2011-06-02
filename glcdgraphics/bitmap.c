@@ -563,7 +563,7 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
     int yt;
     unsigned int i;
     uint32_t c;
-    int start;
+    unsigned int start;
 
     color = cColor::AlignAlpha(color);
     bgcolor = cColor::AlignAlpha(bgcolor);
@@ -595,17 +595,24 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
                 if (skipPixels >= font->Width(text))
                     start = text.length();
                 else
-                    while (skipPixels > font->Width(text[start]))
+                {                    
+                    unsigned int tmp = start;
+                    cFont::EncodedCharAdjustCounter(font->IsUTF8(), text, c, tmp);
+                    while (skipPixels > font->Width(c /*text[start]*/))
                     {
-                        skipPixels -= font->Width(text[start]);
+                        cFont::EncodedCharAdjustCounter(font->IsUTF8(), text, c, start);
+                        skipPixels -= font->Width(c/*text[start]*/);
                         skipPixels -= font->SpaceBetween();
                         start++;
                     }
+                }
             }
         }
-        for (i = start; i < (unsigned int)text.length(); i++)
+
+        i = start;
+        while ( i < (unsigned int)text.length() )
         {
-            cFont::Utf8CodeAdjustCounter(text, c, i);
+            cFont::EncodedCharAdjustCounter(font->IsUTF8(), text, c, i);
 
             if (xt > xmax)
             {
@@ -644,6 +651,7 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
                     }
                 }
             }
+            i++;
         }
     }
     return xt;
