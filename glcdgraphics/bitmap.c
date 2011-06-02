@@ -595,10 +595,10 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
                 if (skipPixels >= font->Width(text))
                     start = text.length();
                 else
-                {                    
+                {
                     unsigned int tmp = start;
                     cFont::EncodedCharAdjustCounter(font->IsUTF8(), text, c, tmp);
-                    while (skipPixels > font->Width(c /*text[start]*/))
+                    while (skipPixels > font->SpaceBetween() + font->Width(text.substr(start), 1 /*text[start]*/))
                     {
                         cFont::EncodedCharAdjustCounter(font->IsUTF8(), text, c, start);
                         skipPixels -= font->Width(c/*text[start]*/);
