@@ -397,7 +397,7 @@ void cFont::EncodedCharAdjustCounter(const bool isutf8, const std::string & str,
             if ( (c1 & 0xC0) == 0x80 ) {
                 c = ( (c0 & 0x1F) << 6 ) | ( (c1 & 0x3F) );
             } else {
-                syslog(LOG_INFO, "GraphLCD: illegal 2-byte UTF-8 sequence found: 0x%02x 0x%02x\n", c0, c1);
+                //syslog(LOG_INFO, "GraphLCD: illegal 2-byte UTF-8 sequence found: 0x%02x 0x%02x\n", c0, c1);
                 c = UTF8_ERRCODE;
             }
             i += 1;
@@ -406,7 +406,7 @@ void cFont::EncodedCharAdjustCounter(const bool isutf8, const std::string & str,
             if ( ((c1 & 0xC0) == 0x80) && ((c2 & 0xC0) == 0x80) ) {
                 c = ( (c0 & 0x0F) << 12 ) | ( (c1 & 0x3F) << 6 ) | ( c2 & 0x3F );
             } else {
-                syslog(LOG_INFO, "GraphLCD: illegal 3-byte UTF-8 sequence found: 0x%02x 0x%02x 0x%02x\n", c0, c1, c2);
+                //syslog(LOG_INFO, "GraphLCD: illegal 3-byte UTF-8 sequence found: 0x%02x 0x%02x 0x%02x\n", c0, c1, c2);
                 c = UTF8_ERRCODE;
             }
             i += 2;
@@ -415,13 +415,13 @@ void cFont::EncodedCharAdjustCounter(const bool isutf8, const std::string & str,
             if ( ((c1 & 0xC0) == 0x80) && ((c2 & 0xC0) == 0x80) && ((c3 & 0xC0) == 0x80) ) {
                 c = ( (c0 & 0x07) << 18 ) | ( (c1 & 0x3F) << 12 ) | ( (c2 & 0x3F) << 6 ) | (c3 & 0x3F);
             } else {
-                syslog(LOG_INFO, "GraphLCD: illegal 4-byte UTF-8 sequence found: 0x%02x 0x%02x 0x%02x 0x%02x\n", c0, c1, c2, c3);
+                //syslog(LOG_INFO, "GraphLCD: illegal 4-byte UTF-8 sequence found: 0x%02x 0x%02x 0x%02x 0x%02x\n", c0, c1, c2, c3);
                 c = UTF8_ERRCODE;
             }
             i += 3;
         } else {
             // 1xxxxxxx is invalid!
-            syslog(LOG_INFO, "GraphLCD: illegal 1-byte UTF-8 char found: 0x%02x\n", c0);
+            //syslog(LOG_INFO, "GraphLCD: illegal 1-byte UTF-8 char found: 0x%02x\n", c0);
             c = UTF8_ERRCODE;
         }
     } else {
