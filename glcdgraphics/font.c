@@ -403,7 +403,7 @@ void cFont::EncodedCharAdjustCounter(const bool isutf8, const std::string & str,
             i += 1;
         } else if ( (c0 & 0xF0) == 0xE0 ) {
             // three byte utf8: 1110zzzz 10yyyyyy 10xxxxxx -> zzzzyyyy yyxxxxxx
-            if ( ((c2 & 0xE0) == 0xC0) && ((c1 & 0xE0) == 0xC0) ) {
+            if ( ((c1 & 0xC0) == 0x80) && ((c2 & 0xC0) == 0x80) ) {
                 c = ( (c0 & 0x0F) << 12 ) | ( (c1 & 0x3F) << 6 ) | ( c2 & 0x3F );
             } else {
                 syslog(LOG_INFO, "GraphLCD: illegal 3-byte UTF-8 sequence found: 0x%02x 0x%02x 0x%02x\n", c0, c1, c2);
@@ -412,7 +412,7 @@ void cFont::EncodedCharAdjustCounter(const bool isutf8, const std::string & str,
             i += 2;
         } else if ( (c0 & 0xF8) == 0xF0 ) {
             // four byte utf8: 11110www 10zzzzzz 10yyyyyy 10xxxxxx -> 000wwwzz zzzzyyyy yyxxxxxx
-            if ( ((c3 & 0xE0) == 0xC0) && ((c2 & 0xE0) == 0xC0) && ((c1 & 0xE0) == 0xC0) ) {
+            if ( ((c1 & 0xC0) == 0x80) && ((c2 & 0xC0) == 0x80) && ((c3 & 0xC0) == 0x80) ) {
                 c = ( (c0 & 0x07) << 18 ) | ( (c1 & 0x3F) << 12 ) | ( (c2 & 0x3F) << 6 ) | (c3 & 0x3F);
             } else {
                 syslog(LOG_INFO, "GraphLCD: illegal 4-byte UTF-8 sequence found: 0x%02x 0x%02x 0x%02x 0x%02x\n", c0, c1, c2, c3);
