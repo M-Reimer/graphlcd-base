@@ -598,7 +598,7 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
                 {
                     while (skipPixels > font->SpaceBetween() + font->Width(text.substr(start), 1 /*text[start]*/))
                     {
-                        cFont::EncodedCharAdjustCounter(font->IsUTF8(), text, c, start);
+                        encodedCharAdjustCounter(font->IsUTF8(), text, c, start);
                         skipPixels -= font->Width(c/*text[start]*/);
                         skipPixels -= font->SpaceBetween();
                         start++;
@@ -610,7 +610,7 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
         i = start;
         while ( i < (unsigned int)text.length() )
         {
-            cFont::EncodedCharAdjustCounter(font->IsUTF8(), text, c, i);
+            encodedCharAdjustCounter(font->IsUTF8(), text, c, i);
 
             if (xt > xmax)
             {

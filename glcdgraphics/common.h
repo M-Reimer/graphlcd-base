@@ -13,6 +13,7 @@
 #define _GLCDGRAPHICS_COMMON_H_
 
 #include <string>
+#include <stdint.h>
 
 namespace GLCD
 {
@@ -20,6 +21,7 @@ namespace GLCD
 void clip(int & value, int min, int max);
 void sort(int & value1, int & value2);
 std::string trim(const std::string & s);
+void encodedCharAdjustCounter(const bool isutf8, const std::string & str, uint32_t & c, unsigned int & i);
 
 } // end of namespace
 
