@@ -10,6 +10,7 @@
  */
 
 #include <ctype.h>
+#include <syslog.h>
 
 #include "common.h"
 
@@ -58,8 +59,11 @@ std::string trim(const std::string & s)
 }
 
 
-// character to return when erraneous utf-8 sequence  (for now: '_')
-#define UTF8_ERRCODE 0x005F
+// character to return when erraneous utf-8 sequence  (for now: space)
+#define UTF8_ERRCODE 0x0020
+// for debugging issues return '_' instead:
+//#define UTF8_ERRCODE 0x005F
+
 void encodedCharAdjustCounter(const bool isutf8, const std::string & str, uint32_t & c, unsigned int & i)
 {
     if (i >= str.length())
@@ -72,7 +76,6 @@ void encodedCharAdjustCounter(const bool isutf8, const std::string & str, uint32
         c1 = (i+1 < str.length()) ? str[i+1] : 0;
         c2 = (i+2 < str.length()) ? str[i+2] : 0;
         c3 = (i+3 < str.length()) ? str[i+3] : 0;
-        //c0 &=0xff; c1 &=0xff; c2 &=0xff; c3 &=0xff;
 
         if ( (c0 & 0x80) == 0x00) {
             // one byte: 0xxxxxxx
