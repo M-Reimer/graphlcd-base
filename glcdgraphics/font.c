@@ -385,12 +385,13 @@ int cFont::Width(const std::string & str, unsigned int len) const
     unsigned int symcount=0;
     uint32_t c;
 
-    for (i = 0; i < (unsigned int)str.length() && symcount < len; i++)
+    i = 0;
+    while (i < (unsigned int)str.length() && symcount < len)
     {
-        unsigned int tmp = i;
-        encodedCharAdjustCounter(IsUTF8(), str, c, tmp);
+        encodedCharAdjustCounter(IsUTF8(), str, c, i);
         symcount++;
         sum += Width(c);
+        i++;
     }
     sum += spaceBetween * (symcount - 1);
 
