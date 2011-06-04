@@ -59,15 +59,12 @@ std::string trim(const std::string & s)
 }
 
 
-// character to return when erraneous utf-8 sequence  (for now: space)
-#define UTF8_ERRCODE 0x0020
-// for debugging issues return '_' instead:
-//#define UTF8_ERRCODE 0x005F
-
-void encodedCharAdjustCounter(const bool isutf8, const std::string & str, uint32_t & c, unsigned int & i)
+bool encodedCharAdjustCounter(const bool isutf8, const std::string & str, uint32_t & c, unsigned int & i, const uint32_t errChar)
 {
+    bool rv = false;
+
     if (i >= str.length())
-        return;
+        return rv;
         
     if ( isutf8 ) {
         uint8_t c0,c1,c2,c3;
@@ -80,41 +77,47 @@ void encodedCharAdjustCounter(const bool isutf8, const std::string & str, uint32
         if ( (c0 & 0x80) == 0x00) {
             // one byte: 0xxxxxxx
             c = c0;
+            rv = true;
         } else if ( (c0 & 0xE0) == 0xC0 ) {
             // two byte utf8: 110yyyyy 10xxxxxx -> 00000yyy yyxxxxxx
             if ( (c1 & 0xC0) == 0x80 ) {
                 c = ( (c0 & 0x1F) << 6 ) | ( (c1 & 0x3F) );
+                rv = true;
             } else {
-                //syslog(LOG_INFO, "GraphLCD: illegal 2-byte UTF-8 sequence found: 0x%02x 0x%02x\n", c0, c1);
-                c = UTF8_ERRCODE;
+                //syslog(LOG_INFO, "GraphLCD: illegal 2-byte UTF-8 sequence found: %02x %02x, pos=%d, str: %s\n", c0,c1,i,str.c_str());
+                c = errChar;
             }
-            i += 1;
+            i += 1;            
         } else if ( (c0 & 0xF0) == 0xE0 ) {
             // three byte utf8: 1110zzzz 10yyyyyy 10xxxxxx -> zzzzyyyy yyxxxxxx
             if ( ((c1 & 0xC0) == 0x80) && ((c2 & 0xC0) == 0x80) ) {
                 c = ( (c0 & 0x0F) << 12 ) | ( (c1 & 0x3F) << 6 ) | ( c2 & 0x3F );
+                rv = true;
             } else {
-                //syslog(LOG_INFO, "GraphLCD: illegal 3-byte UTF-8 sequence found: 0x%02x 0x%02x 0x%02x\n", c0, c1, c2);
-                c = UTF8_ERRCODE;
+                //syslog(LOG_INFO, "GraphLCD: illegal 3-byte UTF-8 sequence found: %02x %02x %02x, pos=%d, str: %s\n", c0,c1,c2,i,str.c_str());
+                c = errChar;
             }
             i += 2;
         } else if ( (c0 & 0xF8) == 0xF0 ) {
             // four byte utf8: 11110www 10zzzzzz 10yyyyyy 10xxxxxx -> 000wwwzz zzzzyyyy yyxxxxxx
             if ( ((c1 & 0xC0) == 0x80) && ((c2 & 0xC0) == 0x80) && ((c3 & 0xC0) == 0x80) ) {
                 c = ( (c0 & 0x07) << 18 ) | ( (c1 & 0x3F) << 12 ) | ( (c2 & 0x3F) << 6 ) | (c3 & 0x3F);
+                rv = true;
             } else {
-                //syslog(LOG_INFO, "GraphLCD: illegal 4-byte UTF-8 sequence found: 0x%02x 0x%02x 0x%02x 0x%02x\n", c0, c1, c2, c3);
-                c = UTF8_ERRCODE;
+                //syslog(LOG_INFO, "GraphLCD: illegal 4-byte UTF-8 sequence found: %02x %02x %02x %02x, pos=%d, str: %s\n", c0,c1,c2,c3,i,str.c_str());
+                c = errChar;
             }
             i += 3;
         } else {
             // 1xxxxxxx is invalid!
-            //syslog(LOG_INFO, "GraphLCD: illegal 1-byte UTF-8 char found: 0x%02x\n", c0);
-            c = UTF8_ERRCODE;
+            //syslog(LOG_INFO, "GraphLCD: illegal 1-byte UTF-8 char found: %02x, pos=%d, str: %s\n", c0,i,str.c_str());
+            c = errChar;
         }
     } else {
         c = str[i];
+        rv = true;
     }
+    return rv;
 }
 
 } // end of namespace

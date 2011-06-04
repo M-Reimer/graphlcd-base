@@ -15,6 +15,7 @@
 
 #include <string>
 #include <map>
+#include <iconv.h>
 
 namespace GLCD
 {
@@ -36,7 +37,10 @@ private:
     bool skipping;
     int state;
     int linenr;
-    int delim;
+    unsigned int delim;
+    std::string sysEncoding;
+    bool sysIsUTF8;
+    iconv_t iconv_cd;
 
     std::string data, cdata, tag, attrn, attrv;
     std::map<std::string, std::string> attr;
@@ -49,11 +53,12 @@ private:
 
 protected:
     bool IsTokenChar(bool start, int c);
-    int  ReadChar(int c);
+    int  ReadChar(unsigned int c, int char_size);
 
 public:
-    cXML(const std::string & file);
-    cXML(const char * mem, unsigned int len);
+    cXML(const std::string & file, const std::string sysCharset = "UTF-8");
+    //cXML(const char * mem, unsigned int len);
+    ~cXML();
 
     void SetNodeStartCB(XML_NODE_START_CB(cb));
     void SetNodeEndCB(XML_NODE_END_CB(cb));

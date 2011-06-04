@@ -15,31 +15,13 @@
 #include <iostream>
 #include <fstream>
 
+#include <string.h>
+
 #include "xml.h"
+#include "../glcdgraphics/common.h"
 
 namespace GLCD
 {
-
-std::string trim(const std::string & s)
-{
-    std::string::size_type start, end;
-
-    start = 0;
-    while (start < s.length())
-    {
-        if (!isspace(s[start]))
-            break;
-        start++;
-    }
-    end = s.length() - 1;
-    while (end >= 0)
-    {
-        if (!isspace(s[end]))
-            break;
-        end--;
-    }
-    return s.substr(start, end - start + 1);
-}
 
 enum {
     LOOK4START,     // looking for first element start
@@ -57,7 +39,7 @@ enum {
     INCLOSETAG,     // reading closing tag
 };
 
-cXML::cXML(const std::string & file)
+cXML::cXML(const std::string & file, const std::string sysCharset)
 :   nodestartcb(NULL),
     nodeendcb(NULL),
     cdatacb(NULL),
@@ -66,6 +48,18 @@ cXML::cXML(const std::string & file)
 {
     char * buffer;
     long size;
+    sysEncoding = sysCharset;
+    sysIsUTF8 = (sysEncoding == "UTF-8");
+    if (!sysIsUTF8) {
+        // convert from utf-8 to system encoding
+        iconv_cd = iconv_open(sysEncoding.c_str(), "UTF-8");
+        if (iconv_cd == (iconv_t) -1) {
+            syslog(LOG_ERR, "ERROR: system encoding %s is not supported\n", sysEncoding.c_str());
+            iconv_cd = NULL;
+        }
+    } else {
+        iconv_cd = NULL;
+    }
 
 #if (__GNUC__ < 3)
     std::ifstream f(file.c_str(), std::ios::in | std::ios::binary | std::ios::ate);
@@ -89,6 +83,7 @@ cXML::cXML(const std::string & file)
     delete[] buffer;
 }
 
+#if 0
 cXML::cXML(const char * mem, unsigned int len)
 :   nodestartcb(NULL),
     nodeendcb(NULL),
@@ -97,6 +92,13 @@ cXML::cXML(const char * mem, unsigned int len)
     progresscb(NULL)
 {
     data.assign(mem, len);
+}
+#endif
+
+cXML::~cXML()
+{
+    if (iconv_cd != NULL)
+        iconv_close(iconv_cd);
 }
 
 void cXML::SetNodeStartCB(XML_NODE_START_CB(cb))
@@ -129,14 +131,26 @@ int cXML::Parse(void)
     int percent = 0;
     int last = 0;
     std::string::size_type len;
+    uint32_t c, c_tmp;
+    unsigned int i_old;
+    int l, char_size;
 
     state    = LOOK4START;
     linenr   = 1;
     skipping = false;
     len = data.length();
-    for (std::string::size_type i = 0; i < len; i++)
+
+    unsigned int i = 0;    
+    while (i < (unsigned int)len)
     {
-        if (ReadChar(data[i]) != 0)
+        i_old = i;
+        encodedCharAdjustCounter(true, data, c_tmp, i);
+        char_size = (i - i_old) + 1;
+        c = 0;
+        for (l = 0 ; l < char_size; l++)
+            c += ( (0xFF & data[i_old + l]) << ( l << 3) );
+
+        if (ReadChar(c /*data[i]*/, char_size) != 0)
             return -1;
         if (progresscb)
         {
@@ -147,6 +161,7 @@ int cXML::Parse(void)
                 last = percent;
             }
         }
+        i++;
     }
     return 0;
 }
@@ -156,8 +171,15 @@ bool cXML::IsTokenChar(bool start, int c)
     return isalpha(c) || c == '_' || (!start && isdigit(c));
 }
 
-int cXML::ReadChar(int c)
+int cXML::ReadChar(unsigned int c, int char_size)
 {
+    // buffer for conversions (when conversion from utf8 to system encoding is required)
+    char convbufin[5];
+    char convbufout[5];
+    char* convbufinp = convbufin;
+    char* convbufoutp = convbufout;
+    size_t bufin_size, bufout_size, bufconverted;
+
     // new line?
     if (c == '\n')
         linenr++;
@@ -190,7 +212,29 @@ int cXML::ReadChar(int c)
                 state = LOOK4TAG;
             }
             else
-                cdata += c;
+            {
+                int i;
+                //cdata += c;
+                // convert text-data on the fly if system encoding != UTF-8
+                if (iconv_cd != NULL && char_size > 1 /* ((c & 0x80) == 0x80)*/) {
+                    for (i = 0; i < char_size; i++)
+                        convbufin[i] = ( (char)((c  >> ( i << 3) ) & 0xFF) );
+                    convbufin[char_size] = '\0';
+                    bufin_size = strlen(convbufin);
+                    bufout_size = bufin_size;
+                    bufconverted = iconv(iconv_cd, &convbufinp, &bufin_size, &convbufoutp, &bufout_size);
+
+                    if (bufconverted != (size_t)-1 && strlen(convbufout) != 0) {
+                        for (i = 0; i < (int)strlen(convbufout); i++)
+                            cdata += convbufout[i];
+                    } else {
+                        cdata += "?";
+                    }
+                } else {
+                    for (i = 0; i < char_size; i++)
+                        cdata += ( (unsigned char)((c  >> ( i << 3) ) & 0xFF) );
+                }
+            }
             // silently ignore until resync
             break;
 

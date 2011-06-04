@@ -448,7 +448,7 @@ cSkin * XmlParse(cSkinConfig & Config, const std::string & Name, const std::stri
     skin = new cSkin(Config, Name);
     context.clear();
 
-    cXML xml(fileName);
+    cXML xml(fileName, skin->Config().CharSet());
     xml.SetNodeStartCB(StartElem);
     xml.SetNodeEndCB(EndElem);
     xml.SetCDataCB(CharData);
