@@ -676,11 +676,16 @@ int cBitmap::DrawCharacter(int x, int y, int xmax, uint32_t c, const cFont * fon
     charBitmap = font->GetCharacter(c);
     if (charBitmap)
     {
+        int drawWidth = charBitmap->Width() - skipPixels;
+        if ( x + drawWidth-1 > xmax)
+            drawWidth = xmax - x + 1;
+
         drawBitmap = new cBitmap(charBitmap->Width()-skipPixels,charBitmap->Height());
         drawBitmap->Clear(bgcolor);
         if (drawBitmap) {
-          for (xt=0;xt<charBitmap->Width();xt++) {
-            for (yt=0;yt<charBitmap->Height();yt++) {
+
+          for (xt = 0; xt < drawWidth; xt++) {
+            for (yt = 0; yt < charBitmap->Height() ; yt++) {
               dot = charBitmap->GetPixel(xt+skipPixels,yt);
               if ((dot | 0xFF000000) == cColor::Black) { // todo: does not work with antialising?
                 drawBitmap->DrawPixel(xt, yt, color);
@@ -692,7 +697,7 @@ int cBitmap::DrawCharacter(int x, int y, int xmax, uint32_t c, const cFont * fon
           DrawBitmap(x, y, *drawBitmap);
           delete drawBitmap;
         }
-        return charBitmap->Width() - skipPixels;
+        return drawWidth; //charBitmap->Width() - skipPixels;
     }
     return 0;
 }

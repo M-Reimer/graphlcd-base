@@ -136,7 +136,7 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
           // add #VARNAME#
           mText.append(varNameStart, (ptr - varNameStart));
           mText.append("#");
-          offset ++; // # adds one character -> fix offset
+          offset +=2; // adds two '#' -> fix offset
           ptr--; // we'd be at the correct position now but the for-loop does a ++ptr -> fix it by stepping back one char
           last = ptr + 1;
         }
@@ -236,20 +236,21 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
 
 cType cSkinString::Evaluate(void) const
 {
-    std::string result_raw = "", result_trans = "";
-    int offset = 0;
-
     if (mText.length() == 0 && mTokens.size() == 1)
         return mSkin->Config().GetToken(mTokens[0]);
 
-    for (uint32_t i = 0; i < mTokens.size(); ++i) {
-        result_raw.append(mText.c_str() + offset, mTokens[i].Offset - offset);
+    std::string result_raw = "";
+    int offset = 0;
+    for (uint32_t i = 0; i < mTokens.size(); i++) {
+        result_raw.append(mText.substr(offset, mTokens[i].Offset - offset) );
+        std::string bla = mSkin->Config().GetToken(mTokens[i]);
         result_raw.append(mSkin->Config().GetToken(mTokens[i]));
         offset = mTokens[i].Offset;
     }
     result_raw.append(mText.c_str() + offset);
 
     // replace variable placeholders (#VARNAME#) with corresponding values
+    std::string result_trans = "";
     size_t idxstart = 0, idxend = 0;
     size_t pos = 0;
     while ( (idxstart=result_raw.find("#", idxstart)) != std::string::npos ) {
