@@ -208,7 +208,7 @@ int cXML::ReadChar(unsigned int c, int char_size)
                             size_t endpos = cdata.find(';', startpos );
                             if (endpos != std::string::npos) {
                                 char* tempptr;
-                                std::string charid = cdata.substr(pos+2+((ishex)?1:0), endpos-startpos);
+                                std::string charid = cdata.substr(startpos, endpos-startpos);
                                 long val = strtol(charid.c_str(), &tempptr, (ishex) ? 16 : 10);
 
                                 if (tempptr != charid.c_str() && *tempptr == '\0') {
@@ -218,22 +218,22 @@ int cXML::ReadChar(unsigned int c, int char_size)
                                         enclen = 0;  // ignore control chars
                                     } else if ( val <= 0x007F ) {
                                         enclen = 1;
-                                        encbuf[0] = (unsigned char)(val & 0x7F);
+                                        encbuf[0] = (char)(val & 0x7F);
                                     } else if ( val <= 0x07FF ) {
                                         enclen = 2;
-                                        encbuf[1] = (unsigned char)(( val & 0x003F) | 0x80);
-                                        encbuf[0] = (unsigned char)(( (val & 0x07C0) >> 6) | 0xC0);
+                                        encbuf[1] = (char)(( val & 0x003F) | 0x80);
+                                        encbuf[0] = (char)(( (val & 0x07C0) >> 6) | 0xC0);
                                     } else if ( val <= 0xFFFF ) {
                                         enclen = 3;
-                                        encbuf[2] = (unsigned char)(( val & 0x003F) | 0x80);
-                                        encbuf[1] = (unsigned char)(( (val & 0x0FC0) >> 6) | 0x80);
-                                        encbuf[0] = (unsigned char)(( (val & 0xF000) >> 12) | 0xE0);
+                                        encbuf[2] = (char)(( val & 0x003F) | 0x80);
+                                        encbuf[1] = (char)(( (val & 0x0FC0) >> 6) | 0x80);
+                                        encbuf[0] = (char)(( (val & 0xF000) >> 12) | 0xE0);
                                     } else if ( val <= 0x10FFFF ) {
                                         enclen = 4;
-                                        encbuf[3] = (unsigned char)(( val & 0x003F) | 0x80);
-                                        encbuf[2] = (unsigned char)(( (val & 0x0FC0) >> 6) | 0x80);
-                                        encbuf[1] = (unsigned char)(( (c & 0x03F000 ) >> 12) | 0x80);
-                                        encbuf[0] = (unsigned char)(( (c & 0x1C0000 ) >> 18) | 0xF0);
+                                        encbuf[3] = (char)(( val & 0x003F) | 0x80);
+                                        encbuf[2] = (char)(( (val & 0x0FC0) >> 6) | 0x80);
+                                        encbuf[1] = (char)(( (c & 0x03F000 ) >> 12) | 0x80);
+                                        encbuf[0] = (char)(( (c & 0x1C0000 ) >> 18) | 0xF0);
                                     }
                                     encbuf[enclen] = '\0';
                                     if (enclen > 0) {
