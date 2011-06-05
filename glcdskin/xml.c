@@ -16,6 +16,7 @@
 #include <fstream>
 
 #include <string.h>
+#include <stdlib.h>
 
 #include "xml.h"
 #include "../glcdgraphics/common.h"
@@ -201,6 +202,46 @@ int cXML::ReadChar(unsigned int c, int char_size)
                             cdata.replace(pos, 4, ">");
                         else if (cdata.substr(pos, 5) == "&amp;")
                             cdata.replace(pos, 5, "&");
+                        else if (cdata.substr(pos, 2) == "&#") {
+                            bool ishex = ((cdata.substr(pos+2, 1) == "x") || (cdata.substr(pos+2, 1) == "X") );
+                            size_t startpos = pos+2+((ishex)?1:0);
+                            size_t endpos = cdata.find(';', startpos );
+                            if (endpos != std::string::npos) {
+                                char* tempptr;
+                                std::string charid = cdata.substr(pos+2+((ishex)?1:0), endpos-startpos);
+                                long val = strtol(charid.c_str(), &tempptr, (ishex) ? 16 : 10);
+
+                                if (tempptr != charid.c_str() && *tempptr == '\0') {
+                                    char encbuf[5]; size_t enclen = 0;
+
+                                    if ( val <= 0x1F ) {
+                                        enclen = 0;  // ignore control chars
+                                    } else if ( val <= 0x007F ) {
+                                        enclen = 1;
+                                        encbuf[0] = (unsigned char)(val & 0x7F);
+                                    } else if ( val <= 0x07FF ) {
+                                        enclen = 2;
+                                        encbuf[1] = (unsigned char)(( val & 0x003F) | 0x80);
+                                        encbuf[0] = (unsigned char)(( (val & 0x07C0) >> 6) | 0xC0);
+                                    } else if ( val <= 0xFFFF ) {
+                                        enclen = 3;
+                                        encbuf[2] = (unsigned char)(( val & 0x003F) | 0x80);
+                                        encbuf[1] = (unsigned char)(( (val & 0x0FC0) >> 6) | 0x80);
+                                        encbuf[0] = (unsigned char)(( (val & 0xF000) >> 12) | 0xE0);
+                                    } else if ( val <= 0x10FFFF ) {
+                                        enclen = 4;
+                                        encbuf[3] = (unsigned char)(( val & 0x003F) | 0x80);
+                                        encbuf[2] = (unsigned char)(( (val & 0x0FC0) >> 6) | 0x80);
+                                        encbuf[1] = (unsigned char)(( (c & 0x03F000 ) >> 12) | 0x80);
+                                        encbuf[0] = (unsigned char)(( (c & 0x1C0000 ) >> 18) | 0xF0);
+                                    }
+                                    encbuf[enclen] = '\0';
+                                    if (enclen > 0) {
+                                        cdata.replace(pos, endpos-pos+1, encbuf);
+                                    }
+                                }
+                            }
+                        }
                         pos++;
                     }
                     if (!cdatacb(trim(cdata)))
