@@ -680,7 +680,7 @@ int cBitmap::DrawCharacter(int x, int y, int xmax, uint32_t c, const cFont * fon
         if ( x + drawWidth-1 > xmax)
             drawWidth = xmax - x + 1;
 
-        drawBitmap = new cBitmap(charBitmap->Width()-skipPixels,charBitmap->Height());
+        drawBitmap = new cBitmap(drawWidth /*charBitmap->Width()-skipPixels*/,charBitmap->Height());
         drawBitmap->Clear(bgcolor);
         if (drawBitmap) {
 
