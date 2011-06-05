@@ -243,7 +243,6 @@ cType cSkinString::Evaluate(void) const
     int offset = 0;
     for (uint32_t i = 0; i < mTokens.size(); i++) {
         result_raw.append(mText.substr(offset, mTokens[i].Offset - offset) );
-        std::string bla = mSkin->Config().GetToken(mTokens[i]);
         result_raw.append(mSkin->Config().GetToken(mTokens[i]));
         offset = mTokens[i].Offset;
     }
