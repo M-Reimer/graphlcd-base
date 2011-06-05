@@ -720,9 +720,8 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         }
 
                         if (updateScroll) {
-                            mScrollOffset += currScrollSpeed;
-
-                            if ( x + Size().w + mScrollOffset >= (w+Size().w - font->Width("  "))) {
+                            mScrollOffset += currScrollSpeed;                            
+                            if ( mScrollOffset >= w ) {
                                 if (currScrollLoopMode == 1)
                                     // reset mScrollOffset in next step (else: string not redrawn when scroll done)
                                     mScrollLoopReached = true;
