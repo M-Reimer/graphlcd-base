@@ -44,7 +44,7 @@ cColor cColor::ParseColor(std::string col) {
 
         char* tempptr;
         const char* str = col.c_str();
-        uint32_t rv = (uint32_t) strtol(str, &tempptr, 16);
+        uint32_t rv = (uint32_t) strtoul(str, &tempptr, 16);
 
         if ((str == tempptr) || (*tempptr != '\0'))
             return cColor(cColor::ERRCOL);
