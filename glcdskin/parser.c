@@ -262,6 +262,8 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
 
         if (object->ParseType(name))
         {
+            ATTRIB_OPT_FUNC_PARAM("x", object->ParseIntParam, object->mPos1.x);
+            ATTRIB_OPT_FUNC_PARAM("y", object->ParseIntParam, object->mPos1.y);
             ATTRIB_OPT_FUNC_PARAM("x1", object->ParseIntParam, object->mPos1.x);
             ATTRIB_OPT_FUNC_PARAM("y1", object->ParseIntParam, object->mPos1.y);
             ATTRIB_OPT_FUNC_PARAM("x2", object->ParseIntParam, object->mPos2.x);
@@ -273,10 +275,8 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
 
             if (name == "image")
             {
-                ATTRIB_OPT_FUNC_PARAM("x", object->ParseIntParam, object->mPos1.x);
-                ATTRIB_OPT_FUNC_PARAM("y", object->ParseIntParam, object->mPos1.y);
-                ATTRIB_OPT_FUNC_PARAM("x", object->ParseIntParam, object->mPos2.x);
-                ATTRIB_OPT_FUNC_PARAM("y", object->ParseIntParam, object->mPos2.y);
+                //ATTRIB_OPT_FUNC_PARAM("x", object->ParseIntParam, object->mPos2.x);
+                //ATTRIB_OPT_FUNC_PARAM("y", object->ParseIntParam, object->mPos2.y);
                 ATTRIB_OPT_FUNC_PARAM("color", object->ParseColor, object->mColor);
                 ATTRIB_OPT_FUNC_PARAM("bgcolor", object->ParseColor, object->mBackgroundColor);
                 ATTRIB_MAN_FUNC("path", object->mPath.Parse);
@@ -289,7 +289,7 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
                 ATTRIB_OPT_FUNC_PARAM("bgcolor", object->ParseColor, object->mBackgroundColor);
                 ATTRIB_OPT_FUNC("align", object->ParseAlignment);
                 ATTRIB_OPT_FUNC("valign", object->ParseVerticalAlignment);
-                ATTRIB_OPT_FUNC("font", object->ParseFontFace);
+                ATTRIB_MAN_FUNC("font", object->ParseFontFace);
                 ATTRIB_OPT_BOOL("multiline", object->mMultiline);
                 ATTRIB_OPT_FUNC("scrollmode", object->ParseScrollLoopMode);
                 ATTRIB_OPT_FUNC("scrollspeed", object->ParseScrollSpeed);
@@ -303,7 +303,7 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
             {
                 ATTRIB_OPT_FUNC_PARAM("labelcolor", object->ParseColor, object->mColor);
                 ATTRIB_OPT_FUNC_PARAM("color", object->ParseColor, object->mBackgroundColor);
-                ATTRIB_OPT_FUNC("font", object->ParseFontFace);
+                ATTRIB_MAN_FUNC("font", object->ParseFontFace);
                 ATTRIB_OPT_NUMBER("radius", object->mRadius);
             }
             else if (name == "pixel")
