@@ -510,18 +510,25 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
             int loops = 1;
             int varx[5]  = {0, 0, 0, 0, 0};
             int vary[5]  = {0, 0, 0, 0, 0};
+
+            int fxOff = 1;
+            if (mRadius > 1)
+                fxOff = 2;
             
             switch (mEffect) {
                 case tfxShadow:
-                    loops = 2;
-                    varx[0] =  1;  vary[0] =  1;
+                    loops = 1;
+                    for (int fxi = 0; fxi < fxOff; fxi++) {
+                      varx[fxi] =  fxi + 1;  vary[fxi] =  fxi + 1;
+                      loops++;
+                    }
                 break;
                 case tfxOutline:
                     loops = 5;
-                    varx[0] = -1;  vary[0] =  0;
-                    varx[1] =  1;  vary[1] =  0;
-                    varx[2] =  0;  vary[2] = -1;
-                    varx[3] =  0;  vary[3] =  1;
+                    varx[0] = -fxOff;  vary[0] =      0;
+                    varx[1] =  fxOff;  vary[1] =      0;
+                    varx[2] =      0;  vary[2] = -fxOff;
+                    varx[3] =      0;  vary[3] =  fxOff;
                 break;
                 case tfxNone:  // no-one gets forgotten here, so make g++ happy
                 default:
