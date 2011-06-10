@@ -519,7 +519,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                 case tfxShadow:
                     loops = 1;
                     for (int fxi = 0; fxi < fxOff; fxi++) {
-                      varx[fxi] =  fxi + 1;  vary[0] =  fxi + 1;
+                      varx[fxi] =  fxi + 1;  vary[fxi] =  fxi + 1;
                       loops++;
                     }
                 break;
