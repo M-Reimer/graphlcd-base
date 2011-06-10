@@ -298,6 +298,7 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
                 ATTRIB_OPT_FUNC("altcondition", object->ParseAltCondition);
                 ATTRIB_OPT_FUNC_PARAM("effectcolor", object->ParseColor, object->mEffectColor);
                 ATTRIB_OPT_FUNC("effect", object->ParseEffect);
+                ATTRIB_OPT_NUMBER("radius", object->mRadius);
             }
             else if (name == "button")
             {
