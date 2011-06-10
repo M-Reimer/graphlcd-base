@@ -22,7 +22,7 @@ namespace GLCD
 
 static const char * Internals[] =
 {
-    "not", "and", "or", "equal", "gt",  "lt", "ge", "le", "ne", "file", "trans",
+    "not", "and", "or", "equal", "eq", "gt",  "lt", "ge", "le", "ne", "file", "trans",
     "add", "sub", "mul", "div",
     "FontTotalWidth",
     "FontTotalHeight",
@@ -213,6 +213,7 @@ bool cSkinFunction::Parse(const std::string & Text)
                                 params = -1;
                                 break;
 
+                            case fun_equal:
                             case fun_eq:
                             case fun_ne:
                             case fun_gt:
@@ -382,6 +383,7 @@ cType cSkinFunction::Evaluate(void) const
             }
             return false;
 
+        case fun_equal:
         case fun_eq:
             return mParams[0]->Evaluate() == mParams[1]->Evaluate();
 

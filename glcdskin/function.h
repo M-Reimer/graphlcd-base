@@ -47,6 +47,7 @@ public:
         fun_not = INTERNAL,
         fun_and,
         fun_or,
+        fun_equal,
         fun_eq,
         fun_gt,
         fun_lt,
