@@ -232,8 +232,8 @@ int cXML::ReadChar(unsigned int c, int char_size)
                                         enclen = 4;
                                         encbuf[3] = (char)(( val & 0x003F) | 0x80);
                                         encbuf[2] = (char)(( (val & 0x0FC0) >> 6) | 0x80);
-                                        encbuf[1] = (char)(( (c & 0x03F000 ) >> 12) | 0x80);
-                                        encbuf[0] = (char)(( (c & 0x1C0000 ) >> 18) | 0xF0);
+                                        encbuf[1] = (char)(( (val & 0x03F000 ) >> 12) | 0x80);
+                                        encbuf[0] = (char)(( (val & 0x1C0000 ) >> 18) | 0xF0);
                                     }
                                     encbuf[enclen] = '\0';
                                     if (enclen > 0) {
