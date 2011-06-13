@@ -5,11 +5,13 @@
 -include ../Make.config
 
 # External image lib to use: imagemagick, graphicsmagick, or none
+# (two ifdef/endif are used because older installations may not support 'else ifdef')
 IMAGELIB = 
+ifdef HAVE_GRAPHICSMAGICK
+	IMAGELIB = graphicsmagick
+endif
 ifdef HAVE_IMAGEMAGICK
 	IMAGELIB = imagemagick
-else ifdef HAVE_GRAPHICSMAGICK
-	IMAGELIB = graphicsmagick
 endif
 
 
@@ -53,11 +55,13 @@ ifdef HAVE_FREETYPE2
 endif### Targets:
 
 
+# two ifdef/endif are used because older installations may not support 'else ifdef'
 ifeq ($(IMAGELIB), imagemagick)
 	DEFINES += -DHAVE_IMAGEMAGICK
 	INCLUDES += $(shell pkg-config --cflags ImageMagick++)
 	LIBS += $(shell pkg-config --libs ImageMagick++)
-else ifeq ($(IMAGELIB), graphicsmagick)
+endif
+ifeq ($(IMAGELIB), graphicsmagick)
 	DEFINES += -DHAVE_IMAGEMAGICK # yep, really HAVE_IMAGEMAGICK here
 	INCLUDES += $(shell pkg-config --cflags GraphicsMagick++)
 	LIBS += $(shell pkg-config --libs GraphicsMagick++)
