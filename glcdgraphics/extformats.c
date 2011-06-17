@@ -112,7 +112,8 @@ bool cExtFormatFile::Load(cImage & image, const string & fileName)
             if ( isMatte && pix->opacity == MaxRGB ) {
                 bmpdata[iy*width+ix] = cColor::Transparent;
             } else {
-                bmpdata[iy*width+ix] = (uint32_t)( 0xFF000000 | (int(pix->red * 255 / MaxRGB) << 16) | (int(pix->green * 255 / MaxRGB) << 8) | int(pix->blue * 255 / MaxRGB));
+                //bmpdata[iy*width+ix] = (uint32_t)( 0xFF000000 | (int(pix->red * 255 / MaxRGB) << 16) | (int(pix->green * 255 / MaxRGB) << 8) | int(pix->blue * 255 / MaxRGB));
+                bmpdata[iy*width+ix] = (uint32_t)( (int(255 - (pix->opacity * 255 / MaxRGB)) << 24)  | (int(pix->red * 255 / MaxRGB) << 16) | (int(pix->green * 255 / MaxRGB) << 8) | int(pix->blue * 255 / MaxRGB));
             }
             ++pix;
           }

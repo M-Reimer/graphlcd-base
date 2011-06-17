@@ -94,6 +94,7 @@ protected:
     int lineSize;
     uint32_t * bitmap;
     bool ismonochrome;
+    bool supportAlpha;
 
     uint32_t backgroundColor;
 
@@ -108,7 +109,7 @@ public:
     int LineSize() const { return lineSize; }
     const uint32_t * Data() const { return bitmap; }
 
-    void Clear(uint32_t initcol = cColor::Transparent);
+    void Clear(uint32_t color = cColor::Transparent);
     void Invert();
     void DrawPixel(int x, int y, uint32_t color);
     void DrawLine(int x1, int y1, int x2, int y2, uint32_t color);
@@ -130,16 +131,8 @@ public:
     void SetMonochrome(bool mono) { ismonochrome = mono; }
     bool IsMonochrome(void) const { return ismonochrome; }
 
-#if 0
-    int DrawText(int x, int y, int xmax, const std::string & text, const cFont * font,
-                 uint32_t color, bool proportional = true, int skipPixels = 0) {
-        return DrawText(x, y, xmax, text, font, color, cColor::Black, proportional, skipPixels);
-    }
-    int DrawCharacter(int x, int y, int xmax, char c, const cFont * font,
-                      uint32_t color, int skipPixels = 0) {
-        return DrawCharacter(x, y, xmax, c, font, color, cColor::Black, skipPixels);
-    }
-#endif
+    void SetSupportAlpha(bool suppAlpha) { supportAlpha = suppAlpha; }
+    bool IsSupportAlpha(void) const { return supportAlpha; }
 
     bool LoadPBM(const std::string & fileName);
     void SavePBM(const std::string & fileName);

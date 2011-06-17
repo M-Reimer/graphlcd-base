@@ -70,7 +70,8 @@ cBitmap::cBitmap(int width, int height, uint32_t * data)
 :   width(width),
     height(height),
     bitmap(NULL),
-    ismonochrome(false)
+    ismonochrome(false),
+    supportAlpha(true)
 {
 #ifdef DEBUG
     printf("%s:%s(%d) cBitmap Size %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, width, height);
@@ -89,7 +90,8 @@ cBitmap::cBitmap(int width, int height, uint32_t initcol)
 :   width(width),
     height(height),
     bitmap(NULL),
-    ismonochrome(false)
+    ismonochrome(false),
+    supportAlpha(true)
 {
 #ifdef DEBUG
     printf("%s:%s(%d) cBitmap Size %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, width, height);
@@ -106,6 +108,7 @@ cBitmap::cBitmap(const cBitmap & b)
     lineSize = b.lineSize;
     backgroundColor = b.backgroundColor;
     ismonochrome = b.ismonochrome;
+    supportAlpha = b.supportAlpha;
     bitmap = new uint32_t[b.width * b.height];
     if (b.bitmap && bitmap) {
         memcpy(bitmap, b.bitmap, b.width * b.height * sizeof(uint32_t));
@@ -117,15 +120,20 @@ cBitmap::~cBitmap()
     delete[] bitmap;
 }
 
-void cBitmap::Clear(uint32_t initcol)
+void cBitmap::Clear(uint32_t color)
 {
 #ifdef DEBUG
     printf("%s:%s(%d) %03d * %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, width, height, color);
 #endif
-    uint32_t col = initcol; //(initcol == cColor::Transparent) ? backgroundColor : initcol;
+    //uint32_t col = initcol; //(initcol == cColor::Transparent) ? backgroundColor : initcol;
+
+    // force clearing colour to contain alpha level = 0xFF
+    if ( color != cColor::Transparent )
+        color = (color & 0x00FFFFFF) | 0xFF000000;
+
     for (int i = 0; i < width * height; i++)
-        bitmap[i] = col;
-    backgroundColor = col;
+        bitmap[i] = color;
+    backgroundColor = color;
 }
 
 void cBitmap::Invert()
@@ -145,10 +153,29 @@ void cBitmap::DrawPixel(int x, int y, uint32_t color)
     if (y < 0 || y > height - 1)
         return;
 
-    if (color != GLCD::cColor::Transparent)
-        bitmap[x + (width * y)] = cColor::AlignAlpha(color);
-    else
-        bitmap[x + (width * y)] = cColor::AlignAlpha(backgroundColor);
+    if (color != GLCD::cColor::Transparent) {
+        uint32_t col = cColor::AlignAlpha(color);
+        if (supportAlpha) {
+            uint32_t bg = bitmap[x + (width * y)];
+            uint32_t afg = (col & 0xFF000000) >> 24;
+            uint32_t rfg = (col & 0x00FF0000) >> 16;
+            uint32_t gfg = (col & 0x0000FF00) >> 8;
+            uint32_t bfg = (col & 0x000000FF);
+
+            uint32_t rbg = (bg & 0x00FF0000) >> 16;
+            uint32_t gbg = (bg & 0x0000FF00) >> 8;
+            uint32_t bbg = (bg & 0x000000FF);
+            
+            rfg = (rfg * afg ) / 255 + ( rbg * ( 255 - afg ) ) / 255;
+            gfg = (gfg * afg ) / 255 + ( gbg * ( 255 - afg ) ) / 255;
+            bfg = (bfg * afg ) / 255 + ( bbg * ( 255 - afg ) ) / 255;
+            
+            col = 0xFF000000 | (rfg << 16) | (gfg << 8) | bfg;
+        }
+        bitmap[x + (width * y)] = col;
+    }
+    //else
+    //    bitmap[x + (width * y)] = cColor::AlignAlpha(backgroundColor);
 }
 
 /*
@@ -681,8 +708,9 @@ int cBitmap::DrawCharacter(int x, int y, int xmax, uint32_t c, const cFont * fon
             drawWidth = xmax - x + 1;
 
         drawBitmap = new cBitmap(drawWidth /*charBitmap->Width()-skipPixels*/,charBitmap->Height());
-        drawBitmap->Clear(bgcolor);
         if (drawBitmap) {
+          drawBitmap->SetSupportAlpha(false);
+          drawBitmap->Clear(bgcolor);
 
           for (xt = 0; xt < drawWidth; xt++) {
             for (yt = 0; yt < charBitmap->Height() ; yt++) {
