@@ -545,7 +545,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
             {
 
                 cBitmap* pane = new cBitmap(Size().w, Size().h, cColor::Transparent);
-                pane->SetSupportAlpha(false);
+                pane->SetProcessAlpha(false);
 
                 const cFont * font = skinFont->Font();
                 std::string text = "";

@@ -94,7 +94,7 @@ protected:
     int lineSize;
     uint32_t * bitmap;
     bool ismonochrome;
-    bool supportAlpha;
+    bool processAlpha;
 
     uint32_t backgroundColor;
 
@@ -131,8 +131,8 @@ public:
     void SetMonochrome(bool mono) { ismonochrome = mono; }
     bool IsMonochrome(void) const { return ismonochrome; }
 
-    void SetSupportAlpha(bool suppAlpha) { supportAlpha = suppAlpha; }
-    bool IsSupportAlpha(void) const { return supportAlpha; }
+    void SetProcessAlpha(bool procAlpha) { processAlpha = procAlpha; }
+    bool IsProcessAlpha(void) const { return processAlpha; }
 
     bool LoadPBM(const std::string & fileName);
     void SavePBM(const std::string & fileName);
