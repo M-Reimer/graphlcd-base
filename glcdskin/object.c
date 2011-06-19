@@ -544,13 +544,8 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
             if (skinFont)
             {
 
-                cBitmap* pane = NULL;
-                if (loops == 1) {
-                    pane = screen;
-                } else {
-                    pane = new cBitmap(screen->Width(), screen->Height(), cColor::Transparent);
-                    pane->SetSupportAlpha(false);
-                }
+                cBitmap* pane = new cBitmap(Size().w, Size().h, cColor::Transparent);
+                pane->SetSupportAlpha(false);
 
                 const cFont * font = skinFont->Font();
                 std::string text = "";
@@ -598,7 +593,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                     for (size_t i = 0; i < lines.size(); i++)
                     {
                         int w = font->Width(lines[i]);
-                        int x = Pos().x;
+                        int x = 0;
                         if (w < Size().w)
                         {
                             if (mAlign == taRight)
@@ -612,7 +607,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         }
                         for (loop = 0; loop < loops; loop++) {
                             pane->DrawText(
-                                varx[loop] + x, vary[loop] + yoff + Pos().y + i * font->LineHeight(), 
+                                varx[loop] + x, vary[loop] + yoff + i * font->LineHeight(), 
                                 x + Size().w - 1, lines[i], font, varcol[loop], mBackgroundColor
                             );
                         }
@@ -642,7 +637,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         std::string::size_type pos1;
                         std::string::size_type pos2;
                         std::string str;
-                        int x = Pos().x;
+                        int x = 0;
                         int w = Size().w;
                         int tab = 0;
                         int tabWidth;
@@ -654,10 +649,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             str = text.substr(pos1, pos2 - pos1);
                             tabWidth = mSkin->Config().GetTabPosition(tab, Size().w, *font);
                             for (loop = 0; loop < loops; loop++) {
-                                pane->DrawText(
-                                    varx[loop] + x, vary[loop] + yoff + Pos().y, x + tabWidth - 1, str, font,
-                                    varcol[loop], mBackgroundColor
-                                );
+                                pane->DrawText( varx[loop], vary[loop] + yoff, tabWidth - 1, str, font, varcol[loop], mBackgroundColor );
                             }
                             pos1 = pos2 + 1;
                             pos2 = text.find('\t', pos1);
@@ -668,16 +660,13 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         }
                         str = text.substr(pos1);
                         for (loop = 0; loop < loops; loop++) {
-                            pane->DrawText(
-                                varx[loop] + x, vary[loop] + yoff + Pos().y, x + w - 1, str, font,
-                                varcol[loop], mBackgroundColor
-                            );
+                            pane->DrawText( varx[loop] + x, vary[loop] + yoff, x + w - 1, str, font, varcol[loop], mBackgroundColor );
                         }
                     }
                     else
                     {
                         int w = font->Width(text);
-                        int x = Pos().x;
+                        int x = 0;
                         bool updateScroll = false;
 
                         if (w < Size().w)
@@ -727,14 +716,14 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             std::string textdoubled = text + "     " + text;
                             for (loop = 0; loop < loops; loop++) {
                                 pane->DrawText(
-                                    varx[loop] + x, vary[loop] + yoff + Pos().y, x + Size().w - 1, textdoubled, font,
+                                    varx[loop] + x, vary[loop] + yoff, x + Size().w - 1, textdoubled, font,
                                     varcol[loop], mBackgroundColor, true, corr_scrolloffset
                                 );
                             }
                         } else {
                             for (loop = 0; loop < loops; loop++) {
                                 pane->DrawText(
-                                    varx[loop] + x, vary[loop] + yoff + Pos().y, x + Size().w - 1, text, font,
+                                    varx[loop] + x, vary[loop] + yoff, x + Size().w - 1, text, font,
                                     varcol[loop], mBackgroundColor, true, mScrollOffset
                                 );
                             }
@@ -754,10 +743,8 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         }
                     }
                 }
-                if (loops > 1) {
-                    screen->DrawBitmap(0, 0, *pane, cColor::White, cColor::Transparent);
-                    delete pane;
-                }
+                screen->DrawBitmap(Pos().x, Pos().y, *pane, cColor::White, cColor::Transparent);
+                delete pane;
             }
             break;
         }
