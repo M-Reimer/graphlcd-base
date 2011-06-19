@@ -508,8 +508,9 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
             // amount of loops for effects (no effect: 1 loop)
             int loop;
             int loops = 1;
-            int varx[5]  = {0, 0, 0, 0, 0};
-            int vary[5]  = {0, 0, 0, 0, 0};
+            int varx[6]  = {0, 0, 0, 0, 0, 0};
+            int vary[6]  = {0, 0, 0, 0, 0, 0};
+            uint32_t varcol[6] = { mColor, mColor, mColor, mColor, mColor, mColor };
 
             int fxOff = 1;
             if (mRadius > 1)
@@ -520,15 +521,20 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                     loops = 1;
                     for (int fxi = 0; fxi < fxOff; fxi++) {
                       varx[fxi] =  fxi + 1;  vary[fxi] =  fxi + 1;
+                      varcol[loops-1] = mEffectColor;
                       loops++;
                     }
+                    varcol[loops-1] = cColor::Transparent;
+                    loops++;
                 break;
                 case tfxOutline:
-                    loops = 5;
+                    loops = 6;
                     varx[0] = -fxOff;  vary[0] =      0;
                     varx[1] =  fxOff;  vary[1] =      0;
                     varx[2] =      0;  vary[2] = -fxOff;
                     varx[3] =      0;  vary[3] =  fxOff;
+                    varcol[0] = varcol[1] = varcol[2] = varcol[3] = mEffectColor;
+                    varcol[4] = cColor::Transparent;
                 break;
                 case tfxNone:  // no-one gets forgotten here, so make g++ happy
                 default:
@@ -537,6 +543,15 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
 
             if (skinFont)
             {
+
+                cBitmap* pane = NULL;
+                if (loops == 1) {
+                    pane = screen;
+                } else {
+                    pane = new cBitmap(screen->Width(), screen->Height(), cColor::Transparent);
+                    pane->SetSupportAlpha(false);
+                }
+
                 const cFont * font = skinFont->Font();
                 std::string text = "";
 
@@ -596,10 +611,9 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             }
                         }
                         for (loop = 0; loop < loops; loop++) {
-                            screen->DrawText(
+                            pane->DrawText(
                                 varx[loop] + x, vary[loop] + yoff + Pos().y + i * font->LineHeight(), 
-                                x + Size().w - 1, lines[i], font,
-                                ((loop+1 == loops) ? mColor : mEffectColor), mBackgroundColor
+                                x + Size().w - 1, lines[i], font, varcol[loop], mBackgroundColor
                             );
                         }
                     }
@@ -640,9 +654,9 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             str = text.substr(pos1, pos2 - pos1);
                             tabWidth = mSkin->Config().GetTabPosition(tab, Size().w, *font);
                             for (loop = 0; loop < loops; loop++) {
-                                screen->DrawText(
-                                    varx[loop] + x, vary[loop] + yoff + Pos().y, x + tabWidth - 1, str, font, 
-                                    ((loop+1 == loops) ? mColor : mEffectColor), mBackgroundColor
+                                pane->DrawText(
+                                    varx[loop] + x, vary[loop] + yoff + Pos().y, x + tabWidth - 1, str, font,
+                                    varcol[loop], mBackgroundColor
                                 );
                             }
                             pos1 = pos2 + 1;
@@ -654,9 +668,9 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         }
                         str = text.substr(pos1);
                         for (loop = 0; loop < loops; loop++) {
-                            screen->DrawText(
+                            pane->DrawText(
                                 varx[loop] + x, vary[loop] + yoff + Pos().y, x + w - 1, str, font,
-                                ((loop+1 == loops) ? mColor : mEffectColor), mBackgroundColor
+                                varcol[loop], mBackgroundColor
                             );
                         }
                     }
@@ -712,16 +726,16 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             w += font->Width("     ");
                             std::string textdoubled = text + "     " + text;
                             for (loop = 0; loop < loops; loop++) {
-                                screen->DrawText(
-                                    varx[loop] + x, vary[loop] + yoff + Pos().y, x + Size().w - 1, textdoubled, font, 
-                                    ((loop+1 == loops) ? mColor : mEffectColor), mBackgroundColor, true, corr_scrolloffset
+                                pane->DrawText(
+                                    varx[loop] + x, vary[loop] + yoff + Pos().y, x + Size().w - 1, textdoubled, font,
+                                    varcol[loop], mBackgroundColor, true, corr_scrolloffset
                                 );
                             }
                         } else {
                             for (loop = 0; loop < loops; loop++) {
-                                screen->DrawText(
+                                pane->DrawText(
                                     varx[loop] + x, vary[loop] + yoff + Pos().y, x + Size().w - 1, text, font,
-                                    ((loop+1 == loops) ? mColor : mEffectColor), mBackgroundColor, true, mScrollOffset
+                                    varcol[loop], mBackgroundColor, true, mScrollOffset
                                 );
                             }
                         }
@@ -739,6 +753,10 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             mLastChange = timestamp;
                         }
                     }
+                }
+                if (loops > 1) {
+                    screen->DrawBitmap(0, 0, *pane, cColor::White, cColor::Transparent);
+                    delete pane;
                 }
             }
             break;
