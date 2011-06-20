@@ -55,6 +55,7 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mChangeDelay(-1),               // delay between two images frames: -1: not animated / don't care
     mStoredImagePath(""),
     mImageFrameId(0),               // start with 1st frame
+    mOpacity(255),                  // default: full opacity
     mScrollLoopMode(-1),            // scroll (text) or loop (image) mode: default (-1)
     mScrollLoopReached(false),      // if scroll/loop == once: already looped once?
     mScrollSpeed(0),                // scroll speed: default (0)
@@ -97,6 +98,7 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
     mChangeDelay(-1),
     mStoredImagePath(Src.mStoredImagePath),
     mImageFrameId(0),
+    mOpacity(Src.mOpacity),
     mScrollLoopMode(Src.mScrollLoopMode),
     mScrollLoopReached(Src.mScrollLoopReached),
     mScrollSpeed(Src.mScrollSpeed),
@@ -384,7 +386,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                     if (mColor == cColor::ERRCOL)
                         screen->DrawBitmap(Pos().x, Pos().y, *bitmap);
                     else
-                        screen->DrawBitmap(Pos().x, Pos().y, *bitmap, mColor, mBackgroundColor);
+                        screen->DrawBitmap(Pos().x, Pos().y, *bitmap, mColor, mBackgroundColor, mOpacity);
                 }
 
                 if (mScrollLoopMode != -1)  // if == -1: currScrollLoopMode already contains correct value

@@ -148,6 +148,7 @@ private:
 
     std::string mStoredImagePath;   // stored image path
     int  mImageFrameId;             // frame ID of image
+    int  mOpacity;                  // opacity of an image ([0, 255], default 255)
 
     int mScrollLoopMode;            // scroll (text) or loop (image) mode: -1: default, 0: never, 1: once, 2: always
     bool mScrollLoopReached;        // if scroll/loop == once: already looped once?

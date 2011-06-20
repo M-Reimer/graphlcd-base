@@ -167,11 +167,11 @@ void cBitmap::DrawPixel(int x, int y, uint32_t color)
             uint32_t bbg = (bg & 0x000000FF);
             
             // calculate colour channels of new colour depending on alpha channel and background colour
-            rfg = (rfg * afg ) / 255 + ( rbg * ( 255 - afg ) ) / 255;
-            gfg = (gfg * afg ) / 255 + ( gbg * ( 255 - afg ) ) / 255;
-            bfg = (bfg * afg ) / 255 + ( bbg * ( 255 - afg ) ) / 255;
+            rfg = (rfg * afg + rbg * (255 - afg)) / 255;
+            gfg = (gfg * afg + gbg * (255 - afg)) / 255;
+            bfg = (bfg * afg + bbg * (255 - afg)) / 255;
             
-            // as we don't support z-buffering, the new colour will always have alpha level == 0xFF
+            // as we draw from bottom to top, the new colour will always have alpha level == 0xFF
             // (it will serve as background colour for future objects that will be drawn onto the current object)
             col = 0xFF000000 | (rfg << 16) | (gfg << 8) | bfg;
         }
@@ -536,7 +536,7 @@ void cBitmap::DrawSlope(int x1, int y1, int x2, int y2, uint32_t color, int type
     }
 }
 
-void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, uint32_t bgcolor)
+void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, uint32_t bgcolor, int opacity)
 {
 #ifdef DEBUG
     printf("%s:%s(%d) '%03d' x '%03d' \n", __FILE__, __FUNCTION__, __LINE__, x, y);
@@ -549,6 +549,7 @@ void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, u
     bool ismonochrome = bitmap.IsMonochrome();
 
     int xt, yt;
+    uint32_t alpha;
 
     if (data)
     {
@@ -561,7 +562,13 @@ void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, u
               if (ismonochrome) {
                 DrawPixel(xt+x, yt+y, (cl == cColor::Black) ? color : bgcolor);
               } else {
-                DrawPixel(xt+x, yt+y, cl);
+                if (opacity == 255) {
+                    DrawPixel(xt+x, yt+y, cl);
+                } else {
+                    alpha = (cl & 0xFF000000) >> 24;
+                    alpha = (alpha * opacity) / 255;
+                    DrawPixel(xt+x, yt+y, (cl & 0x00FFFFFF) | (alpha << 24));
+                }
               }
             }
           }

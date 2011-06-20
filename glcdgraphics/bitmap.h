@@ -119,7 +119,7 @@ public:
     void DrawRoundRectangle(int x1, int y1, int x2, int y2, uint32_t color, bool filled, int size);
     void DrawEllipse(int x1, int y1, int x2, int y2, uint32_t color, bool filled, int quadrants);
     void DrawSlope(int x1, int y1, int x2, int y2, uint32_t color, int type);
-    void DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color = cColor::White, uint32_t bgcolor = cColor::Black);
+    void DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color = cColor::White, uint32_t bgcolor = cColor::Black, int opacity = 255);
     int DrawText(int x, int y, int xmax, const std::string & text, const cFont * font,
                  uint32_t color = cColor::White, uint32_t bgcolor = cColor::Black, bool proportional = true, int skipPixels = 0);
     int DrawCharacter(int x, int y, int xmax, uint32_t c, const cFont * font,

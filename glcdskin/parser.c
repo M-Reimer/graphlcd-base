@@ -281,6 +281,7 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
                 ATTRIB_OPT_FUNC_PARAM("bgcolor", object->ParseColor, object->mBackgroundColor);
                 ATTRIB_MAN_FUNC("path", object->mPath.Parse);
                 ATTRIB_OPT_FUNC("loop", object->ParseScrollLoopMode);
+                ATTRIB_OPT_FUNC_PARAM("opacity", object->ParseIntParam, object->mOpacity);
             }
             else if (name == "text"
                 || name == "scrolltext")
@@ -341,6 +342,12 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
                 --object->mPos2.y;
             }
 #endif
+            // range checks
+            if (object->mOpacity < 0)
+                object->mOpacity = 0;
+            else if (object->mOpacity > 255)
+                object->mOpacity = 255;
+
         }
         else
             TAG_ERR_REMAIN(context[context.size() - 1].c_str());
