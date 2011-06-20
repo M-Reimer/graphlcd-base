@@ -560,18 +560,16 @@ void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, u
             cl = data[(yt * bitmap.Width())+xt];
             if (cl != cColor::Transparent) {
               if (ismonochrome) {
-                DrawPixel(xt+x, yt+y, (cl == cColor::Black) ? color : bgcolor);
-              } else {
-                if (opacity == 255) {
-                    DrawPixel(xt+x, yt+y, cl);
-                } else {
-                    alpha = (cl & 0xFF000000) >> 24;
-                    alpha = (alpha * opacity) / 255;
-                    DrawPixel(xt+x, yt+y, (cl & 0x00FFFFFF) | (alpha << 24));
-                }
+                cl = (cl == cColor::Black) ? color : bgcolor;
               }
-            }
-          }
+              if (opacity != 255) {
+                  alpha = (cl & 0xFF000000) >> 24;
+                  alpha = (alpha * opacity) / 255;
+                  cl = (cl & 0x00FFFFFF) | (alpha << 24);
+              }
+              DrawPixel(xt+x, yt+y, cl);
+           }
+         }
        }
     }
 }
