@@ -585,24 +585,24 @@ void cFont::WrapText(int Width, int Height, std::string & Text,
         if (Text[pos] == '\n')
         {
             Lines.push_back(trim(Text.substr(start, pos - start)));
-            start = pos + 1;
-            posLast = pos + 1;
+            start = pos /*+ 1*/;
+            posLast = pos /*+ 1*/;
             textWidth = 0;
             lineCount++;
         }
-        else if (textWidth > Width && (lineCount + 1) < maxLines)
+        else if (textWidth >= Width && (lineCount + 1) < maxLines)
         {
             if (posLast > start)
             {
                 Lines.push_back(trim(Text.substr(start, posLast - start)));
-                start = posLast + 1;
+                start = posLast /*+ 1*/;
                 posLast = start;
                 textWidth = this->Width(Text.substr(start, pos - start + 1)) + spaceBetween;
             }
             else
             {
                 Lines.push_back(trim(Text.substr(start, pos - start)));
-                start = pos + 1;
+                start = pos /*+ 1*/;
                 posLast = start;
                 textWidth = this->Width(Text[pos]) + spaceBetween;
             }
@@ -622,19 +622,19 @@ void cFont::WrapText(int Width, int Height, std::string & Text,
 
     if (Height == 0 || lineCount < maxLines)
     {
-        if (textWidth > Width && (lineCount + 1) < maxLines)
+        if (textWidth >= Width && (lineCount + 1) < maxLines)
         {
             if (posLast > start)
             {
                 Lines.push_back(trim(Text.substr(start, posLast - start)));
-                start = posLast + 1;
+                start = posLast /*+ 1*/;
                 posLast = start;
                 textWidth = this->Width(Text.substr(start, pos - start + 1)) + spaceBetween;
             }
             else
             {
                 Lines.push_back(trim(Text.substr(start, pos - start)));
-                start = pos + 1;
+                start = pos /*+ 1*/;
                 posLast = start;
                 textWidth = this->Width(Text[pos]) + spaceBetween;
             }
