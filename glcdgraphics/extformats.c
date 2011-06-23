@@ -74,13 +74,9 @@ bool cExtFormatFile::Load(cImage & image, const string & fileName)
     for (it = extimages.begin(); it != extimages.end(); ++it) {
       bool ignoreImage = false;
 
-      //if (colors != 0){
-        //(*it).opacity(OpaqueOpacity);
-        //(*it).backgroundColor( Color ( 0,0,0,0) );
-        (*it).quantizeColorSpace( RGBColorspace );
-        (*it).quantizeColors( 256*256*256 /*colors*/ );
-        (*it).quantize();
-      //}
+      //(*it).quantizeColorSpace( RGBColorspace );
+      //(*it).quantizeColors( 256*256*256 /*colors*/ );
+      //(*it).quantize();
 
       if (firstImage) {
         width = (uint16_t)((*it).columns());

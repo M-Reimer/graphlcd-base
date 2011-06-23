@@ -563,26 +563,31 @@ void cFont::WrapText(int Width, int Height, std::string & Text,
     int lineCount;
     int textWidth;
     std::string::size_type start;
-    std::string::size_type pos;
+    unsigned int pos;
     std::string::size_type posLast;
+    uint32_t c;
 
     Lines.clear();
-    maxLines = 2000;
+    maxLines = 100;
     if (Height > 0)
     {
         maxLines = Height / LineHeight();
-        if (maxLines == 0)
-            maxLines = 1;
+        //if (maxLines == 0)
+            maxLines += 1;
     }
-    lineCount = 0;
 
+    lineCount = 0;
     pos = 0;
     start = 0;
     posLast = 0;
     textWidth = 0;
-    while (pos < Text.length() && (Height == 0 || lineCount < maxLines))
+
+    while ((pos < Text.length()) && (lineCount <= maxLines))
     {
-        if (Text[pos] == '\n')
+        unsigned int posraw = pos;
+        encodedCharAdjustCounter(IsUTF8(), Text, c, posraw);
+        
+        if (c == '\n')
         {
             Lines.push_back(trim(Text.substr(start, pos - start)));
             start = pos /*+ 1*/;
@@ -590,7 +595,7 @@ void cFont::WrapText(int Width, int Height, std::string & Text,
             textWidth = 0;
             lineCount++;
         }
-        else if (textWidth >= Width && (lineCount + 1) < maxLines)
+        else if (textWidth + this->Width(c) > Width  && (lineCount + 1) < maxLines)
         {
             if (posLast > start)
             {
@@ -604,56 +609,38 @@ void cFont::WrapText(int Width, int Height, std::string & Text,
                 Lines.push_back(trim(Text.substr(start, pos - start)));
                 start = pos /*+ 1*/;
                 posLast = start;
-                textWidth = this->Width(Text[pos]) + spaceBetween;
+                textWidth = this->Width(c) + spaceBetween;
             }
             lineCount++;
         }
-        else if (Text[pos] == ' ')
+        else if (isspace(c))
         {
             posLast = pos;
-            textWidth += this->Width(Text[pos]) + spaceBetween;
+            textWidth += this->Width(c) + spaceBetween;
+        }
+        else if ( (c < 0x80) && strchr("-.,:;!?_", (int)c) )
+        {
+            posLast = pos+1;
+            textWidth += this->Width(c) + spaceBetween;
         }
         else
         {
-            textWidth += this->Width(Text[pos]) + spaceBetween;
+            textWidth += this->Width(c) + spaceBetween;
         }
+        pos = posraw;
         pos++;
     }
+    if (start < Text.length()) {
+        Lines.push_back(trim(Text.substr(start)));
+    }
 
-    if (Height == 0 || lineCount < maxLines)
-    {
-        if (textWidth >= Width && (lineCount + 1) < maxLines)
-        {
-            if (posLast > start)
-            {
-                Lines.push_back(trim(Text.substr(start, posLast - start)));
-                start = posLast /*+ 1*/;
-                posLast = start;
-                textWidth = this->Width(Text.substr(start, pos - start + 1)) + spaceBetween;
-            }
-            else
-            {
-                Lines.push_back(trim(Text.substr(start, pos - start)));
-                start = pos /*+ 1*/;
-                posLast = start;
-                textWidth = this->Width(Text[pos]) + spaceBetween;
-            }
-            lineCount++;
-        }
-        if (pos > start)
-        {
-            Lines.push_back(trim(Text.substr(start)));
-            lineCount++;
-        }
+    if (ActualWidth) {
         textWidth = 0;
         for (int i = 0; i < lineCount; i++)
             textWidth = std::max(textWidth, this->Width(Lines[i]));
         textWidth = std::min(textWidth, Width);
-    }
-    else
-        textWidth = Width;
-    if (ActualWidth)
         *ActualWidth = textWidth;
+    }
 }
 
 } // end of namespace
