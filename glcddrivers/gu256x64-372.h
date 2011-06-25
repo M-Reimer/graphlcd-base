@@ -16,7 +16,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas 'randy' Weinberger (randy AT smue.org)
+ * (c) 2004-2011 Andreas 'randy' Weinberger (randy AT smue.org)
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #ifndef _GLCDDRIVERS_GU256X64_372_H_
@@ -57,7 +58,6 @@ class cDriverGU256X64_372 : public cDriver
 
 protected:
     void ClearVFDMem();
-    void SetPixel(int x, int y, uint32_t data);
     void GU256X64Cmd(unsigned char data);
     void GU256X64Data(unsigned char data);
 
@@ -69,7 +69,8 @@ public:
     virtual int DeInit();
 
     virtual void Clear();
-    virtual void Set8Pixels(int x, int y, unsigned char data);
+    virtual void SetPixel(int x, int y, uint32_t data);
+    //virtual void Set8Pixels(int x, int y, unsigned char data);
     virtual void Refresh(bool refreshAll = false);
 
     virtual void SetBrightness(unsigned int percent);

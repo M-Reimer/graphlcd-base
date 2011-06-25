@@ -18,7 +18,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2007 Alexander Rieger (Alexander.Rieger AT inka.de)
+ * (c) 2007      Alexander Rieger (Alexander.Rieger AT inka.de)
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <errno.h>
@@ -417,7 +418,7 @@ int cDriverGU126X64D_K610A4::write(unsigned char data)
 } // cDriverGU126X64D_K610A4::write()
 
 //-----------------------------------------------------------------------------
-void cDriverGU126X64D_K610A4::setPixel(int x, int y, uint32_t data)
+void cDriverGU126X64D_K610A4::SetPixel(int x, int y, uint32_t data)
 {
     if (!myDrawMem          ) return;
     if (x >= width  || x < 0) return;
@@ -431,9 +432,13 @@ void cDriverGU126X64D_K610A4::setPixel(int x, int y, uint32_t data)
 
     unsigned char c = 0x80 >> (y % 8);
 
-    myDrawMem[x][y/8] = myDrawMem[x][y/8] | c;
-} // cDriverGU126X64D_K610A4::setPixel()
+    if (data == GLCD::cColor::White)
+        myDrawMem[x][y/8] |= c;
+    else
+        myDrawMem[x][y/8] &= ( 0xFF ^ c );
+} // cDriverGU126X64D_K610A4::SetPixel()
 
+#if 0
 //-----------------------------------------------------------------------------
 void cDriverGU126X64D_K610A4::Set8Pixels(int x, int y, unsigned char data)
 {
@@ -448,6 +453,7 @@ void cDriverGU126X64D_K610A4::Set8Pixels(int x, int y, unsigned char data)
         } // if
     } // for
 } // cDriverGU126X64D_K610A4::Set8Pixels()
+#endif
 
 //-----------------------------------------------------------------------------
 void cDriverGU126X64D_K610A4::Refresh(bool refreshAll)

@@ -4,6 +4,8 @@
  * g15daemon.h  -  pseudo device for the g15daemon
  *                   Output goes to the g15daemon which then displays it
  *
+ * (c) 2005-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #ifndef _GLCDDRIVERS_G15DAEMON_H_
@@ -30,7 +32,6 @@ private:
     int zoom;
 
     int CheckSetup();
-    void SetPixel(int x, int y, uint32_t data);
 
 public:
     cDriverG15daemon(cDriverConfig * config);
@@ -40,7 +41,8 @@ public:
     virtual int DeInit();
 
     virtual void Clear();
-    virtual void Set8Pixels(int x, int y, unsigned char data);
+    virtual void SetPixel(int x, int y, uint32_t data);
+    //virtual void Set8Pixels(int x, int y, unsigned char data);
     virtual void Refresh(bool refreshAll = false);
 };
 

@@ -62,7 +62,7 @@ public:
 
     virtual void Clear() {}
     virtual void SetPixel(int x, int y, uint32_t data) {}
-    virtual void Set8Pixels(int x, int y, unsigned char data);
+            void Set8Pixels(int x, int y, unsigned char data);
 //    virtual void SetScreen(const unsigned char * data, int width, int height, int lineSize);
     virtual void SetScreen(const uint32_t *data, int width, int height);
     virtual void Refresh(bool refreshAll = false) {}

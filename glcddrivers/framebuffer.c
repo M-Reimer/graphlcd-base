@@ -7,7 +7,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Stephan Skrodzki
+ * (c) 2004      Stephan Skrodzki
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <fcntl.h>
@@ -164,17 +165,19 @@ void cDriverFramebuffer::SetPixel(int x, int y, uint32_t data)
         y = height - 1 - y;
     }
 
+
     // Figure out where in memory to put the pixel
     location = (x*(1+zoom)+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
                (y*(1+zoom)+vinfo.yoffset) * finfo.line_length;
 
-    if (vinfo.bits_per_pixel <= 8)
-    {
-        outcol = 15;
-    }
-    else
-    {
-        outcol = 255;
+    if (data == GLCD::cColor::White) {
+        if (vinfo.bits_per_pixel <= 8) {
+            outcol = 15;
+        } else {
+            outcol = 255;
+        }
+    } else {
+        outcol = 0;
     }
 
     if (vinfo.bits_per_pixel <= 8)
@@ -230,6 +233,7 @@ void cDriverFramebuffer::Clear()
     memset(offbuff, 0, screensize);
 }
 
+#if 0
 void cDriverFramebuffer::Set8Pixels(int x, int y, unsigned char data)
 {
     int n;
@@ -242,6 +246,7 @@ void cDriverFramebuffer::Set8Pixels(int x, int y, unsigned char data)
             SetPixel(x + n, y, GLCD::cColor::White);
     }
 }
+#endif
 
 void cDriverFramebuffer::Refresh(bool refreshAll)
 {

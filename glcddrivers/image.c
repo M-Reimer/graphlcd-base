@@ -105,6 +105,7 @@ void cDriverImage::Clear()
     memset(newLCD, 0, lineSize * height);
 }
 
+#if 0
 void cDriverImage::Set8Pixels(int x, int y, unsigned char data)
 {
     if (x >= width || y >= height)
@@ -123,28 +124,25 @@ void cDriverImage::Set8Pixels(int x, int y, unsigned char data)
         newLCD[lineSize * y + x / 8] |= ReverseBits(data);
     }
 }
+#endif
 
 void cDriverImage::SetPixel(int x, int y, uint32_t data)
 {
     if (x >= width || y >= height)
         return;
 
-    if ((data | 0xFF000000) != cColor::Black) {
-      data = cColor::White;
-    }
-
-    if (!config->upsideDown)
+    int pos = x % 8;
+    if (config->upsideDown)
     {
-        // normal orientation
-        newLCD[y * x] |= data;
-    }
-    else
-    {
-        // upside down orientation
         x = width - 1 - x;
         y = height - 1 - y;
-        newLCD[y * x] |= ReverseBits(data);
+        pos = 7 - pos; // reverse bit position
     }
+
+    if (data == GLCD::cColor::White)
+        newLCD[y * x] |= ( 1 << pos );
+    else
+        newLCD[y * x] &= ( 0xFF ^ ( 1 << pos) );
 }
 
 void cDriverImage::Refresh(bool refreshAll)

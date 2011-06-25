@@ -14,7 +14,9 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2003 Andreas Brachold <vdr04 AT deltab.de>
+ * (c) 2003      Andreas Brachold <vdr04 AT deltab.de>
+ * (c) 2005-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <errno.h>
@@ -348,9 +350,13 @@ void cDriverGU140X32F::SetPixel(int x, int y, uint32_t data)
     n = x + ((y / 8) * width);
     c = 0x80 >> (y % 8);
 
-    m_pDrawMem[n] |= c;
+    if (data == GLCD::cColor::White)
+        m_pDrawMem[n] |= c;
+    else
+        m_pDrawMem[n] &= (0xFF ^ c);
 }
 
+#if 0
 void cDriverGU140X32F::Set8Pixels(int x, int y, unsigned char data)
 {
     int n;
@@ -364,6 +370,7 @@ void cDriverGU140X32F::Set8Pixels(int x, int y, unsigned char data)
             SetPixel(x + n, y, GLCD::cColor::White);
     }
 }
+#endif
 
 void cDriverGU140X32F::Refresh(bool refreshAll)
 {

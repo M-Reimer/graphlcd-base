@@ -7,6 +7,8 @@
 * This file is released under the GNU General Public License. Refer
 * to the COPYING file distributed with this package.
 *
+* (c) 2005-2010 Andreas Regel <andreas.regel AT powarman.de>
+* (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
 */
 
 #include <fcntl.h>
@@ -191,7 +193,7 @@ void cDriverG15daemon::SetPixel(int x, int y, uint32_t data)
         y = height - 1 - y;
     }
 
-    offbuff[x + (width * y)] = 1;
+    offbuff[x + (width * y)] = ( (data == GLCD::cColor::White) ? 1 : 0 );
 }
 
 void cDriverG15daemon::Clear()
@@ -199,6 +201,7 @@ void cDriverG15daemon::Clear()
     memset(offbuff, 0, screensize);
 }
 
+#if 0
 void cDriverG15daemon::Set8Pixels(int x, int y, unsigned char data)
 {
     int n;
@@ -211,6 +214,7 @@ void cDriverG15daemon::Set8Pixels(int x, int y, unsigned char data)
             SetPixel(x + n, y, GLCD::cColor::White);
     }
 }
+#endif
 
 void cDriverG15daemon::Refresh(bool refreshAll)
 {

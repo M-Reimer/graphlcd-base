@@ -8,7 +8,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2003, 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2003-2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <syslog.h>
@@ -376,6 +377,50 @@ void cDriverT6963C::Clear()
         memset(newLCD[x], 0, height);
 }
 
+
+void cDriverT6963C::SetPixel(int x, int y, uint32_t data)
+{
+    if (x >= width || y >= height)
+        return;
+
+    if (FS == 6)
+    {
+        int pos = x % 6;
+        if (config->upsideDown)
+        {
+            x = width - 1 - x;
+            y = height - 1 - y;
+            pos = 5 - pos; // reverse bit position
+        }
+
+        // columns_per_line = (width + FS6-1) / FS6  (FS6 == 6 bits per byte used)
+        //int cols = (width + 6 - 1 ) / 6;
+        int col = x / 6;
+        
+        if (data == GLCD::cColor::White)
+            newLCD[col][y] |= (1 << pos);
+        else
+            newLCD[col][y] &= ( 0x3F ^ (1 << pos) );        
+    }
+    else
+    {
+        int pos = x % 8;
+        if (config->upsideDown)
+        {
+            x = width - 1 - x;
+            y = height - 1 - y;
+            pos = 7 - pos; // reverse bit position
+        }
+
+        if (data == GLCD::cColor::White)
+            newLCD[x / 8][y] |= (1 << pos);
+        else
+            newLCD[x / 8][y] &= ( 0xFF ^ (1 << pos) );
+    }
+}
+
+
+#if 0
 void cDriverT6963C::Set8Pixels(int x, int y, unsigned char data)
 {
     if (x >= width || y >= height)
@@ -446,6 +491,7 @@ void cDriverT6963C::Set8Pixels(int x, int y, unsigned char data)
         }
     }
 }
+#endif
 
 void cDriverT6963C::Refresh(bool refreshAll)
 {

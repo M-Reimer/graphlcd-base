@@ -6,7 +6,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2003 Andreas 'randy' Weinberger <vdr AT smue.org>
+ * (c) 2003-2011 Andreas 'randy' Weinberger <vdr AT smue.org>
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <syslog.h>
@@ -303,6 +304,28 @@ void cDriverSED1520::Clear()
         memset(LCD[x], 0, height);
 }
 
+
+void cDriverSED1520::SetPixel (int x, int y, uint32_t data)
+{
+    if (x >= width || y >= height)
+        return;
+
+    int pos = x % 8;
+    if (config->upsideDown)
+    {
+        x = width - 1 - x;
+        y = height - 1 - y;
+        pos = 7 - pos; // reverse bit position
+    }
+
+    if (data == GLCD::cColor::White)
+        LCD[x / 8][y] |= ( 1 << pos );
+    else
+        LCD[x / 8][y] &= (0xFF ^ ( 1 << pos ));
+}
+
+
+#if 0
 void cDriverSED1520::Set8Pixels (int x, int y, unsigned char data)
 {
     if (x >= width || y >= height)
@@ -321,6 +344,7 @@ void cDriverSED1520::Set8Pixels (int x, int y, unsigned char data)
         LCD[x / 8][y] = LCD[x / 8][y] | ReverseBits(data);
     }
 }
+#endif
 
 void cDriverSED1520::Refresh(bool refreshAll)
 {

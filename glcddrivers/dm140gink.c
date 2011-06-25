@@ -7,7 +7,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Stephan Skrodzki
+ * (c) 2004      Stephan Skrodzki
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <fcntl.h>
@@ -267,7 +268,10 @@ void cDriverDM140GINK::SetPixel(int x, int y, uint32_t data)
 
     int offset = (y/8) * width + x;
     char mask = (1 << (7 - (y%8)));
-    framebuff[offset] |= mask;
+    if (data == GLCD::cColor::White)
+        framebuff[offset] |= mask;
+    else
+        framebuff[offset] &= (0xFF ^ mask);
 }
 
 void cDriverDM140GINK::Clear()
@@ -275,6 +279,7 @@ void cDriverDM140GINK::Clear()
     memset(framebuff, 0, screensize);
 }
 
+#if 0
 void cDriverDM140GINK::Set8Pixels(int x, int y, unsigned char data)
 {
     x &= 0xFFF8;
@@ -285,6 +290,7 @@ void cDriverDM140GINK::Set8Pixels(int x, int y, unsigned char data)
             SetPixel(x + n, y, GLCD::cColor::White);
     }
 }
+#endif
 
 void cDriverDM140GINK::Refresh(bool refreshAll)
 {

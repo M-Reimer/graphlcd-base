@@ -7,7 +7,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004      Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <stdio.h>
@@ -122,6 +123,28 @@ void cDriverNetwork::Clear()
     memset(newLCD, 0, lineSize * height);
 }
 
+
+void cDriverNetwork::SetPixel(int x, int y, uint32_t data)
+{
+    if (x >= width || y >= height)
+        return;
+
+    int pos = x % 8;
+    if (config->upsideDown)
+    {
+        x = width - 1 - x;
+        y = height - 1 - y;
+        pos = 7 - pos; // reverse bit position
+    }
+
+    if (data == GLCD::cColor::White)
+        newLCD[lineSize * y + x / 8] |= (1 << pos);
+    else
+        newLCD[lineSize * y + x / 8] &= ( 0xFF ^ (1 << pos) );
+}
+
+
+#if 0
 void cDriverNetwork::Set8Pixels(int x, int y, unsigned char data)
 {
     if (x >= width || y >= height)
@@ -140,6 +163,7 @@ void cDriverNetwork::Set8Pixels(int x, int y, unsigned char data)
         newLCD[lineSize * y + x / 8] |= ReverseBits(data);
     }
 }
+#endif
 
 void cDriverNetwork::Refresh(bool refreshAll)
 {

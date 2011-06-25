@@ -6,7 +6,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2005 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2005-2010 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <stdint.h>
@@ -176,6 +177,27 @@ void cDriverAvrCtl::Clear()
         memset(newLCD[x], 0, (kBufferHeight + 7) / 8);
 }
 
+
+void cDriverAvrCtl::SetPixel(int x, int y, uint32_t data)
+{
+    if (x >= width || y >= height)
+        return;
+
+    if (config->upsideDown)
+    {
+        x = width - 1 - x;
+        y = height - 1 - y;
+    }
+
+    int offset = 7 - (y % 8);
+    if (data == GLCD::cColor::White)
+        newLCD[x][y / 8] |= (1 << offset);
+    else
+        newLCD[x][y / 8] &= ( 0xFF ^ (1 << offset) );
+}
+
+
+#if 0
 void cDriverAvrCtl::Set8Pixels(int x, int y, unsigned char data)
 {
     if (x >= width || y >= height)
@@ -200,6 +222,7 @@ void cDriverAvrCtl::Set8Pixels(int x, int y, unsigned char data)
         }
     }
 }
+#endif
 
 void cDriverAvrCtl::Refresh(bool refreshAll)
 {

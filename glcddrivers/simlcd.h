@@ -9,6 +9,8 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2001-2004 Carsten Siebholz <c.siebholz AT t-online.de>
+ * (c) 2011      Dirk Heiser
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #ifndef _GLCDDRIVERS_SIMLCD_H_
