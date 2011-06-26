@@ -101,6 +101,7 @@ bool cExtFormatFile::Load(cImage & image, const string & fileName)
         //Dprintf("this image has %d colors\n", (*it).totalColors());
 
         bool isMatte = (*it).matte();
+        bool isMonochrome = ((*it).totalColors() <= 2) ? true : false;
         const PixelPacket *pix = (*it).getConstPixels(0, 0, (int)width, (int)height);
 
         for (int iy = 0; iy < (int)height; ++iy) {
@@ -110,12 +111,20 @@ bool cExtFormatFile::Load(cImage & image, const string & fileName)
             } else {
                 //bmpdata[iy*width+ix] = (uint32_t)( 0xFF000000 | (int(pix->red * 255 / MaxRGB) << 16) | (int(pix->green * 255 / MaxRGB) << 8) | int(pix->blue * 255 / MaxRGB));
                 bmpdata[iy*width+ix] = (uint32_t)( (int(255 - (pix->opacity * 255 / MaxRGB)) << 24)  | (int(pix->red * 255 / MaxRGB) << 16) | (int(pix->green * 255 / MaxRGB) << 8) | int(pix->blue * 255 / MaxRGB));
+                if ( isMonochrome ) {  // if is monochrome: exchange black and white
+                    uint32_t c = bmpdata[iy*width+ix];
+                    switch(c) {
+                        case cColor::White: c = cColor::Black; break;
+                        case cColor::Black: c = cColor::White; break;
+                    }
+                    bmpdata[iy*width+ix] =  c;
+                }
             }
             ++pix;
           }
         }
         cBitmap * b = new cBitmap(width, height, bmpdata);
-        b->SetMonochrome(false);
+        b->SetMonochrome(isMonochrome);
         image.AddBitmap(b);
         delete[] bmpdata;
         bmpdata = NULL;
