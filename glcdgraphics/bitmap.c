@@ -97,8 +97,10 @@ cBitmap::cBitmap(int width, int height, uint32_t initcol)
     printf("%s:%s(%d) cBitmap Size %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, width, height);
 #endif
 
-    bitmap = new uint32_t[width * height];
-    Clear(initcol);
+    if (width > 0 && height > 0) {
+        bitmap = new uint32_t[width * height];
+        Clear(initcol);
+    }
 }
 
 cBitmap::cBitmap(const cBitmap & b)
@@ -117,7 +119,9 @@ cBitmap::cBitmap(const cBitmap & b)
 
 cBitmap::~cBitmap()
 {
-    delete[] bitmap;
+    if (bitmap)
+        delete[] bitmap;
+    bitmap = NULL;
 }
 
 void cBitmap::Clear(uint32_t color)
@@ -726,6 +730,11 @@ int cBitmap::DrawCharacter(int x, int y, int xmax, uint32_t c, const cFont * fon
 
 uint32_t cBitmap::GetPixel(int x, int y) const
 {
+    if (x < 0 || x > width - 1)
+        return cColor::Transparent;
+    if (y < 0 || y > height - 1)
+        return cColor::Transparent;
+
     uint32_t value;
     value = bitmap[y * width + x];
     return value;
@@ -756,6 +765,7 @@ cBitmap * cBitmap::SubBitmap(int x1, int y1, int x2, int y2) const
     if (!bmp || !bmp->Data())
         return NULL;
     bmp->Clear();
+    bmp->SetMonochrome(this->IsMonochrome());
 
     for (yt = 0; yt < h; yt++)
     {
@@ -848,7 +858,8 @@ bool cBitmap::LoadPBM(const std::string & fileName)
     str[i] = 0;
     h = atoi(str);
 
-    delete[] bitmap;
+    if (bitmap)
+        delete[] bitmap;
     width = w;
     height = h;
     bitmap = new uint32_t [width * height];

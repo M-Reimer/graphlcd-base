@@ -162,6 +162,9 @@ bool cPBMFile::Save(cImage & image, const std::string & fileName)
     FILE * fp;
     char str[32];
     const cBitmap * bitmap;
+    unsigned char* rawdata = NULL;
+    int rawdata_size = 0;
+    const uint32_t * bmpdata = NULL;
 
     if (image.Count() == 1)
     {
@@ -169,14 +172,29 @@ bool cPBMFile::Save(cImage & image, const std::string & fileName)
         if (fp)
         {
             bitmap = image.GetBitmap(0);
-            if (bitmap)
+            rawdata_size = ((bitmap->Width() + 7) / 8) * bitmap->Height();
+            rawdata = new unsigned char[ rawdata_size ];
+            bmpdata = bitmap->Data();
+
+            if (bitmap && rawdata && bmpdata)
             {
+                memset(rawdata, 0, rawdata_size );
+                for (int y = 0; y < bitmap->Height(); y++) {
+                    int startpos = y * ((bitmap->Width() + 7) / 8);
+                    for (int x = 0; x < bitmap->Width(); x++) {
+                        if (bmpdata[ y * bitmap->Width() + x ] == cColor::Black) {
+                            rawdata[ startpos + (x / 8) ] |= (1 << ( 7 - ( x % 8 ) ));
+                        }
+                    }
+                }
                 sprintf(str, "P4\n%d %d\n", bitmap->Width(), bitmap->Height());
                 fwrite(str, strlen(str), 1, fp);
 //                fwrite(bitmap->Data(), bitmap->LineSize() * bitmap->Height(), 1, fp);
-                fwrite(bitmap->Data(), bitmap->Width() * bitmap->Height(), 1, fp);
+                fwrite(rawdata, rawdata_size, 1, fp);
             }
             fclose(fp);
+            delete[] rawdata;
+            rawdata = NULL;
         }
     }
     else
@@ -191,14 +209,29 @@ bool cPBMFile::Save(cImage & image, const std::string & fileName)
             if (fp)
             {
                 bitmap = image.GetBitmap(i);
-                if (bitmap)
+                rawdata_size = ((bitmap->Width() + 7) / 8) * bitmap->Height();
+                rawdata = new unsigned char[ rawdata_size ];
+                bmpdata = bitmap->Data();
+
+                if (bitmap && rawdata && bmpdata)
                 {
+                    memset(rawdata, 0, rawdata_size );
+                    for (int y = 0; y < bitmap->Height(); y++) {
+                        int startpos = y * ((bitmap->Width() + 7) / 8);
+                        for (int x = 0; x < bitmap->Width(); x++) {
+                            if (bmpdata[ y * bitmap->Width() + x ] == cColor::Black) {
+                                rawdata[ startpos + (x / 8) ] |= (1 << ( 7 - ( x % 8 ) ));
+                            }
+                        }
+                    }
                     sprintf(str, "P4\n%d %d\n", bitmap->Width(), bitmap->Height());
                     fwrite(str, strlen(str), 1, fp);
 //                    fwrite(bitmap->Data(), bitmap->LineSize() * bitmap->Height(), 1, fp);
-                    fwrite(bitmap->Data(), bitmap->Width() * bitmap->Height(), 1, fp);
+                    fwrite(rawdata, rawdata_size, 1, fp);
                 }
                 fclose(fp);
+                delete[] rawdata;
+                rawdata = NULL;
             }
         }
     }
