@@ -19,6 +19,8 @@
 
 #include <glcdgraphics/bitmap.h>
 #include <glcdgraphics/font.h>
+#include <glcdgraphics/image.h>
+#include <glcdgraphics/pbm.h>
 
 static const char *prgname = "genfont";
 static const char *version = "0.0.2";
@@ -138,9 +140,10 @@ int main(int argc, char *argv[])
         fprintf(descFile, "spacebetween:%d\n", 0);
         fprintf(descFile, "spacewidth:%d\n", 0);
 
-        for (unsigned int i = 0; i < 256; i++)
+        for (uint32_t i = 0; i < 256; i++)
         {
-            const GLCD::cBitmap * charBitmap = font.GetCharacter((char) i);
+            const GLCD::cBitmap * charBitmap = font.GetCharacter(i);
+
             if (charBitmap == NULL)
                 continue;
 
@@ -155,12 +158,33 @@ int main(int argc, char *argv[])
             }
         }
 
+        // invert image
+        for(int y=0; y < bitmap->Height(); y++) {
+            for(int x=0; x < bitmap->Width(); x++) {
+                bitmap->DrawPixel(x, y, GLCD::cColor(bitmap->GetPixel(x, y)).Invert());
+            }
+        }
+
         if (posX > 0) // write last end marker
             fprintf(descFile, "%d\n", posX);
         fileName = outputName + ".pbm";
-        bitmap->SavePBM(fileName);
-        delete bitmap;
+
+        GLCD::cPBMFile pbm;
+        GLCD::cImage* image = new GLCD::cImage();
+
+        if (!image)
+            return 3;
+
+        image->AddBitmap(bitmap);
+
+        if (pbm.Save(*image, fileName) == false) {
+            fprintf(stderr, "Cannot save file: %s\n",fileName.c_str());
+            delete image;
+            return 2;
+        }
+
         fclose(descFile);
+        delete image;
     }
 
     fprintf(stdout, "Font successfully generated.\n");

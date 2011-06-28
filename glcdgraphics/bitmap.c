@@ -771,13 +771,69 @@ cBitmap * cBitmap::SubBitmap(int x1, int y1, int x2, int y2) const
     {
       for (xt = 0; xt < w; xt++)
       {
-        cl = bitmap[(w*yt+y1)+xt+x1];
+        cl = this->GetPixel(xt+x1, yt+y1);
         bmp->DrawPixel(xt,yt, cl);
       }
     }
     return bmp;
 }
 
+
+// convert a new 32 bpp bitmap to an old style 1bpp bitmap (bit order: from least to most sig. bit:  byte: [ 0, 1, 2, 3, 4, 5, 6, 7 ])
+// if IsMonochrome(): ignore threshold
+const unsigned char* cBitmap::ConvertTo1BPP(const cBitmap & bitmap, int threshold)
+{
+    if (bitmap.Width() <= 0 || bitmap.Height() <= 0)
+        return NULL;
+
+    int cols = (bitmap.Width() + 7 ) / 8;
+    unsigned char* monobmp = new unsigned char[ cols * bitmap.Height() ];
+    if (!monobmp)
+        return NULL;
+
+    memset(monobmp, 0, cols * bitmap.Height());
+
+    uint32_t col;
+    unsigned char greyval = 0;
+    bool ismono = bitmap.IsMonochrome();
+    
+    for (int y = 0; y < bitmap.Height(); y++) {
+        for (int x = 0; x < bitmap.Width(); x++) {
+            col = bitmap.GetPixel(x, y);
+            if (! ismono) {
+                // col -> grey level
+                greyval = (((0x00FF0000 & col) >> 16) * 77 + ((0x0000FF00 * col) >> 8) * 150 + (0x000000FF & col) * 28) / 255;
+                col = (greyval >= threshold) ? cColor::White : cColor::Black;
+            }
+
+            if ( col == cColor::Black)
+                monobmp[ y * cols + (x >> 3) ] |= ( 1 << ( 7 - (x % 8) ) );
+        }
+    }
+    return monobmp;    
+}
+
+
+// convert an old style 1 bpp bitmap to new 32 bpp bitmap (bit order: from least to most sig. bit:  byte: [ 0, 1, 2, 3, 4, 5, 6, 7 ])
+const cBitmap* cBitmap::ConvertFrom1BPP(const unsigned char* monobmp, int w, int h, uint32_t fg, uint32_t bg)
+{
+    if (w <= 0 || h <= 0 || !monobmp)
+        return NULL;
+    
+    cBitmap* bmp = new cBitmap(w, h, bg);
+    if (bmp == NULL)
+        return NULL;
+    
+    int cols = (w + 7 ) / 8;
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            bmp->DrawPixel(x, y,  ( monobmp[ y * cols + (x >> 3) ] & ( 1 << (7 - (x % 8)) ) ) ? fg : bg );
+        }
+    }
+    return bmp;
+}
+
+#if 0
 bool cBitmap::LoadPBM(const std::string & fileName)
 {
 #ifdef DEBUG
@@ -890,5 +946,6 @@ void cBitmap::SavePBM(const std::string & fileName)
         fclose(fp);
     }
 }
+#endif
 
 } // end of namespace

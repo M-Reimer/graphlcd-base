@@ -133,9 +133,14 @@ public:
 
     void SetProcessAlpha(bool procAlpha) { processAlpha = procAlpha; }
     bool IsProcessAlpha(void) const { return processAlpha; }
+    
+    static const unsigned char* ConvertTo1BPP(const cBitmap & bitmap, int threshold = 127);
+    static const cBitmap* ConvertFrom1BPP(const unsigned char* monobmp, int w, int h, uint32_t fg = cColor::White, uint32_t bg = cColor::Black);
 
+#if 0
     bool LoadPBM(const std::string & fileName);
     void SavePBM(const std::string & fileName);
+#endif
 };
 
 } // end of namespace

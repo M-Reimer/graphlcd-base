@@ -176,6 +176,7 @@ bool cFont::LoadFNT(const std::string & fileName, const std::string & encoding)
         int num = 0;
         uint dot; uint b;
         cBitmap * charBitmap = new cBitmap(charWidth, fontHeight);
+        charBitmap->SetMonochrome(true);
         charBitmap->Clear();
         for (num=0; num<fontHeight * ((charWidth + 7) / 8);num++) {
             y = (charWidth + 7) / 8;
@@ -220,7 +221,7 @@ bool cFont::SaveFNT(const std::string & fileName) const
     numChars = 0;
     for (i = 0; i < 256; i++)
     {
-        if (characters[i])
+        if (GetCharacter(i))
         {
             numChars++;
         }
@@ -243,17 +244,20 @@ bool cFont::SaveFNT(const std::string & fileName) const
     // write font file header
     fwrite(fhdr, kFontHeaderSize, 1, fontFile);
 
+    const cBitmap* charbmp = NULL;
     for (i = 0; i < 256; i++)
     {
-        if (characters[i])
+        charbmp = GetCharacter(i);
+        if (charbmp)
         {
             chdr[0] = (uint8_t) i;
             chdr[1] = (uint8_t) (i >> 8);
-            chdr[2] = (uint8_t) characters[i]->Width();
-            chdr[3] = (uint8_t) (characters[i]->Width() >> 8);
+            chdr[2] = (uint8_t) charbmp->Width();
+            chdr[3] = (uint8_t) (charbmp->Width() >> 8);
             fwrite(chdr, kCharHeaderSize, 1, fontFile);
-//            fwrite(characters[i]->Data(), totalHeight * characters[i]->LineSize(), 1, fontFile);
-            fwrite(characters[i]->Data(), totalHeight * characters[i]->Width(), 1, fontFile);
+            const unsigned char* monobmp = cBitmap::ConvertTo1BPP(*charbmp);
+            fwrite(monobmp /*characters[i]->Data()*/, totalHeight * ((charbmp->Width() + 7) / 8), 1, fontFile);
+            delete[] monobmp;
         }
     }
 
@@ -467,7 +471,8 @@ const cBitmap * cFont::GetCharacter(uint32_t ch) const
         } else {
             // now, fill our pixel data
             cBitmap *charBitmap = new cBitmap(face->glyph->advance.x >> 6, TotalHeight());
-            charBitmap->Clear();
+            charBitmap->Clear(cColor::White);
+            charBitmap->SetMonochrome(true);
             unsigned char * bufPtr = face->glyph->bitmap.buffer;
             unsigned char pixel;
             for (int y = 0; y < face->glyph->bitmap.rows; y++)

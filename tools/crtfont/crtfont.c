@@ -10,7 +10,9 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004      Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ *               Andreas 'randy' Weinberger
  */
 
 #include <getopt.h>
@@ -20,6 +22,8 @@
 #include <string.h>
 #include <glcdgraphics/bitmap.h>
 #include <glcdgraphics/font.h>
+#include <glcdgraphics/image.h>
+#include <glcdgraphics/pbm.h>
 
 static const char *prgname = "crtfont";
 static const char *version = "0.1.6";
@@ -151,15 +155,25 @@ int main(int argc, char *argv[])
     // Load Picture
     switch (picFormat)
     {
-        case PBM:
-            bitmap = new GLCD::cBitmap(0, 0);
-            bitmap->LoadPBM(picName);
-            if (!bitmap)
-            {
+        case PBM: {
+            GLCD::cPBMFile pbm;
+            GLCD::cImage* image = new GLCD::cImage();
+
+            if (!image)
+                return 3;
+
+            if (pbm.Load(*image, picName) == false) {
                 fprintf(stderr, "Cannot open file: %s\n",picName);
+                delete image;
                 return 2;
             }
-            break;
+
+            const GLCD::cBitmap * pbmbm = image->GetBitmap();
+            bitmap = new GLCD::cBitmap(*pbmbm);
+            delete image;
+            pbmbm = NULL;
+        }
+        break;
 
         default:
             return 2;
@@ -296,7 +310,7 @@ void usage(void)
     fprintf(stdout, "        graphlcd plugin for VDR.\n\n");
     fprintf(stdout, "  Usage: %s -f <format> -b bmpfile -d descfile -o outfile\n\n", prgname);
     fprintf(stdout, "  -f  --format      specifies the format of the bitmap. Possible values are:\n");
-    fprintf(stdout, "                    PBM : file is an binary PBM file\n" );
+    fprintf(stdout, "                    PBM : file is a binary PBM file\n" );
     fprintf(stdout, "  -b  --bmpfile     specifies the name of the bitmap file (*.pbm)\n");
     fprintf(stdout, "  -d  --descfile    specifies the name of the description file (*.desc)\n");
     fprintf(stdout, "  -o  --outfile     specifies the name of the output file (*.fnt)\n");
