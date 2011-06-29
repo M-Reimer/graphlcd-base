@@ -37,7 +37,7 @@ void usage()
 {
 	fprintf(stdout, "\n");
 	fprintf(stdout, "%s v%s\n", prgname, version);
-	fprintf(stdout, "%s is a tool to show a text on a LCD.\n", prgname);
+	fprintf(stdout, "%s is a tool to show a text on an LCD.\n", prgname);
 	fprintf(stdout, "\n");
 	fprintf(stdout, "  Usage: %s [-c CONFIGFILE] [-d DISPLAY] [-f FONT] [-x XPOS] [-y YPOS] [-uib] text [more text]\n\n", prgname);
 	fprintf(stdout, "  -c  --config      specifies the location of the config file\n");

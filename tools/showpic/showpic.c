@@ -56,7 +56,7 @@ void usage()
 {
 	fprintf(stdout, "\n");
 	fprintf(stdout, "%s v%s\n", prgname, version);
-	fprintf(stdout, "%s is a tool to show an image on a LCD.\n", prgname);
+	fprintf(stdout, "%s is a tool to show an image on an LCD.\n", prgname);
 	fprintf(stdout, "The image must be in a special format (*.glcd).\n");
 	fprintf(stdout, "You can create such images with the convpic tool.\n\n");
 	fprintf(stdout, "  Usage: %s [-c CONFIGFILE] [-d DISPLAY] [-s SLEEP] [-uie] file [more files]\n\n", prgname);
@@ -67,7 +67,7 @@ void usage()
 	fprintf(stdout, "  -i  --invert      inverts the output (default: no)\n");
 	fprintf(stdout, "  -e  --endless     show all images in endless loop (default: no)\n");
 	fprintf(stdout, "  -s  --sleep       set sleeptime between two images [ms] (default: %d ms)\n", kDefaultSleepMs);
-	fprintf(stdout, "  -b  --brightness  set brightness for display if driver support it [%%]\n");
+	fprintf(stdout, "  -b  --brightness  set brightness for display (if supported by the driver) [%%]\n");
 	fprintf(stdout, "                    (default: config file value)\n");
 	fprintf(stdout, "\n" );
 	fprintf(stdout, "  examples: %s -c /etc/graphlcd.conf vdr-logo.glcd\n", prgname);

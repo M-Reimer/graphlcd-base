@@ -18,6 +18,12 @@ OBJS = common.o config.o driver.o drivers.o port.o simlcd.o framebuffer.o gu140x
 
 HEADERS = config.h driver.h drivers.h
 
+ifeq ($(shell pkg-config --exists libhid && echo 1), 1)
+OBJS += futabaMDM166A.o
+INCLUDES += $(shell pkg-config --cflags libhid)
+LIBS += $(shell pkg-config --libs libhid)
+DEFINES += -DHAVE_LIBHID
+endif
 
 ### Implicit rules:
 
