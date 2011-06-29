@@ -182,7 +182,7 @@ bool cPBMFile::Save(cImage & image, const std::string & fileName)
                 for (int y = 0; y < bitmap->Height(); y++) {
                     int startpos = y * ((bitmap->Width() + 7) / 8);
                     for (int x = 0; x < bitmap->Width(); x++) {
-                        if (bmpdata[ y * bitmap->Width() + x ] == cColor::Black) {
+                        if (bmpdata[ y * bitmap->Width() + x ] == cColor::White) {
                             rawdata[ startpos + (x / 8) ] |= (1 << ( 7 - ( x % 8 ) ));
                         }
                     }

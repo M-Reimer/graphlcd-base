@@ -158,13 +158,6 @@ int main(int argc, char *argv[])
             }
         }
 
-        // invert image
-        for(int y=0; y < bitmap->Height(); y++) {
-            for(int x=0; x < bitmap->Width(); x++) {
-                bitmap->DrawPixel(x, y, GLCD::cColor(bitmap->GetPixel(x, y)).Invert());
-            }
-        }
-
         if (posX > 0) // write last end marker
             fprintf(descFile, "%d\n", posX);
         fileName = outputName + ".pbm";
