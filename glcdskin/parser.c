@@ -262,14 +262,20 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
 
         if (object->ParseType(name))
         {
-            ATTRIB_OPT_FUNC_PARAM("x", object->ParseIntParam, object->mPos1.x);
-            ATTRIB_OPT_FUNC_PARAM("y", object->ParseIntParam, object->mPos1.y);
-            ATTRIB_OPT_FUNC_PARAM("x1", object->ParseIntParam, object->mPos1.x);
-            ATTRIB_OPT_FUNC_PARAM("y1", object->ParseIntParam, object->mPos1.y);
-            ATTRIB_OPT_FUNC_PARAM("x2", object->ParseIntParam, object->mPos2.x);
-            ATTRIB_OPT_FUNC_PARAM("y2", object->ParseIntParam, object->mPos2.y);
-            ATTRIB_OPT_FUNC("width", object->ParseWidth);
-            ATTRIB_OPT_FUNC("height", object->ParseHeight);
+            object->mX1.Parse("0");
+            object->mY1.Parse("0");
+            object->mX2.Parse("-1");
+            object->mY2.Parse("-1");
+            object->mWidth.Parse("0");
+            object->mHeight.Parse("0");
+            ATTRIB_OPT_FUNC("x", object->mX1.Parse);
+            ATTRIB_OPT_FUNC("y", object->mY1.Parse);
+            ATTRIB_OPT_FUNC("x1", object->mX1.Parse);
+            ATTRIB_OPT_FUNC("y1", object->mY1.Parse);
+            ATTRIB_OPT_FUNC("x2", object->mX2.Parse);
+            ATTRIB_OPT_FUNC("y2", object->mY2.Parse);
+            ATTRIB_OPT_FUNC("width", object->mWidth.Parse);
+            ATTRIB_OPT_FUNC("height", object->mHeight.Parse);
             ATTRIB_OPT_FUNC("condition", object->ParseCondition);
             ATTRIB_OPT_STRING("action", object->mAction);
 
@@ -335,6 +341,9 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
                 ATTRIB_OPT_NUMBER("direction", object->mDirection);
                 ATTRIB_OPT_FUNC("current", object->mCurrent.Parse);
                 ATTRIB_OPT_FUNC("total", object->mTotal.Parse);
+                ATTRIB_OPT_FUNC("peak", object->mPeak.Parse);
+                ATTRIB_OPT_FUNC_PARAM("peakcolor", object->ParseColor, object->mPeakColor);
+                ATTRIB_OPT_NUMBER("radius", object->mRadius);
             }
 #if 0
             else if (name == "item") {

@@ -121,8 +121,14 @@ private:
     cSkinDisplay * mDisplay;        // parent display
     cSkin * mSkin;
     eType mType;                    // type of object, one of enum eType
-    tPoint mPos1;
-    tPoint mPos2;
+    //tPoint mPos1;
+    //tPoint mPos2;
+    cSkinString mX1;                // either mX1 and mWidth or mX1 and mX2 are defined. not all three
+    cSkinString mY1;
+    cSkinString mX2;
+    cSkinString mY2;
+    cSkinString mWidth;
+    cSkinString mHeight;
     cSkinColor mColor;
     cSkinColor mBackgroundColor;
     bool mFilled;
@@ -133,13 +139,15 @@ private:
     eTextVerticalAlignment mVerticalAlign;
     bool mMultiline;
     cSkinString mPath;
-    cSkinString mCurrent;
-    cSkinString mTotal;
+    cSkinString mCurrent;           // progress bar: current value
+    cSkinString mTotal;             // progress bar: maximum valid value
+    cSkinString mPeak;              // progress bar: peak value (<= 0: disabled)
     cSkinString mFont;
     cSkinString mText;
     cSkinFunction * mCondition;
     eEffect mEffect;                // effect: none, shadow, or outline
     cSkinColor mEffectColor;        // effect colour (= shadow colour or colour of outline)
+    cSkinColor mPeakColor;          // colour of peak marker
 
     uint64_t mLastChange;           // timestamp: last change in dynamic object (scroll, frame change, ...)
     int mChangeDelay;               // delay between two changes (frame change, scrolling, ...)
@@ -176,8 +184,8 @@ public:
     bool ParseEffect(const std::string &Text);
     bool ParseFontFace(const std::string &Text);
     bool ParseIntParam(const std::string &Text, int & Param);
-    bool ParseWidth(const std::string &Text);
-    bool ParseHeight(const std::string &Text);
+    //bool ParseWidth(const std::string &Text);
+    //bool ParseHeight(const std::string &Text);
 
     bool ParseScrollLoopMode(const std::string & Text); // parse scroll mode ([never|once|always])
     bool ParseScrollSpeed(const std::string & Text);    // parse scroll speed

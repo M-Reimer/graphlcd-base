@@ -274,6 +274,17 @@ cType cSkinString::Evaluate(void) const
       pos = idxstart;
     }
     result_trans.append(result_raw.substr(pos));
+
+    // re-evaluate resulting string
+    if ((mText.size() > 0) && mText[0] != '#' && mObject != NULL ) {
+        cSkinFunction *result = new cSkinFunction(mObject);
+        if (result->Parse(result_trans))  {
+            std::string result_rescan = (std::string)result->Evaluate();
+            if (result_rescan != "")
+                result_trans = result_rescan;            
+        }
+        delete result;
+    }
     return result_trans;
 }
 

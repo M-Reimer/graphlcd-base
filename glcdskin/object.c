@@ -32,8 +32,14 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
 :   mDisplay(Parent),
     mSkin(Parent->Skin()),
     mType((eType) __COUNT_OBJECT__),
-    mPos1(0, 0),
-    mPos2(-1, -1),
+    //mPos1(0, 0),
+    //mPos2(-1, -1),
+    mX1(this, false),
+    mY1(this, false),
+    mX2(this, false),
+    mY2(this, false),
+    mWidth(this, false),
+    mHeight(this, false),
     mColor(this, cColor(cColor::Black)),
     mBackgroundColor(this, cColor(cColor::Transparent)),
     mFilled(false),
@@ -46,11 +52,13 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mPath(this, false),
     mCurrent(this, false),
     mTotal(this, false),
+    mPeak(this, false),
     mFont(this, false),
     mText(this, false),
     mCondition(NULL),
     mEffect(tfxNone),
     mEffectColor(this, cColor(cColor::White)),
+    mPeakColor(this, cColor(cColor::ERRCOL)), // if ERRCOL -> use mColor
     mLastChange(0),
     mChangeDelay(-1),               // delay between two images frames: -1: not animated / don't care
     mStoredImagePath(""),
@@ -75,8 +83,14 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
 :   mDisplay(Src.mDisplay),
     mSkin(Src.mSkin),
     mType(Src.mType),
-    mPos1(Src.mPos1),
-    mPos2(Src.mPos2),
+    //mPos1(Src.mPos1),
+    //mPos2(Src.mPos2),
+    mX1(Src.mX1),
+    mY1(Src.mY1),
+    mX2(Src.mX2),
+    mY2(Src.mY2),
+    mWidth(Src.mWidth),
+    mHeight(Src.mHeight),
     mColor(Src.mColor),
     mBackgroundColor(Src.mBackgroundColor),
     mFilled(Src.mFilled),
@@ -89,11 +103,13 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
     mPath(Src.mPath),
     mCurrent(Src.mCurrent),
     mTotal(Src.mTotal),
+    mPeak(Src.mPeak),
     mFont(Src.mFont),
     mText(Src.mText),
     mCondition(Src.mCondition),
     mEffect(Src.mEffect),
     mEffectColor(Src.mEffectColor),
+    mPeakColor(Src.mPeakColor),
     mLastChange(0),
     mChangeDelay(-1),
     mStoredImagePath(Src.mStoredImagePath),
@@ -231,6 +247,7 @@ bool cSkinObject::ParseIntParam(const std::string &Text, int & Param)
     return true;
 }
 
+#if 0
 bool cSkinObject::ParseWidth(const std::string &Text)
 {
     int w;
@@ -256,6 +273,7 @@ bool cSkinObject::ParseHeight(const std::string &Text)
     }
     return false;
 }
+#endif
 
 bool cSkinObject::ParseFontFace(const std::string & Text)
 {
@@ -334,16 +352,33 @@ const std::string & cSkinObject::TypeName(void) const
 
 tPoint cSkinObject::Pos(void) const
 {
-    return tPoint(mPos1.x < 0 ? mSkin->BaseSize().w + mPos1.x : mPos1.x,
-                  mPos1.y < 0 ? mSkin->BaseSize().h + mPos1.y : mPos1.y);
+    int x1 = mX1.Evaluate();
+    int y1 = mY1.Evaluate();
+    return tPoint(x1 < 0 ? mSkin->BaseSize().w + x1 : x1,
+                  y1 < 0 ? mSkin->BaseSize().h + y1 : y1);
 }
 
 tSize cSkinObject::Size(void) const
 {
-    tPoint p1(mPos1.x < 0 ? mSkin->BaseSize().w + mPos1.x : mPos1.x,
-              mPos1.y < 0 ? mSkin->BaseSize().h + mPos1.y : mPos1.y);
-    tPoint p2(mPos2.x < 0 ? mSkin->BaseSize().w + mPos2.x : mPos2.x,
-              mPos2.y < 0 ? mSkin->BaseSize().h + mPos2.y : mPos2.y);
+    int x1 = mX1.Evaluate();
+    int y1 = mY1.Evaluate();
+    tPoint p1(x1 < 0 ? mSkin->BaseSize().w + x1 : x1,
+              y1 < 0 ? mSkin->BaseSize().h + y1 : y1);
+
+    int w  = mWidth.Evaluate();
+    int h  = mHeight.Evaluate();
+
+    int x2 = mX2.Evaluate();
+    if (w != 0 && x2 == -1) {
+        x2 = x1 + w - 1;
+    }
+    int y2 = mY2.Evaluate();
+    if (h != 0 && y2 == -1) {
+        y2 = y1 + h - 1;
+    }
+
+    tPoint p2((x2 < 0) ? mSkin->BaseSize().w + x2 : x2, 
+              (y2 < 0) ? mSkin->BaseSize().h + y2 : y2);
     return tSize(p2.x - p1.x + 1, p2.y - p1.y + 1);
 }
 
@@ -450,33 +485,61 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
         {
             int current = mCurrent.Evaluate();
             int total = mTotal.Evaluate();
+            int peak = mPeak.Evaluate();
             if (total == 0)
                 total = 1;
             if (current > total)
                 current = total;
+            if (peak > total)
+                peak = total;
+            
+            int maxSize = ( (mDirection % 2) == 0 ) ? Size().w : Size().h;
+            int currSize = maxSize * current / total;
+
+            int peakSize = 0;
+            int peakBarSize = 2;
+            uint32_t peakColor = (mPeakColor == cColor::ERRCOL) ? mColor : mPeakColor;
+            if (peak > 0) {
+                peakSize =  maxSize * peak / total;
+                if (mRadius <= 0) {
+                    peakBarSize = maxSize / 20;
+                    if (peakBarSize < 2)
+                        peakBarSize = 2;
+                } else {
+                    peakBarSize = mRadius;
+                }
+                // at least peakBarSize of empty space between normal progress bar and peak marker. if too small: don't show peak marker
+                if (currSize + peakBarSize + (peakBarSize / 2) >= peakSize)
+                    peakSize = 0;  // don't show at all
+            }
+
             if (mDirection == 0)
             {
-                int w = Size().w * current / total;
-                if (w > 0)
-                    screen->DrawRectangle(Pos().x, Pos().y, Pos().x + w - 1, Pos().y + Size().h - 1, mColor, true);
+                if (currSize > 0)
+                    screen->DrawRectangle(Pos().x, Pos().y, Pos().x + currSize - 1, Pos().y + Size().h - 1, mColor, true);
+                if (peakSize > 0)
+                    screen->DrawRectangle(Pos().x + peakSize-1, Pos().y, Pos().x + peakSize-1 + peakBarSize-1, Pos().y + Size().h - 1, peakColor, true);
             }
             else if (mDirection == 1)
             {
-                int h = Size().h * current / total;
-                if (h > 0)
-                    screen->DrawRectangle(Pos().x, Pos().y, Pos().x + Size().w - 1, Pos().y + h - 1, mColor, true);
+                if (currSize > 0)
+                    screen->DrawRectangle(Pos().x, Pos().y, Pos().x + Size().w - 1, Pos().y + currSize - 1, mColor, true);
+                if (peakSize > 0)
+                    screen->DrawRectangle(Pos().x, Pos().y + peakSize-1, Pos().x + Size().w - 1, Pos().y + peakSize-1 + peakBarSize-1, peakColor, true);
             }
             else if (mDirection == 2)
             {
-                int w = Size().w * current / total;
-                if (w > 0)
-                    screen->DrawRectangle(Pos().x + Size().w - w, Pos().y, Pos().x + Size().w - 1, Pos().y + Size().h - 1, mColor, true);
+                if (currSize > 0)
+                    screen->DrawRectangle(Pos().x + Size().w - currSize, Pos().y, Pos().x + Size().w - 1, Pos().y + Size().h - 1, mColor, true);
+                if (peakSize > 0)
+                    screen->DrawRectangle(Pos().x + Size().w + maxSize - peakSize, Pos().y, Pos().x + maxSize - peakSize + peakBarSize-1, Pos().y + Size().h - 1, peakColor, true);
             }
             else if (mDirection == 3)
             {
-                int h = Size().h * current / total;
-                if (h > 0)
-                    screen->DrawRectangle(Pos().x, Pos().y + Size().h - h, Pos().x + Size().w - 1, Pos().y + Size().h - 1, mColor, true);
+                if (currSize > 0)
+                    screen->DrawRectangle(Pos().x, Pos().y + Size().h - currSize, Pos().x + Size().w - 1, Pos().y + Size().h - 1, mColor, true);
+                if (peakSize > 0)
+                    screen->DrawRectangle(Pos().x, Pos().y + maxSize - peakSize, Pos().x + Size().w - 1, Pos().y + maxSize - peakSize + peakBarSize-1, peakColor, true);
             }
             break;
         }
@@ -816,14 +879,19 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                 {
                     for (int j = 1; j < (int) NumObjects(); j++)
                     {
+                        int px1, py1, py2;
+                        char buf[10];
                         const cSkinObject * o = GetObject(j);
                         cSkinObject obj(*o);
                         obj.SetListIndex(maxitems, i);
                         if (obj.Condition() != NULL && !obj.Condition()->Evaluate())
                             continue;
-                        obj.mPos1.x += mPos1.x;
-                        obj.mPos1.y += mPos1.y + yoffset;
-                        obj.mPos2.y += mPos1.y + yoffset;
+                        px1 = obj.Pos().x + Pos().x;                     // obj.mPos1.x += mPos1.x;
+                        py1 = obj.Pos().y + Pos().y + yoffset;           // obj.mPos1.y += mPos1.y + yoffset;
+                        py2 = obj.Pos().y + obj.Size().w -1 + yoffset;   // obj.mPos2.y += mPos1.y + yoffset;
+                        snprintf(buf, 9, "%d", px1); obj.mX1.Parse((const char*)buf);
+                        snprintf(buf, 9, "%d", py1); obj.mY1.Parse((const char*)buf);
+                        snprintf(buf, 9, "%d", py2); obj.mY2.Parse((const char*)buf);
                         obj.Render(screen);
                     }
                     yoffset += itemheight;
