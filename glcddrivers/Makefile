@@ -6,8 +6,8 @@
 
 CXXFLAGS += -fPIC
 
-VERMAJOR = 1
-VERMINOR = 0
+VERMAJOR = 2
+VERMINOR = 1
 VERMICRO = 0
 
 BASENAME = libglcddrivers.so

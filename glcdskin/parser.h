@@ -16,7 +16,8 @@
 
 #include <string>
 
-#define GLCDSKIN_SKIN_VERSION    1.1
+// max. version of skin definitions supported by the parser
+#define GLCDSKIN_SKIN_VERSION    1.2
 
 
 namespace GLCD

@@ -70,18 +70,21 @@ cXML::cXML(const std::string & file, const std::string sysCharset)
     if (!f.is_open())
     {
         syslog(LOG_ERR, "ERROR: skin file %s not found\n", file.c_str());
-    }
-    size = f.tellg();
+        validFile = false;
+    } else {
+        validFile = true;
+        size = f.tellg();
 #if (__GNUC__ < 3)
-    f.seekg(0, std::ios::beg);
+        f.seekg(0, std::ios::beg);
 #else
-    f.seekg(0, std::ios_base::beg);
+        f.seekg(0, std::ios_base::beg);
 #endif
-    buffer = new char[size];
-    f.read(buffer, size);
-    f.close();
-    data.assign(buffer, size);
-    delete[] buffer;
+        buffer = new char[size];
+        f.read(buffer, size);
+        f.close();
+        data.assign(buffer, size);
+        delete[] buffer;
+    }
 }
 
 #if 0
@@ -135,6 +138,9 @@ int cXML::Parse(void)
     uint32_t c, c_tmp;
     unsigned int i_old;
     int l, char_size;
+    
+    if (!validFile)
+        return -1;
 
     state    = LOOK4START;
     linenr   = 1;

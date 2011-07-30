@@ -143,6 +143,17 @@ static uint32_t oindex = 0;
 static std::string errorDetail = "";
 static std::string condblock_cond = "";
 
+// support for including files (templates, ...) in the skin definition
+// max. depth supported for file inclusion (-> detect recursive inclusions)
+#define MAX_INCLUDEDEPTH 5
+static int includeDepth = 0;
+static std::string subErrorDetail = "";
+
+bool StartElem(const std::string & name, std::map<std::string,std::string> & attrs);
+bool CharData(const std::string & text);
+bool EndElem(const std::string & name);
+
+
 
 static bool CheckSkinVersion(const std::string & version) {
   float currv;
@@ -185,6 +196,36 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
         }
         else
             TAG_ERR_REMAIN("document");
+    }
+    else if (name == "include")
+    {
+        if (includeDepth + 1 < MAX_INCLUDEDEPTH) {
+            cSkinObject* tmpobj = new cSkinObject(new cSkinDisplay(skin));
+            cSkinString* path = new cSkinString(tmpobj, false);
+            ATTRIB_MAN_FUNC("path", path->Parse);
+            std::string strpath = path->Evaluate();
+            // is path relative? -> prepend skinpath
+            if (strpath[0] != '/') {
+                strpath = skin->Config().SkinPath() + "/" + strpath;
+            }
+            path = NULL;
+            tmpobj = NULL;
+
+            includeDepth++;
+            cXML incxml(strpath, skin->Config().CharSet());
+            incxml.SetNodeStartCB(StartElem);
+            incxml.SetNodeEndCB(EndElem);
+            incxml.SetCDataCB(CharData);
+            if (incxml.Parse() != 0) {
+                errorDetail = "error when parsing included xml file '"+strpath+"'"+ ( (subErrorDetail == "") ? "" : " ("+subErrorDetail+")");
+                syslog(LOG_ERR, "ERROR: graphlcd/skin: %s", errorDetail.c_str());                
+                return false;
+            }
+            includeDepth--;            
+        } else {
+            subErrorDetail = "max. include depth reached";
+            return false;            
+        }        
     }
     else if (name == "condblock")
     {

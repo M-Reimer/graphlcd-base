@@ -34,6 +34,7 @@ void (*CB)(int percent)
 class cXML
 {
 private:
+    bool validFile;
     bool skipping;
     int state;
     int linenr;

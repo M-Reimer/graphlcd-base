@@ -128,7 +128,8 @@ bool cSkinFunction::Parse(const std::string & Text)
         int num = strtol(ptr, &end, 10);
         if (end == ptr || *end != '\0')
         {
-            syslog(LOG_ERR, "ERROR: Invalid numeric value\n");
+            // don't log this because when parsing a string starting with a digit (eg: 0%) this may result in a load of false positives
+            //syslog(LOG_ERR, "ERROR: Invalid numeric value (%s)\n", Text.c_str());
             return false;
         }
 

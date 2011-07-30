@@ -18,7 +18,7 @@ endif
 CXXFLAGS += -fPIC
 
 VERMAJOR = 2
-VERMINOR = 0
+VERMINOR = 1
 VERMICRO = 0
 
 BASENAME = libglcdgraphics.so
