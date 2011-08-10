@@ -40,6 +40,9 @@ enum eDriver
     kDriverNetwork       = 14,
     kDriverGU126X64D_K610A4 = 15,
     kDriverDM140GINK     = 16,
+#ifdef HAVE_AX206DPF_EXPERIMENTAL
+    kDriverAX206DPF      = 17,
+#endif    
     kDriverSerDisp       = 100,
     kDriverG15daemon     = 200
 };

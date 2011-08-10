@@ -30,6 +30,9 @@
 #include "dm140gink.h"
 #include "serdisp.h"
 #include "g15daemon.h"
+#ifdef HAVE_AX206DPF_EXPERIMENTAL
+#include "ax206dpf.h"
+#endif
 
 namespace GLCD
 {
@@ -54,6 +57,9 @@ tDriver drivers[] =
     {"dm140gink",     kDriverDM140GINK},
     {"serdisp",       kDriverSerDisp},
     {"g15daemon",     kDriverG15daemon},
+#ifdef HAVE_AX206DPF_EXPERIMENTAL
+    {"ax206dpf",      kDriverAX206DPF},
+#endif    
     {"",              kDriverUnknown}
 };
 
@@ -112,6 +118,10 @@ cDriver * CreateDriver(int driverID, cDriverConfig * config)
             return new cDriverSerDisp(config);
         case kDriverG15daemon:
             return new cDriverG15daemon(config);
+#ifdef HAVE_AX206DPF_EXPERIMENTAL
+        case kDriverAX206DPF:
+            return new cDriverAX206DPF(config);
+#endif
         case kDriverUnknown:
         default:
             return NULL;

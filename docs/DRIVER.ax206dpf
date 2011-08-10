@@ -1,0 +1,104 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The AX 206 digital photoframe driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The ax206dpf driver supports AX 206 based DPFs.
+For more information about these DPFs see:
+http://tech.section5.ch/news/?p=68
+
+The driver was tested with this display:
+http://www.pearl.de/a-PX1184-5618.shtml or http://www.pearl.de/a-HPM1184-5618.shtml
+
+Important Notes
+---------------
+This driver is experimental and not enabled by default.
+To use this driver uncomment the HAVE_AX206DPF_EXPERIMENTAL line in
+Make.config and recompile the library.
+The DPF does not work out of the box with this driver. 
+It has to be modified with a custom firmware (see "Hacking your DPF").
+If your DPF is already hacked, there is no need to install the "dpf-ax" package
+described in "Hacking your DPF". All necessary routines to access a hacked
+DPF are included in this driver.
+
+Non-root users
+--------------
+The driver needs write access to /dev/proc/usb. So the calling user 
+must be root or you have to modify the access rights for /dev/proc/usb.
+For Debian/Ubuntu this can be done with a custom udev rule like:
+SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", MODE="0664", GROUP="<user_group>"
+Replace <user_group> with a group the calling user belongs to.
+Put this rule in a new file "nn-usbuser.rules" in /etc/udev/rules.d.
+Replace "nn" by two digits that are lower than any existing usb rule.
+For my Ubuntu 10.04 system I used "/etc/udev/rules.d/35-usbuser.rules".
+
+
+Configuration Parameters
+------------------------
+The driver supports the following parameters in config file:
+
+Device
+ Selects a specific display.
+ 'dpf0' = first detected display, 'dpf1' = second detected display, ...
+ Default value: 'dpf0'
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value according to the selected DPF is used.
+ Default value: 320 or 240 (see 'Portrait')
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value according to the selected DPF is used.
+ Default value: 240 or 320 (see 'Portrait')
+
+UpsideDown
+ Rotates the display output by 180 degrees. This might be useful, if
+ the LCD is mounted upside-down.
+ Possible values: 'yes', 'no'
+ Default value: 'no'
+
+Portrait
+ Select portrait or landscape mode.
+ Rotate display output by 90 degrees if necessary.
+ Possible values: 'yes' -> default size = 240 x 320
+                  'no' -> default size = 320 x 240
+ Default value: 'no'
+
+Zoom
+ Determines if pixels should be magnified.
+ Possible values: 1, 2, 3, 4
+ Default value: 1
+
+
+Hacking your DPF
+----------------
+For hacking your DPF you need this dpf-ax package:
+http://tech.section5.ch/files/dpfhack-0.12devel.tgz
+
+First of all, let me quote this from the dpf-ax README ((c) 4/2011, hackfin):
+[quote]
+Also note: NO SUPPORT! NO WARRANTY! FRIENDS DON'T MAKE FRIENDS HACK THEIR
+DPF! LET ALONE NON-FRIENDS! (Bottomline: Don't ask me if I can hack your DPF).
+
+If you wish to hack your DPF, please check the sites listed below.
+.
+.
+Find updates and documentation here:
+
+http://tech.section5.ch/news/?p=68
+or here:
+http://picframe.spritesserver.nl/wiki/index.php/DPF_with_AppoTech_AX206
+For our german users, a very good explanation is found here:
+http://geekparadise.de/2011/04/digitaler-bilderrahmen-von-pearl-als-statusdisplay-fur-dockstar/
+[/quote]
+
+So if you are not sure if you have the right DPF or something goes wrong:
+don't ask me ether - I'm like you only a user and not involved in the
+development of the hack!
+
+A guide how to hack the Pearl display can be found here (in german):
+http://www.vdr-portal.de/board1-news/board2-vdr-news/p1015287-announce-graphlcd-base-vdr-plugin-touchcol-branch/#post1015287

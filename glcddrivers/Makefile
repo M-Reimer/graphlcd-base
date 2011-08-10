@@ -25,6 +25,17 @@ LIBS += $(shell pkg-config --libs libhid)
 DEFINES += -DHAVE_LIBHID
 endif
 
+
+ifeq ($(shell pkg-config --exists libusb && echo 1), 1)
+    DEFINES += -DHAVE_LIBUSB
+    ifdef HAVE_AX206DPF_EXPERIMENTAL
+        OBJS += ax206dpf.o
+        INCLUDES += $(shell pkg-config --cflags libusb)
+        LIBS += $(shell pkg-config --libs libusb)
+        DEFINES += -DHAVE_AX206DPF_EXPERIMENTAL
+    endif
+endif    
+
 ### Implicit rules:
 
 %.o: %.c
