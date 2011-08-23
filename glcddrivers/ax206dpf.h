@@ -23,7 +23,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2011      Lutz Neumann <superelchi AT wolke7.de>
+ * (c) 2011      Lutz Neumann <superelchi AT wolke7.net>
  * 
  * HISTORY
  * 
@@ -35,26 +35,42 @@
 
 #include "driver.h"
 
-
 namespace GLCD
 {
+#define MAX_DPFS 4
+
+#define DEFAULT_WIDTH  320
+#define DEFAULT_HEIGHT 240
+#define DEFAULT_BPP    2
+
+#define USB_SCAN_INTERVALL  10       // seconds between usb scans for missing displays
 
 class cDriverConfig;
 
 class cDriverAX206DPF : public cDriver
 {
 private:
-    unsigned char * LCD;
     cDriverConfig * config;
     cDriverConfig * oldConfig;
 
-    int zoom;
-    bool isPortrait;
-    bool rotate90;
-    int miny, maxy;
+    unsigned char * tempLCD;        // temp transfer buffer
 
+    bool portrait;                  // portrait or landscape mode
+    int zoom;                       // pixel zoom factor
+    unsigned int numdisplays;       // number of detected displays
+    unsigned int numxdisplays;      // number of displays (horizontal)
+    unsigned int numydisplays;      // number of displays (vertical)
+    unsigned int sizex;             // logical horizontal size of one display
+    unsigned int sizey;             // logical vertical size of one display
+    unsigned int bpp;               // bits per pixel
+    
     int CheckSetup();
     void ResetMinMax();
+    bool RescanUSB();
+    int InitSingleDisplay(unsigned int);
+    void DeInitSingleDisplay(unsigned int);
+    void ClearSingleDisplay(unsigned int);
+    void SetSingleDisplayBrightness(unsigned int, unsigned int);
 
 public:
     cDriverAX206DPF(cDriverConfig * config);
@@ -67,7 +83,7 @@ public:
     virtual void SetPixel(int x, int y, uint32_t data);
     virtual void Refresh(bool refreshAll = false);
     virtual GLCD::cColor GetBackgroundColor(void);
-    //virtual void SetBrightness(unsigned int);
+    virtual void SetBrightness(unsigned int);
     virtual bool GetDriverFeature  (const std::string & Feature, int & value);
 };
 

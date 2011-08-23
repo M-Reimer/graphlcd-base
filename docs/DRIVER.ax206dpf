@@ -24,6 +24,17 @@ If your DPF is already hacked, there is no need to install the "dpf-ax" package
 described in "Hacking your DPF". All necessary routines to access a hacked
 DPF are included in this driver.
 
+Multi-display setups
+--------------------
+This driver supports up to 4 displays. The displays can be aligned horizontal,
+vertical or tiled (See "Example multi-display setups").
+
+Hot plugging
+------------
+Hot plugging of displays is supported. The driver will add/remove displays automatically
+as they are plugged in or removed. For multi-display setups the scan for new displays will
+continue until all needed displays are detected.
+
 Non-root users
 --------------
 The driver needs write access to /dev/proc/usb. So the calling user 
@@ -57,9 +68,14 @@ Height
 
 UpsideDown
  Rotates the display output by 180 degrees. This might be useful, if
- the LCD is mounted upside-down.
+ the display is mounted upside-down.
  Possible values: 'yes', 'no'
  Default value: 'no'
+ 
+Brightness
+ Sets the brightness of the display's backlight.
+ Possible values: 0 <= x <= 100)
+ Default value: 100
 
 Portrait
  Select portrait or landscape mode.
@@ -73,6 +89,45 @@ Zoom
  Possible values: 1, 2, 3, 4
  Default value: 1
 
+The following parameters are for multi-display setups only (see "Example multi-display setups").
+
+Horizontal
+Sets the number of displays in horizontal direction.
+ Possible values if Vertical=1: 1, 2, 3, 4
+                 if Vertical=2: 1, 2
+ Default value: 1
+
+Vertical
+ Sets the number of displays in vertical direction.
+ Possible values if Horizontal=1: 1, 2, 3, 4
+                 if Horizontal=2: 1, 2
+ Default value: 1
+
+Flip
+ Rotates a single displays output by 180 degrees. This might be useful, if
+ some displays are mounted upside-down.
+ Possible values for every display : 'y', 'n'
+ Default value: 'nnnn'
+
+
+Example multi-display setups
+----------------------------
+'#' = position of USB-connector
+
+Portrait=y      Portrait=n          Portrait=n      Portrait=n          
+Horizontal=2    Horizontal=2        Horizontal=1    Horizontal=2
+Vertical=1      Vertical=1          Vertical=3      Vertical=2
+Flip=nn         Flip=ny             Flip=nyn        Flip=nyny
+
++-+  +-+        +---+  +---+        +---+           +---+  +---+
+| |  | |      # +---+  +---+#      #+---+          #+---+  +---+#
++-+  +-+          1      2            1               1      2
+ #    #                             +---+           +---+  +---+
+ 1    2                             +---+#         #+---+  +---+#
+                                      2               3      4
+                                    +---+
+                                   #+---+ 
+                                      3
 
 Hacking your DPF
 ----------------
@@ -97,7 +152,7 @@ http://geekparadise.de/2011/04/digitaler-bilderrahmen-von-pearl-als-statusdispla
 [/quote]
 
 So if you are not sure if you have the right DPF or something goes wrong:
-don't ask me ether - I'm like you only a user and not involved in the
+don't ask me either - I'm like you only a user and not involved in the
 development of the hack!
 
 A guide how to hack the Pearl display can be found here (in german):

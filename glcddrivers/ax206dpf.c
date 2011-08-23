@@ -24,17 +24,25 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2011      Lutz Neumann <superelchi AT wolke7.de>
+ * (c) 2011      Lutz Neumann <superelchi AT wolke7.net>
  *
  * HISTORY
  * 
  * v0.1 - 10 Aug 2011 - Inital release
+ * V0.2 - 20 Aug 2011 - Optimized display data transfer
+ *                      SetBrightness() implemented
+ *                      Multi-display support
+ * 
  * 
  */
 
 #include <stdio.h>
 #include <syslog.h>
 #include <cstring>
+#include <algorithm>
+#include <pthread.h>
+#include <time.h>
+#include <usb.h>
 
 #include "common.h"
 #include "config.h"
@@ -44,7 +52,24 @@
 
 namespace GLCD
 {
-static     LIBDPF::DPFContext *dpfh;
+typedef struct display_handle {
+    bool attached;
+    char address[8];
+    bool isPortrait;
+    bool rotate90;
+    bool flip;
+    int minx, maxx;
+    int miny, maxy;
+    LIBDPF::DPFContext *dpfh;
+    unsigned char * LCD;
+} DISPLAYHANDLE;
+
+static DISPLAYHANDLE *dh[MAX_DPFS];
+static	pthread_mutex_t libax_mutex;
+static  std::string flips = "";
+static time_t lastscan;
+static int lastbrightness;
+
 
 cDriverAX206DPF::cDriverAX206DPF(cDriverConfig * config)
 :   config(config)
@@ -60,11 +85,25 @@ cDriverAX206DPF::~cDriverAX206DPF()
 int cDriverAX206DPF::Init(void)
 {
     zoom = 1;
-    bool forcePortrait = false;
+    portrait = false;
+    numxdisplays = numydisplays = 1;
+    sizex = sizey = bpp = 0;
+    
+    for (unsigned int i = 0; i < MAX_DPFS; i++)
+    {
+        dh[i] = (DISPLAYHANDLE *) malloc(sizeof(DISPLAYHANDLE));
+        dh[i]->attached = false;
+        dh[i]->address[0] = 0;
+        dh[i]->dpfh = NULL;
+        dh[i]->LCD = NULL;
+    }
+
+    lastbrightness = config->brightness ? config->brightness : 100;
+    
     for (unsigned int i = 0; i < config->options.size(); i++)
     {
         if (config->options[i].name == "Portrait") {
-            forcePortrait = config->options[i].value == "yes";
+            portrait = config->options[i].value == "yes";
         }    
         else if (config->options[i].name == "Zoom") {
             int z = strtol(config->options[i].value.c_str(), (char **) NULL, 0);
@@ -72,77 +111,236 @@ int cDriverAX206DPF::Init(void)
                 zoom = z;
             else
                 syslog(LOG_ERR, "%s error: zoom %d not supported, using default (%d)!\n",config->name.c_str(), z, zoom);
-    
+        }
+        else if (config->options[i].name == "Horizontal") {
+            int h = strtol(config->options[i].value.c_str(), (char **) NULL, 0);
+            if (h > 0 && h <= 4)
+                numxdisplays = h;
+            else
+                syslog(LOG_ERR, "%s error: Horizontal=%d not supported, using default (%d)!\n",config->name.c_str(), h, numxdisplays);
+        }
+        else if (config->options[i].name == "Vertical") {
+            int v = strtol(config->options[i].value.c_str(), (char **) NULL, 0);
+            if (v > 0 && v <= 4)
+                numydisplays = v;
+            else
+                syslog(LOG_ERR, "%s error: Vertical=%d not supported, using default (%d)!\n",config->name.c_str(), v, numydisplays);
+        }
+        else if (config->options[i].name == "Flip") {
+            flips = config->options[i].value;
+            for (unsigned int j = 0; j < flips.size(); j++)
+            {
+                if (flips[j] != 'y' && flips[j] != 'n')
+                {
+                syslog(LOG_ERR, "%s error: flips=%s - illegal character, only 'y' and 'n' supported, using default!\n",config->name.c_str(), flips.c_str());
+                flips = "";
+                break;
+                }
+            }
         }
     }
 
-    // Init display
-        
-   	int error;
-	char index;
-
-    if (config->device.length() != 4 || config->device.compare(0, 3, "dpf"))
-        index = '0';
-    else
-        index = config->device.at(3);
+    // See if we have too many displays
+    if (numxdisplays * numydisplays > MAX_DPFS)
+        syslog(LOG_ERR, "%s: too many displays (%dx%d). Max is %d!\n",config->name.c_str(), numxdisplays, numydisplays, MAX_DPFS);    
     
-    char usb_device[5];
-    sprintf(usb_device, "usb%c", index);
-        
-	error = dpf_open(usb_device, &dpfh);
-	if (error < 0) {
-        syslog(LOG_INFO, "%s: can not open dpf device number '%c' (error %d).\n", config->name.c_str(), index, error);
-		return -1;
-	}
-
-    // See, if we have to rotate the display
-    isPortrait = dpfh->width < dpfh->height;
-    rotate90 = isPortrait != forcePortrait;
-
-    // Set width / height from display
-    unsigned int vwidth = (!rotate90) ? dpfh->width : dpfh->height;
-    unsigned int vheight = (!rotate90) ? dpfh->height : dpfh->width;
-    width = config->width;
-    if (width <= 0 || width > (int) vwidth)
-        width = (int) vwidth;
-    height = config->height;
-    if (height <= 0 || height > (int) vheight)
-        height = (int) vheight;
+    // Init all displays
+    numdisplays = 0;
+   	int error = 0;
+    for (unsigned int i = 0; i < numxdisplays * numydisplays; i++)
+    {
+        error = InitSingleDisplay(i);
+        if (error < 0)
+            return -1;
+        numdisplays++;
+    }
+    
+    if (sizex == 0)
+    {
+        // no displays detected
+        sizex = (portrait) ? DEFAULT_HEIGHT : DEFAULT_WIDTH;
+        sizey = (portrait) ? DEFAULT_WIDTH : DEFAULT_HEIGHT;
+        bpp = DEFAULT_BPP;
+    }
+    
+    // setup temp transfer LCD array
+    tempLCD = (unsigned char *) malloc(sizex * sizey * bpp);
+    
+    width = sizex * numxdisplays;
+    height = sizey * numydisplays;
+    
     if (zoom > 1)
     {
         height /= zoom;
         width /= zoom;
     }
-
-    // setup lcd array
-    LCD = (unsigned char *) malloc(dpfh->height * dpfh->width * dpfh->bpp);
+    
     ResetMinMax();
 
     *oldConfig = *config;
+
+    if (numdisplays == 1)
+        syslog(LOG_INFO, "%s: AX206DPF initialized (%dx%d).\n", config->name.c_str(), width, height);
+    else
+    {
+        unsigned n = 0;
+        for (unsigned int i = 0; i < numdisplays; i++)
+            if (dh[i]->attached) n++;
+        syslog(LOG_INFO, "%s: using %d display(s) (%d online, %d offline).\n", config->name.c_str(), numdisplays, n, numdisplays - n);
+    }
     
-    // Set Display Brightness -- NOT WORKING!
-    //SetBrightness(config->brightness ? config->brightness : 100);
-    syslog(LOG_INFO, "%s: AX206DPF initialized (%dx%d).\n", config->name.c_str(), width, height);
+    lastscan = time(NULL);
+    
     return 0;
+}
+
+bool cDriverAX206DPF::RescanUSB()
+{
+    bool ret = false;
+    usb_find_busses();
+    if (usb_find_devices() > 0)
+    {
+        unsigned int a = 0, b = 0;
+        for (unsigned int i = 0; i < numdisplays; i++)
+        {
+            if (dh[i]->attached) a |= 0x01 << i;
+            DeInitSingleDisplay(i);
+        }
+        for (unsigned int i = 0; i < numdisplays; i++)
+        {
+            InitSingleDisplay(i);
+            if (dh[i]->attached) b |= 0x01 << i;
+        }
+        ret = a != b;
+    }
+    return ret;
+}
+
+int cDriverAX206DPF::InitSingleDisplay(unsigned int di)
+{
+	char index;
+    
+    if (config->device.length() != 4 || config->device.compare(0, 3, "dpf"))
+        index = '0';
+    else
+        index = config->device.at(3);
+    
+    char device[5];
+    sprintf(device, "usb%c", index + di);
+    int error = dpf_open(device, &dh[di]->dpfh);
+    if (error < 0)
+    {
+        dh[di]->dpfh = NULL;
+        dh[di]->attached = false;
+        return 0;
+    }
+    dh[di]->attached = true;
+    struct usb_device *dev = usb_device(dh[di]->dpfh->dev.udev);
+    char *s1 = dev->bus->dirname;
+    char *s2 = dev->filename;
+    if (strlen(s1) > 3) s1 = (char *) "???";
+    if (strlen(s2) > 3) s2 = (char *) "???";
+    sprintf(dh[di]->address, "%s:%s", s1, s2);
+    
+    // See, if we have to rotate the display
+    dh[di]->isPortrait = dh[di]->dpfh->width < dh[di]->dpfh->height;
+    dh[di]->rotate90 = dh[di]->isPortrait != portrait;
+    dh[di]->flip = (!dh[di]->isPortrait && dh[di]->rotate90);    // adjust to make rotate por/land = physical por/land
+    if (flips.size() >= di + 1 && flips[di] == 'y')
+        dh[di]->flip = !dh[di]->flip;
+
+    if (sizex == 0)
+    {
+        // this is the first display found
+        // Get width / height from this display (all displays have same geometry)
+        sizex = ((!dh[di]->rotate90) ? dh[di]->dpfh->width : dh[di]->dpfh->height);
+        sizey = ((!dh[di]->rotate90) ? dh[di]->dpfh->height : dh[di]->dpfh->width);
+        bpp = dh[di]->dpfh->bpp;
+    }
+    else
+    {
+        // make sure alle displays have the same geometry
+        if ((!(sizex == dh[di]->dpfh->width && sizey == dh[di]->dpfh->height) &&
+            !(sizex == dh[di]->dpfh->height && sizey == dh[di]->dpfh->width)) ||
+            bpp != (unsigned int) dh[di]->dpfh->bpp)
+        {
+        syslog(LOG_INFO, "%s: all displays must have same geometry. Display %d has not. Giving up.\n", config->name.c_str(), di);
+        return -1;
+        }
+    }
+    // setup physical lcd arrays
+    dh[di]->LCD = (unsigned char *) malloc(dh[di]->dpfh->height * dh[di]->dpfh->width * dh[di]->dpfh->bpp);
+    ClearSingleDisplay(di);
+
+    // Set Display Brightness
+    SetSingleDisplayBrightness(di, lastbrightness);
+
+
+    // Reorder displays
+    bool changed = false;
+    for (unsigned int i = 0; i < MAX_DPFS - 1; i++)
+    {
+        for (unsigned int j = i + 1; j < MAX_DPFS; j++)
+            {
+            if (strcmp(dh[i]->address, dh[j]->address) < 0)
+            {
+                DISPLAYHANDLE *h = dh[i];
+                dh[i] = dh[j];
+                dh[j] = h;
+                changed = true;
+            }
+        }
+    }
+
+    //for (unsigned int i = 0; i < MAX_DPFS; i++)
+    //    fprintf(stderr, "Display %d at %s\n", i, (dh[i]->attached) ? dh[i]->address : "-none-");
+    //fprintf(stderr, "\n");
+
+    //fprintf(stderr, "Display %d at %s attached.\n", di, dh[di]->address);
+    //syslog(LOG_INFO, "%s: display %d at %s attached\n", config->name.c_str(), di, dh[di]->address);
+    
+    return 0;
+}
+
+void cDriverAX206DPF::DeInitSingleDisplay(unsigned int di)
+{
+    if (dh[di]->dpfh != NULL)
+        dpf_close(dh[di]->dpfh);
+    dh[di]->dpfh = NULL;
+
+    if (dh[di]->LCD != NULL)
+        free(dh[di]->LCD);
+    dh[di]->LCD = NULL;
+    
+    dh[di]->attached = false;
+    dh[di]->address[0] = 0;
 }
 
 int cDriverAX206DPF::DeInit(void)
 {
-    dpf_close(dpfh);
+    // close displays & free lcd arrays
+    for (unsigned int i = 0; i< numdisplays; i++)
+        DeInitSingleDisplay(i);
 
-    // free lcd array
-    if (LCD)
-    {
-        free(LCD);
-    }
+    if (tempLCD)
+        free(tempLCD);
 
     return 0;
 }
 
+
 void cDriverAX206DPF::ResetMinMax(void)
 {
-    miny = dpfh->height - 1;
-    maxy = 0;
+    for (unsigned int i = 0; i < numydisplays; i++)
+    {
+        if (dh[i]->attached)
+        {
+            dh[i]->minx = dh[i]->dpfh->width - 1;
+            dh[i]->maxx = 0;
+            dh[i]->miny = dh[i]->dpfh->height - 1;
+            dh[i]->maxy = 0;
+        }
+    }
 }
 
 int cDriverAX206DPF::CheckSetup(void)
@@ -171,11 +369,22 @@ int cDriverAX206DPF::CheckSetup(void)
     return 0;
 }
 
+void cDriverAX206DPF::ClearSingleDisplay(unsigned int di)
+{
+    if (dh[di]->attached)
+    {
+        memset(dh[di]->LCD, 0, dh[di]->dpfh->width * dh[di]->dpfh->height * dh[di]->dpfh->bpp);       //Black
+        dh[di]->minx = 0;
+        dh[di]->maxx = dh[di]->dpfh->width - 1;
+        dh[di]->miny = 0;
+        dh[di]->maxy = dh[di]->dpfh->height - 1;
+    }
+}
+
 void cDriverAX206DPF::Clear(void)
 {
-    memset(LCD, 0, dpfh->height * dpfh->width * dpfh->bpp);       //Black
-    miny = 0;
-    maxy = dpfh->height - 1;
+    for (unsigned int i = 0; i < numdisplays; i++)
+        ClearSingleDisplay(i);
 }
 
 #define _RGB565_0(p) \
@@ -185,76 +394,142 @@ void cDriverAX206DPF::Clear(void)
 
 void cDriverAX206DPF::SetPixel(int x, int y, uint32_t data)
 {
-    bool flip = config->upsideDown;
-    if (!isPortrait && rotate90)
-    flip = !flip;
+    bool changed = false;
     
-    if (flip)
+    if (config->upsideDown)
     {
-        // upside down orientation
+        // global upside down orientation
         x = width - 1 - x;
-        y = height - 1 - y;
+        y = height - 1 -y;
     }
-    
-    unsigned int i;
-    if (rotate90)
+
+    int sx = sizex / zoom;
+    int sy = sizey / zoom;
+    int di = (y / sy) * numxdisplays + (x / sx);
+    int lx = (x % sx) * zoom;
+    int ly = (y % sy) * zoom;
+
+    if (!dh[di]->attached)
+        return;
+        
+    if (dh[di]->flip)
+    {
+        // local upside down orientation
+        lx = sizex - 1 - lx;
+        ly = sizey - 1 - ly;
+    }
+
+    if (dh[di]->rotate90)
     {
         // wrong Orientation, rotate
-        int xn = y;
-        y = dpfh->height - 1 - x;
-        x = xn;
+        int i = ly;
+        ly = (dh[di]->dpfh->height) - 1 - lx;
+        lx = i;
     }
 
-    if (x >= ((int) dpfh->width / zoom) || y >= ((int) dpfh->height / zoom))
+    if (lx < 0 || lx >= (int) dh[di]->dpfh->width || ly < 0 || ly >= (int) dh[di]->dpfh->height)
+    {
+        syslog(LOG_INFO, "x/y out of bounds (x=%d, y=%d, di=%d, rot=%d, flip=%d, lx=%d, ly=%d)\n", x, y, di, dh[di]->rotate90, dh[di]->flip, lx, ly);
         return;
+    }
 
-    y *= zoom;
+    unsigned char c1 = _RGB565_0(data);
+    unsigned char c2 = _RGB565_1(data);
+    
     if (zoom == 1)
     {
-        i = (y * dpfh->width + x) * dpfh->bpp;
-        LCD[i]   = _RGB565_0(data);
-        LCD[i+1] = _RGB565_1(data);
+        unsigned int i = (ly * dh[di]->dpfh->width + lx) * dh[di]->dpfh->bpp;
+        if (dh[di]->LCD[i] != c1 || dh[di]->LCD[i+1] != c2)
+        {
+            dh[di]->LCD[i]   = c1;
+            dh[di]->LCD[i+1] = c2;
+            changed = true;
+        }
     }
     else
     {
         for (int dy = 0; dy < zoom; dy++)
         {
-            i = ((y + dy) * dpfh->width + (x * zoom)) * dpfh->bpp;
-            for (int dx = 0; dx < zoom * dpfh->bpp; dx += dpfh->bpp)
+            unsigned int i = ((ly + dy) * dh[di]->dpfh->width + lx) * dh[di]->dpfh->bpp;
+            for (int dx = 0; dx < zoom * dh[di]->dpfh->bpp; dx += dh[di]->dpfh->bpp)
             {
-                LCD[i+dx]   = _RGB565_0(data);
-                LCD[i+dx+1] = _RGB565_1(data);
+                if (dh[di]->LCD[i+dx] != c1 || dh[di]->LCD[i+dx+1] != c2)
+                {
+                    dh[di]->LCD[i+dx]   = c1;
+                    dh[di]->LCD[i+dx+1] = c2;
+                    changed = true;
+                }
             }
         }
     }
-    if (y * zoom < miny) miny = y;
-    if (y * zoom > maxy) maxy = y;
+
+    if (changed)
+    {
+        if (lx < dh[di]->minx) dh[di]->minx = lx;
+        if (lx > dh[di]->maxx) dh[di]->maxx = lx;
+        if (ly < dh[di]->miny) dh[di]->miny = ly;
+        if (ly > dh[di]->maxy) dh[di]->maxy = ly;
+    }
 }
 
 void cDriverAX206DPF::Refresh(bool refreshAll)
 {
+	short rect[4];
 
     if (CheckSetup() > 0)
         refreshAll = true;
-
-	short rect[4];
     
-    if (!refreshAll)
+    for (unsigned int di = 0; di < numdisplays; di++)
     {
-	rect[0] = 0; rect[1] = miny;
-	rect[2] = dpfh-> width; rect[3] = maxy + 1;
-    }
-    else
-    {
-	rect[0] = 0; rect[1] = 0;
-	rect[2] = dpfh->width; rect[3] = dpfh->height;
-    }
-    
-    if (rect[1] > rect[3])
-        return;
+        if (!dh[di]->attached)
+        {
+            time_t current = time(NULL);
+            if (current - lastscan >= USB_SCAN_INTERVALL)
+            {
+                lastscan = current;
+                if (RescanUSB())
+                    ; //return;             // something changed, wait for next refresh
+            }
+        }
         
-	dpf_screen_blit(dpfh, &LCD[rect[1] * dpfh->width * dpfh->bpp], rect);
+        if (!dh[di]->attached)
+            continue;
+            
+        if (refreshAll)
+        {
+            dh[di]->minx = 0; dh[di]->miny = 0;
+            dh[di]->maxx = dh[di]->dpfh->width - 1; dh[di]->maxy = dh[di]->dpfh->height - 1;
+        }
+        //fprintf(stderr, "%d: (%d,%d)-(%d,%d) ", di, dh[di]->minx, dh[di]->miny, dh[di]->maxx, dh[di]->maxy);
+        if (dh[di]->minx > dh[di]->maxx || dh[di]->miny > dh[di]->maxy)
+            continue;
+
+        unsigned int cpylength = (dh[di]->maxx - dh[di]->minx + 1) * dh[di]->dpfh->bpp;
+        unsigned char *ps = dh[di]->LCD + (dh[di]->miny * dh[di]->dpfh->width + dh[di]->minx) * dh[di]->dpfh->bpp;
+        unsigned char *pd = tempLCD;
+        for (int y = dh[di]->miny; y <= dh[di]->maxy; y++)
+        {
+            memcpy(pd, ps, cpylength);
+            ps += dh[di]->dpfh->width * dh[di]->dpfh->bpp;
+            pd += cpylength;
+        }
+            
+        rect[0] = dh[di]->minx; rect[1] = dh[di]->miny; rect[2] = dh[di]->maxx + 1; rect[3] = dh[di]->maxy + 1;
+        pthread_mutex_lock(&libax_mutex);
+        int err = dpf_screen_blit(dh[di]->dpfh, tempLCD, rect);
+        pthread_mutex_unlock(&libax_mutex);
+        if (err < 0)
+        {
+            //fprintf(stderr, "Display %d detached (err=%d).\n", di, err);
+            syslog(LOG_INFO, "%s: display %d communication error (%d). Display detached\n", config->name.c_str(), di, err);
+            DeInitSingleDisplay(di);
+            RescanUSB();
+            lastscan = time(NULL);
+        }
+    }
+    
     ResetMinMax();
+    //fprintf(stderr, "\n");
 }
 
 GLCD::cColor cDriverAX206DPF::GetBackgroundColor(void)
@@ -262,9 +537,11 @@ GLCD::cColor cDriverAX206DPF::GetBackgroundColor(void)
     return GLCD::cColor::Black;
 }
 
-/* NOT WORKING - WILL FREEZE THE DISPLAY FROM TIME TO TIME!
-void cDriverAX206DPF::SetBrightness(unsigned int percent)
+void cDriverAX206DPF::SetSingleDisplayBrightness(unsigned int di, unsigned int percent)
 {
+    if (!dh[di]->attached)
+        return;
+        
     LIBDPF::DPFValue val;
     val.type = LIBDPF::TYPE_INTEGER;
     
@@ -275,9 +552,20 @@ void cDriverAX206DPF::SetBrightness(unsigned int percent)
         val.value.integer = 7;
     else    
         val.value.integer = (((percent * 10) + 167) * 6) / 1000;
-    dpf_setproperty(dpfh, PROPERTY_BRIGHTNESS, &val);
+    pthread_mutex_lock(&libax_mutex);
+    dpf_setproperty(dh[di]->dpfh, PROPERTY_BRIGHTNESS, &val);
+    pthread_mutex_unlock(&libax_mutex);
 }
-*/
+
+void cDriverAX206DPF::SetBrightness(unsigned int percent)
+{
+    lastbrightness = percent;
+    
+    for (unsigned int i = 0; i < numdisplays; i++)
+    {
+        SetSingleDisplayBrightness(i, percent);
+    }
+}
 
 bool cDriverAX206DPF::GetDriverFeature(const std::string & Feature, int & value)
 {
@@ -438,7 +726,7 @@ int dpf_open(const char *dev, DPFHANDLE *h)
 	//if (dpf->mode == MODE_USB) {
 		dpf->dev.udev = u;
 		error = probe(dpf);
-		fprintf(stderr, "Got LCD dimensions: %dx%d\n", dpf->width, dpf->height);
+		//fprintf(stderr, "Got LCD dimensions: %dx%d\n", dpf->width, dpf->height);
 	//} else {
 	//	dpf->dev.fd = fd;
 	//}
@@ -586,7 +874,7 @@ int check_known_device(struct usb_device *d)
 	while (dev->desc) {
 		if ((d->descriptor.idVendor == dev->vid) &&
 			(d->descriptor.idProduct == dev->pid)) { 
-				fprintf(stderr, "Found %s\n", dev->desc);
+				//fprintf(stderr, "Found %s at %s:%s\n", dev->desc, d->bus->dirname, d->filename);
 				return 1;
 		}
 		dev++;
