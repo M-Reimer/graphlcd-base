@@ -1,0 +1,8 @@
+#
+# all displays / modules supported by graphlcd-base
+#
+# Futaba DM140-GINK VFD displays, incl. activity 5xx
+ATTRS{idVendor}=="040b", ATTRS{idProduct}=="7001", GROUP="uucp", MODE="0660"
+ATTRS{idVendor}=="1509", ATTRS{idProduct}=="925d", GROUP="uucp", MODE="0660"
+# AX206DPF-based picture frames (modified firmware)
+ATTRS{idVendor}=="152a", ATTRS{idProduct}=="8380", GROUP="uucp", MODE="0660"
