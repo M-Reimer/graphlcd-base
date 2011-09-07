@@ -348,6 +348,9 @@ int cDriverSerDisp::Init(void)
 
 int cDriverSerDisp::DeInit(void)
 {
+    if (!dd)
+      return 0;
+
     //fp_serdisp_quit(dd);
     /* use serdisp_close instead of serdisp_quit so that showpic and showtext are usable together with serdisplib */
     fp_serdisp_close(dd);
