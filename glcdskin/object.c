@@ -894,7 +894,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         snprintf(buf, 9, "%d", py); obj.mY1.Parse((const char*)buf);
                         if (ph > 0)
                           snprintf(buf, 9, "%d", ph); obj.mHeight.Parse((const char*)buf);
-                        snprintf(buf, 9, "%d", pw); obj.mHeight.Parse((const char*)buf);
+                        snprintf(buf, 9, "%d", pw); obj.mWidth.Parse((const char*)buf);
                         obj.Render(screen);
                     }
                     yoffset += itemheight;
