@@ -714,7 +714,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                             str = text.substr(pos1, pos2 - pos1);
                             tabWidth = mSkin->Config().GetTabPosition(tab, Size().w, *font);
                             for (loop = 0; loop < loops; loop++) {
-                                pane->DrawText( varx[loop], vary[loop] + yoff, tabWidth - 1, str, font, varcol[loop], mBackgroundColor );
+                                pane->DrawText( varx[loop] + x, vary[loop] + yoff, x + tabWidth - 1, str, font, varcol[loop], mBackgroundColor );
                             }
                             pos1 = pos2 + 1;
                             pos2 = text.find('\t', pos1);
@@ -879,19 +879,22 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                 {
                     for (int j = 1; j < (int) NumObjects(); j++)
                     {
-                        int px1, py1, py2;
+                        int px, py, ph,pw;
                         char buf[10];
                         const cSkinObject * o = GetObject(j);
                         cSkinObject obj(*o);
                         obj.SetListIndex(maxitems, i);
                         if (obj.Condition() != NULL && !obj.Condition()->Evaluate())
                             continue;
-                        px1 = obj.Pos().x + Pos().x;                     // obj.mPos1.x += mPos1.x;
-                        py1 = obj.Pos().y + Pos().y + yoffset;           // obj.mPos1.y += mPos1.y + yoffset;
-                        py2 = obj.Pos().y + obj.Size().w -1 + yoffset;   // obj.mPos2.y += mPos1.y + yoffset;
-                        snprintf(buf, 9, "%d", px1); obj.mX1.Parse((const char*)buf);
-                        snprintf(buf, 9, "%d", py1); obj.mY1.Parse((const char*)buf);
-                        snprintf(buf, 9, "%d", py2); obj.mY2.Parse((const char*)buf);
+                        px = obj.Pos().x + Pos().x;                     // obj.mPos1.x += mPos1.x;
+                        py = obj.Pos().y + Pos().y + yoffset;           // obj.mPos1.y += mPos1.y + yoffset;
+                        ph = o->Size().h;                               // obj.mPos2.y += mPos1.y + yoffset;
+                        pw = o->Size().w;
+                        snprintf(buf, 9, "%d", px); obj.mX1.Parse((const char*)buf);
+                        snprintf(buf, 9, "%d", py); obj.mY1.Parse((const char*)buf);
+                        if (ph > 0)
+                          snprintf(buf, 9, "%d", ph); obj.mHeight.Parse((const char*)buf);
+                        snprintf(buf, 9, "%d", pw); obj.mHeight.Parse((const char*)buf);
                         obj.Render(screen);
                     }
                     yoffset += itemheight;
