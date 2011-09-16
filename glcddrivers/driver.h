@@ -59,6 +59,9 @@ public:
 
     int Width() const { return width; }
     int Height() const { return height; }
+    
+    const std::string ConfigName();
+    const std::string DriverName();
 
     virtual int Init() { return 0; }
     virtual int DeInit() { return 0; }

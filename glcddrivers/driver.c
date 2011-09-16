@@ -39,6 +39,14 @@ cDriver::~cDriver(void)
     delete oldConfig;
 }
 
+const std::string cDriver::ConfigName() {
+  return (config) ? config->name : "";
+}
+
+const std::string cDriver::DriverName() {
+  return (config) ? config->driver : "";
+}
+
 
 //void cDriver::SetScreen(const unsigned char * data, int wid, int hgt, int lineSize)
 void cDriver::SetScreen(const uint32_t * data, int wid, int hgt)

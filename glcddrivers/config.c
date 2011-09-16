@@ -6,7 +6,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004      Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2011      Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #include <syslog.h>
@@ -214,6 +215,12 @@ bool cConfig::Load(const std::string & filename)
             continue;
         if (line[0] == '[' && line[line.length() - 1] == ']')
         {
+            // no ':' in section names
+            if (line.substr(1, line.length() - 2).find(':') != std::string::npos) {
+                syslog(LOG_ERR, "Config error: section name may not contain a ':', erraneous line: '%s'\n", line.c_str());
+                file.close();
+                return false;
+            }
             if (!inSections)
                 inSections = true;
             else
