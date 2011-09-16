@@ -108,10 +108,8 @@ const unsigned char kSerialCDLO = 0x04; //
 
 
 cDriverT6963C::cDriverT6963C(cDriverConfig * config)
-:   config(config)
+:   cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
-
     port = new cParallelPort();
 
     //width = config->width;
@@ -126,7 +124,6 @@ cDriverT6963C::cDriverT6963C(cDriverConfig * config)
 cDriverT6963C::~cDriverT6963C()
 {
     delete port;
-    delete oldConfig;
 }
 
 int cDriverT6963C::Init()
@@ -397,7 +394,7 @@ void cDriverT6963C::SetPixel(int x, int y, uint32_t data)
         //int cols = (width + 6 - 1 ) / 6;
         int col = x / 6;
         
-        if (data == GLCD::cColor::White)
+        if (data == GRAPHLCD_White)
             newLCD[col][y] |= (1 << pos);
         else
             newLCD[col][y] &= ( 0x3F ^ (1 << pos) );        
@@ -412,7 +409,7 @@ void cDriverT6963C::SetPixel(int x, int y, uint32_t data)
             pos = 7 - pos; // reverse bit position
         }
 
-        if (data == GLCD::cColor::White)
+        if (data == GRAPHLCD_White)
             newLCD[x / 8][y] |= (1 << pos);
         else
             newLCD[x / 8][y] &= ( 0xFF ^ (1 << pos) );

@@ -46,10 +46,8 @@ const unsigned char kLEDLO = 0x00;
 
 
 cDriverSED1520::cDriverSED1520(cDriverConfig * config)
-:   config(config)
+:   cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
-
     port = new cParallelPort();
 
     refreshCounter = 0;
@@ -58,7 +56,6 @@ cDriverSED1520::cDriverSED1520(cDriverConfig * config)
 cDriverSED1520::~cDriverSED1520()
 {
     delete port;
-    delete oldConfig;
 }
 
 int cDriverSED1520::Init()
@@ -318,7 +315,7 @@ void cDriverSED1520::SetPixel (int x, int y, uint32_t data)
         pos = 7 - pos; // reverse bit position
     }
 
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         LCD[x / 8][y] |= ( 1 << pos );
     else
         LCD[x / 8][y] &= (0xFF ^ ( 1 << pos ));

@@ -35,9 +35,6 @@ class cDriverGU256X64_372 : public cDriver
 {
     cParallelPort * port;
 
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
-
     int m_iSizeYb;
     int m_nRefreshCounter;
 

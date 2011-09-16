@@ -15,7 +15,7 @@
 
 #include "common.h"
 #include "driver.h"
-
+#include "config.h"
 
 namespace GLCD
 {
@@ -24,13 +24,21 @@ cSimpleTouchEvent::cSimpleTouchEvent() : x(0), y(0), touch(0)
 {
 }
 
-cDriver::cDriver()
+cDriver::cDriver(cDriverConfig * config)
 :   width(0),
-    height(0)
+    height(0),
+    config(config)
 {
     fgcol = GetDefaultForegroundColor();
     bgcol = GetDefaultBackgroundColor();
+    oldConfig = new cDriverConfig(*config);
 }
+
+cDriver::~cDriver(void)
+{
+    delete oldConfig;
+}
+
 
 //void cDriver::SetScreen(const unsigned char * data, int wid, int hgt, int lineSize)
 void cDriver::SetScreen(const uint32_t * data, int wid, int hgt)

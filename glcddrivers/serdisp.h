@@ -59,9 +59,6 @@ class cDriverSerDisp : public cDriver
 {
 private:
 
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
-
     long  serdisp_version;
 
     int   supports_options;
@@ -100,22 +97,18 @@ private:
 
 protected:
     virtual bool GetDriverFeature  (const std::string & Feature, int & value);
-    virtual GLCD::cColor GetDefaultBackgroundColor(void);
+    virtual uint32_t GetDefaultBackgroundColor(void);
 
 public:
 
     cDriverSerDisp(cDriverConfig * config);
-    virtual ~cDriverSerDisp();
 
     virtual int Init();
     virtual int DeInit();
 
     virtual void Clear();
     virtual void SetPixel(int x, int y, uint32_t data);
-    //virtual void Set8Pixels(int x, int y, unsigned char data);
-#if 0
-    virtual void SetScreen(const unsigned char * data, int width, int height, int lineSize);
-#endif
+
     virtual void Refresh(bool refreshAll = false);
     virtual void SetBrightness(unsigned int percent);
 

@@ -226,18 +226,12 @@ const char *cHIDQueue::hiderror(hid_return ret) const
 
 
 cDriverFutabaMDM166A::cDriverFutabaMDM166A(cDriverConfig * config)
-: config(config)
+: cDriver(config)
 , m_pDrawMem(0)
 , m_pVFDMem(0)
 {
-    oldConfig = new cDriverConfig(*config);
     m_nRefreshCounter = 0;
 	lastIconState = 0;
-}
-
-cDriverFutabaMDM166A::~cDriverFutabaMDM166A()
-{
-    delete oldConfig;
 }
 
 int cDriverFutabaMDM166A::Init()
@@ -363,7 +357,7 @@ void cDriverFutabaMDM166A::SetPixel(int x, int y, uint32_t data)
     c = 0x80 >> (y % 8);
 
     //m_pDrawMem[n] |= c;
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         m_pDrawMem[n] |= c;
     else
         m_pDrawMem[n] &= (0xFF ^ c);

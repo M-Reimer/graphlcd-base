@@ -21,7 +21,7 @@ HEADERS = cache.h config.h display.h font.h function.h object.h parser.h skin.h 
 
 
 ### Inner graphlcd-base dependencies
-LIBS += -L../glcdgraphics -lglcdgraphics
+LIBS += -L../glcdgraphics -lglcdgraphics -L../glcddrivers -lglcddrivers
 
 
 ### Implicit rules:

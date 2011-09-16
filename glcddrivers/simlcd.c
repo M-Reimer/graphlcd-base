@@ -32,15 +32,8 @@
 namespace GLCD
 {
 
-cDriverSimLCD::cDriverSimLCD(cDriverConfig * config)
-:   config(config)
+cDriverSimLCD::cDriverSimLCD(cDriverConfig * config) : cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
-}
-
-cDriverSimLCD::~cDriverSimLCD(void)
-{
-    delete oldConfig;
 }
 
 int cDriverSimLCD::Init(void)
@@ -120,7 +113,7 @@ void cDriverSimLCD::Clear(void)
     {
         for (int x = 0; x < width; x++)
         {
-            LCD[x][y] = GLCD::cColor::White; 
+            LCD[x][y] = GRAPHLCD_White; 
         }
     }
 }
@@ -160,7 +153,7 @@ void cDriverSimLCD::Refresh(bool refreshAll)
             {
                 for (x = 0; x < width; x++)
                 {
-                    if (LCD[x][y] == GLCD::cColor::Black)
+                    if (LCD[x][y] == GRAPHLCD_Black)
                     {
                         if (!config->invert)
                         {
@@ -195,9 +188,9 @@ void cDriverSimLCD::Refresh(bool refreshAll)
     }
 }
 
-GLCD::cColor cDriverSimLCD::GetBackgroundColor(void)
+uint32_t cDriverSimLCD::GetBackgroundColor(void)
 {
-    return GLCD::cColor::White;
+    return GRAPHLCD_White;
 }
 
 bool cDriverSimLCD::GetDriverFeature(const std::string & Feature, int & value)

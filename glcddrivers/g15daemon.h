@@ -23,8 +23,6 @@ class cDriverG15daemon : public cDriver
 {
 private:
     unsigned char ** LCD;
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
     char *offbuff;
     int sockfd;
     long int screensize;
@@ -35,7 +33,6 @@ private:
 
 public:
     cDriverG15daemon(cDriverConfig * config);
-    virtual ~cDriverG15daemon();
 
     virtual int Init();
     virtual int DeInit();

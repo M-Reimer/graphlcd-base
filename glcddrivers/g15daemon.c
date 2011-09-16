@@ -107,16 +107,10 @@ namespace GLCD
 {
 
 cDriverG15daemon::cDriverG15daemon(cDriverConfig * config)
-:   config(config),
+:   cDriver(config),
     offbuff(0),
     sockfd(-1)
 {
-    oldConfig = new cDriverConfig(*config);
-}
-
-cDriverG15daemon::~cDriverG15daemon()
-{
-    delete oldConfig;
 }
 
 int cDriverG15daemon::Init()
@@ -193,7 +187,7 @@ void cDriverG15daemon::SetPixel(int x, int y, uint32_t data)
         y = height - 1 - y;
     }
 
-    offbuff[x + (width * y)] = ( (data == GLCD::cColor::White) ? 1 : 0 );
+    offbuff[x + (width * y)] = ( (data == GRAPHLCD_White) ? 1 : 0 );
 }
 
 void cDriverG15daemon::Clear()
@@ -211,7 +205,7 @@ void cDriverG15daemon::Set8Pixels(int x, int y, unsigned char data)
     for (n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n))      // if bit is set
-            SetPixel(x + n, y, GLCD::cColor::White);
+            SetPixel(x + n, y, GRAPHLCD_White);
     }
 }
 #endif

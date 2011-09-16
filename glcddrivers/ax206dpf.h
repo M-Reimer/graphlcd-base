@@ -50,9 +50,6 @@ class cDriverConfig;
 class cDriverAX206DPF : public cDriver
 {
 private:
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
-
     unsigned char * tempLCD;        // temp transfer buffer
 
     bool portrait;                  // portrait or landscape mode
@@ -74,7 +71,6 @@ private:
 
 public:
     cDriverAX206DPF(cDriverConfig * config);
-    virtual ~cDriverAX206DPF();
 
     virtual int Init();
     virtual int DeInit();
@@ -82,7 +78,7 @@ public:
     virtual void Clear();
     virtual void SetPixel(int x, int y, uint32_t data);
     virtual void Refresh(bool refreshAll = false);
-    virtual GLCD::cColor GetBackgroundColor(void);
+    virtual uint32_t GetBackgroundColor(void);
     virtual void SetBrightness(unsigned int);
     virtual bool GetDriverFeature  (const std::string & Feature, int & value);
 };

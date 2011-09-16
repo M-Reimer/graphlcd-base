@@ -31,8 +31,6 @@ private:
     int refreshCounter;
     long timeForPortCmdInNs;
     long timeForLCDInNs;
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
     bool useSleepInit;
 
     int CheckSetup();

@@ -28,8 +28,6 @@ class cDriverImage : public cDriver
 private:
     uint32_t * newLCD;
     uint32_t * oldLCD;
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
     int lineSize;
     int counter;
 

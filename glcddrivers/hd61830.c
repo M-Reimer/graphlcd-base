@@ -57,10 +57,8 @@ namespace GLCD
 
 
 cDriverHD61830::cDriverHD61830(cDriverConfig * config)
-:   config(config)
+:   cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
-
     port = new cParallelPort();
 
     useSleepInit = false;
@@ -72,7 +70,6 @@ cDriverHD61830::cDriverHD61830(cDriverConfig * config)
 cDriverHD61830::~cDriverHD61830()
 {
     delete port;
-    delete oldConfig;
 }
 
 int cDriverHD61830::Init()
@@ -318,7 +315,7 @@ void cDriverHD61830::SetPixel(int x, int y, uint32_t data)
         pos = 7 - pos; // reverse bit position
     }
 
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         newLCD[x / 8][y] |= ( 1 << pos );
     else
         newLCD[x / 8][y] &= ( 0xFF ^ ( 1 << pos ) );

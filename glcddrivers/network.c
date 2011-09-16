@@ -30,17 +30,11 @@ namespace GLCD
 {
 
 cDriverNetwork::cDriverNetwork(cDriverConfig * config)
-:   config(config)
+:   cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
     childTid = 0;
     running = false;
     clientConnected = false;
-}
-
-cDriverNetwork::~cDriverNetwork()
-{
-    delete oldConfig;
 }
 
 int cDriverNetwork::Init()
@@ -137,7 +131,7 @@ void cDriverNetwork::SetPixel(int x, int y, uint32_t data)
         pos = 7 - pos; // reverse bit position
     }
 
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         newLCD[lineSize * y + x / 8] |= (1 << pos);
     else
         newLCD[lineSize * y + x / 8] &= ( 0xFF ^ (1 << pos) );

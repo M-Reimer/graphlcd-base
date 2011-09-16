@@ -38,6 +38,7 @@ public:
     cSimpleTouchEvent();
 };
 
+class cDriverConfig;
 
 class cDriver
 {
@@ -46,13 +47,15 @@ protected:
     int      height;
     uint32_t bgcol;
     uint32_t fgcol;
+    cDriverConfig * config;
+    cDriverConfig * oldConfig;
 
     virtual bool GetDriverFeature  (const std::string & Feature, int & value) { return false; }
-    virtual GLCD::cColor GetDefaultBackgroundColor(void) { return GLCD::cColor(GLCD::cColor::Black); }
-            GLCD::cColor GetDefaultForegroundColor(void) { return GLCD::cColor(GetDefaultBackgroundColor()).Invert(); }
+    virtual uint32_t GetDefaultBackgroundColor(void) { return GRAPHLCD_Black; }
+            uint32_t GetDefaultForegroundColor(void) { return GetDefaultBackgroundColor() ^ 0x00FFFFFF; }
 public:
-    cDriver();
-    virtual ~cDriver() {}
+    cDriver(cDriverConfig * config);
+    virtual ~cDriver();
 
     int Width() const { return width; }
     int Height() const { return height; }
@@ -72,18 +75,18 @@ public:
 
     virtual bool SetFeature  (const std::string & Feature, int value)   { return false; }
 
-    GLCD::cColor GetBackgroundColor(bool driverdefault=false) {
+    uint32_t GetBackgroundColor(bool driverdefault=false) {
         return (
-            (driverdefault || bgcol == GLCD::cColor::ERRCOL || bgcol == GLCD::cColor::Transparent)
+            (driverdefault || bgcol == GRAPHLCD_ERRCOL || bgcol == GRAPHLCD_Transparent)
             ? GetDefaultBackgroundColor()
-            : GLCD::cColor(bgcol)
+            : bgcol
         );
     }
-    GLCD::cColor GetForegroundColor(bool driverdefault=false) {
+    uint32_t GetForegroundColor(bool driverdefault=false) {
         return (
-            (driverdefault || fgcol == GLCD::cColor::ERRCOL || fgcol == GLCD::cColor::Transparent)
+            (driverdefault || fgcol == GRAPHLCD_ERRCOL || fgcol == GRAPHLCD_Transparent)
             ? GetDefaultForegroundColor()
-            : GLCD::cColor(fgcol)
+            : fgcol
         );
     }
 

@@ -30,8 +30,6 @@ private:
     unsigned char ** LCD_page; // paged lcd display "memory"
     int refreshCounter;
     long timeForPortCmdInNs;
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
     bool useSleepInit;
 
     int SEAD;

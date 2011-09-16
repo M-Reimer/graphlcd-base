@@ -31,16 +31,10 @@ namespace GLCD
 {
 
 cDriverDM140GINK::cDriverDM140GINK(cDriverConfig * config)
-:   config(config),
+:   cDriver(config),
     fd(-1),
     framebuff(0)
 {
-    oldConfig = new cDriverConfig(*config);
-}
-
-cDriverDM140GINK::~cDriverDM140GINK()
-{
-    delete oldConfig;
 }
 
 /* hack - fix improper signed char handling - it's seeing 0x80 as a negative value*/
@@ -268,7 +262,7 @@ void cDriverDM140GINK::SetPixel(int x, int y, uint32_t data)
 
     int offset = (y/8) * width + x;
     char mask = (1 << (7 - (y%8)));
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         framebuff[offset] |= mask;
     else
         framebuff[offset] &= (0xFF ^ mask);
@@ -287,7 +281,7 @@ void cDriverDM140GINK::Set8Pixels(int x, int y, unsigned char data)
     for (int n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n))      // if bit is set
-            SetPixel(x + n, y, GLCD::cColor::White);
+            SetPixel(x + n, y, GRAPHLCD_White);
     }
 }
 #endif

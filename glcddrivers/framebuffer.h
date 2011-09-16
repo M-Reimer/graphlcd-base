@@ -27,8 +27,6 @@ class cDriverFramebuffer : public cDriver
 {
 private:
     unsigned char ** LCD;
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
     char *offbuff;
     int fbfd;
     struct fb_var_screeninfo vinfo;
@@ -41,7 +39,6 @@ private:
 
 public:
     cDriverFramebuffer(cDriverConfig * config);
-    virtual ~cDriverFramebuffer();
 
     virtual int Init();
     virtual int DeInit();

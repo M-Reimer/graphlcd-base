@@ -98,12 +98,10 @@ static const std::string kWiringWindows  = "Windows";
 
 
 cDriverGU140X32F::cDriverGU140X32F(cDriverConfig * config)
-:   config(config),
+:   cDriver(config),
     m_pDrawMem(0),
     m_pVFDMem(0)
 {
-    oldConfig = new cDriverConfig(*config);
-
     port = new cParallelPort();
 
     m_nRefreshCounter = 0;
@@ -112,7 +110,6 @@ cDriverGU140X32F::cDriverGU140X32F(cDriverConfig * config)
 cDriverGU140X32F::~cDriverGU140X32F()
 {
     delete port;
-    delete oldConfig;
 }
 
 int cDriverGU140X32F::Init()
@@ -350,7 +347,7 @@ void cDriverGU140X32F::SetPixel(int x, int y, uint32_t data)
     n = x + ((y / 8) * width);
     c = 0x80 >> (y % 8);
 
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         m_pDrawMem[n] |= c;
     else
         m_pDrawMem[n] &= (0xFF ^ c);
@@ -367,7 +364,7 @@ void cDriverGU140X32F::Set8Pixels(int x, int y, unsigned char data)
     for (n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n))      // if bit is set
-            SetPixel(x + n, y, GLCD::cColor::White);
+            SetPixel(x + n, y, GRAPHLCD_White);
     }
 }
 #endif

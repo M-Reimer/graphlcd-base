@@ -51,10 +51,8 @@ const int kBufferHeight = 128;
 
 
 cDriverAvrCtl::cDriverAvrCtl(cDriverConfig * config)
-:   config(config)
+:   cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
-
     port = new cSerialPort();
 
     //width = config->width;
@@ -65,7 +63,6 @@ cDriverAvrCtl::cDriverAvrCtl(cDriverConfig * config)
 cDriverAvrCtl::~cDriverAvrCtl()
 {
     delete port;
-    delete oldConfig;
 }
 
 int cDriverAvrCtl::Init()
@@ -190,7 +187,7 @@ void cDriverAvrCtl::SetPixel(int x, int y, uint32_t data)
     }
 
     int offset = 7 - (y % 8);
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         newLCD[x][y / 8] |= (1 << offset);
     else
         newLCD[x][y / 8] &= ( 0xFF ^ (1 << offset) );

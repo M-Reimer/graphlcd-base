@@ -42,10 +42,8 @@ const unsigned char kCS2LO = 0x04;
 
 
 cDriverKS0108::cDriverKS0108(cDriverConfig * config)
-:   config(config)
+:   cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
-
     port = new cParallelPort();
 
     refreshCounter = 0;
@@ -56,7 +54,6 @@ cDriverKS0108::cDriverKS0108(cDriverConfig * config)
 cDriverKS0108::~cDriverKS0108()
 {
     delete port;
-    delete oldConfig;
 }
 
 int cDriverKS0108::Init()
@@ -435,7 +432,7 @@ void cDriverKS0108::SetPixel(int x, int y, uint32_t data)
         pos = 7 - pos; // reverse bit position
     }
 
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         LCD[x / 8][y] |= (1 << pos);
     else
         LCD[x / 8][y] &= ( 0xFF ^ (1 << pos) );

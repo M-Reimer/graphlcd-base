@@ -39,9 +39,6 @@ class cDriverGU140X32F : public cDriver
 
     cParallelPort * port;
 
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
-
     int m_iSizeYb;
     int m_nRefreshCounter;
     unsigned char *m_pDrawMem; // the draw "memory"

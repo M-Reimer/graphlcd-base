@@ -24,6 +24,13 @@
 // this flag will be checked in current versions of vdr-graphlcd-plugin
 #define GRAPHLCD_CBITMAP_ARGB
 
+// colour definitions for glcddrivers so that libglcddrivers.so isn't link-dependent on libglcdgraphics.so
+#define GRAPHLCD_Black       0xFF000000
+#define GRAPHLCD_White       0xFFFFFFFF
+#define GRAPHLCD_Transparent 0x00FFFFFF
+#define GRAPHLCD_ERRCOL      0x00000000
+
+
 namespace GLCD
 {
 
@@ -53,16 +60,16 @@ public:
    cColor(uint32_t col) { color = col; }
    cColor(const cColor & col) { color = col.color; }
 
-   static const uint32_t Black       = 0xFF000000;
-   static const uint32_t White       = 0xFFFFFFFF;
+   static const uint32_t Black       = GRAPHLCD_Black;
+   static const uint32_t White       = GRAPHLCD_White;
    static const uint32_t Red         = 0xFFFF0000;
    static const uint32_t Green       = 0xFF00FF00;
    static const uint32_t Blue        = 0xFF0000FF;
    static const uint32_t Magenta     = 0xFFFF00FF;
    static const uint32_t Cyan        = 0xFF00FFFF;
    static const uint32_t Yellow      = 0xFFFFFF00;
-   static const uint32_t Transparent = 0x00FFFFFF;
-   static const uint32_t ERRCOL      = 0x00000000;
+   static const uint32_t Transparent = GRAPHLCD_Transparent;
+   static const uint32_t ERRCOL      = GRAPHLCD_ERRCOL;
 
    uint32_t GetColor (void)         { return color; }
    void     SetColor (uint32_t col) { color = col; }

@@ -84,10 +84,8 @@ const unsigned char kWindowsCDLO = 0x08; //
 
 
 cDriverGU256X64_372::cDriverGU256X64_372(cDriverConfig * config)
-:   config(config)
+:   cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
-
     port = new cParallelPort();
 
     m_nRefreshCounter = 0;
@@ -95,7 +93,6 @@ cDriverGU256X64_372::cDriverGU256X64_372(cDriverConfig * config)
 
 cDriverGU256X64_372::~cDriverGU256X64_372()
 {
-    delete oldConfig;
     delete port;
 }
 
@@ -366,7 +363,7 @@ void cDriverGU256X64_372::SetPixel(int x, int y, uint32_t data)
 
     c = 0x80 >> (y % 8);
 
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         m_pDrawMem[x][y/8] |= c;
     else
         m_pDrawMem[x][y/8] &= ( 0xFF ^ c );
@@ -383,7 +380,7 @@ void cDriverGU256X64_372::Set8Pixels(int x, int y, unsigned char data)
     for (n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n)) // if bit is set
-            SetPixel(x + n, y, GLCD::cColor::White);
+            SetPixel(x + n, y, GRAPHLCD_White);
     }
 }
 #endif

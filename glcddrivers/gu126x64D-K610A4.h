@@ -46,7 +46,6 @@ public:
     //     constructor/destructor
     //---------------------------------------------------------------------------
     cDriverGU126X64D_K610A4(cDriverConfig * config);
-    virtual ~cDriverGU126X64D_K610A4();
 
     //---------------------------------------------------------------------------
     //     from cDriver
@@ -108,9 +107,6 @@ private:
     //     attributes
     //---------------------------------------------------------------------------
     cParallelPort  *port;
-
-    cDriverConfig  *config;
-    cDriverConfig  *oldConfig;
 
     int             myNumRows;
     unsigned char **myDrawMem;

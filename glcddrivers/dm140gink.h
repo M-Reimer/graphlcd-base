@@ -25,9 +25,6 @@ class cDriverConfig;
 class cDriverDM140GINK : public cDriver
 {
 private:
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
-
     int fd;
 
     int vendor;
@@ -42,7 +39,6 @@ private:
 
 public:
     cDriverDM140GINK(cDriverConfig * config);
-    virtual ~cDriverDM140GINK();
 
     virtual int Init();
     virtual int DeInit();

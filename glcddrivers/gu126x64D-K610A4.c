@@ -91,9 +91,8 @@ static const long          ADJUST_FACTOR     =  100;    // used to adjust timing
 
 //-----------------------------------------------------------------------------
 cDriverGU126X64D_K610A4::cDriverGU126X64D_K610A4(cDriverConfig * config)
-                       : port                (0)
-                       , config              (config)
-                       , oldConfig           (0)
+                       : cDriver              (config)
+                       , port                (0)
                        , myNumRows           (0)
                        , myDrawMem           (0)
                        , myVFDMem            (0)
@@ -105,14 +104,8 @@ cDriverGU126X64D_K610A4::cDriverGU126X64D_K610A4(cDriverConfig * config)
                        , myDataPendingCounter(0)
                        , myLogFlags          (0)
 {
-    oldConfig = new cDriverConfig(*config);
 } // cDriverGU126X64D_K610A4::cDriverGU126X64D_K610A4()
 
-//-----------------------------------------------------------------------------
-cDriverGU126X64D_K610A4::~cDriverGU126X64D_K610A4()
-{
-    delete oldConfig;
-} // cDriverGU126X64D_K610A4::cDriverGU126X64D_K610A4()
 
 //-----------------------------------------------------------------------------
 int cDriverGU126X64D_K610A4::Init()
@@ -432,7 +425,7 @@ void cDriverGU126X64D_K610A4::SetPixel(int x, int y, uint32_t data)
 
     unsigned char c = 0x80 >> (y % 8);
 
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         myDrawMem[x][y/8] |= c;
     else
         myDrawMem[x][y/8] &= ( 0xFF ^ c );
@@ -449,7 +442,7 @@ void cDriverGU126X64D_K610A4::Set8Pixels(int x, int y, unsigned char data)
     {
         if ((data & (0x80 >> n)) != 0) // if bit is set
         {
-            setPixel(x + n, y, GLCD::cColor::White);
+            setPixel(x + n, y, GRAPHLCD_White);
         } // if
     } // for
 } // cDriverGU126X64D_K610A4::Set8Pixels()

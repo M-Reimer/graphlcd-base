@@ -29,16 +29,10 @@ namespace GLCD
 {
 
 cDriverFramebuffer::cDriverFramebuffer(cDriverConfig * config)
-:   config(config),
+:   cDriver(config),
     offbuff(0),
     fbfd(-1)
 {
-    oldConfig = new cDriverConfig(*config);
-}
-
-cDriverFramebuffer::~cDriverFramebuffer()
-{
-    delete oldConfig;
 }
 
 int cDriverFramebuffer::Init()
@@ -170,7 +164,7 @@ void cDriverFramebuffer::SetPixel(int x, int y, uint32_t data)
     location = (x*(1+zoom)+vinfo.xoffset) * (vinfo.bits_per_pixel/8) +
                (y*(1+zoom)+vinfo.yoffset) * finfo.line_length;
 
-    if (data == GLCD::cColor::White) {
+    if (data == GRAPHLCD_White) {
         if (vinfo.bits_per_pixel <= 8) {
             outcol = 15;
         } else {
@@ -243,7 +237,7 @@ void cDriverFramebuffer::Set8Pixels(int x, int y, unsigned char data)
     for (n = 0; n < 8; ++n)
     {
         if (data & (0x80 >> n))      // if bit is set
-            SetPixel(x + n, y, GLCD::cColor::White);
+            SetPixel(x + n, y, GRAPHLCD_White);
     }
 }
 #endif

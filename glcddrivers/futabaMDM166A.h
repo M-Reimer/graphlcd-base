@@ -43,8 +43,6 @@ namespace GLCD
 
 	class cDriverFutabaMDM166A : public cDriver, cHIDQueue 
 	{
-		cDriverConfig * config;
-		cDriverConfig * oldConfig;
 		unsigned char *m_pDrawMem; // the draw "memory"
 		unsigned char *m_pVFDMem;  // the double buffed display "memory"
 		unsigned int m_iSizeYb;
@@ -59,7 +57,6 @@ namespace GLCD
 
 	public:
 		cDriverFutabaMDM166A(cDriverConfig * config);
-		virtual ~cDriverFutabaMDM166A();
 
 		virtual int Init();
 		virtual int DeInit();

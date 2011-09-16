@@ -29,8 +29,6 @@ class cDriverNetwork : public cDriver
 private:
     unsigned char * newLCD;
     unsigned char * oldLCD;
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
     int lineSize;
     bool running;
     pthread_t childTid;
@@ -42,7 +40,6 @@ private:
 
 public:
     cDriverNetwork(cDriverConfig * config);
-    virtual ~cDriverNetwork();
 
     virtual int Init();
     virtual int DeInit();

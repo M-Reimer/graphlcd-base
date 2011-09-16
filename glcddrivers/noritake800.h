@@ -47,9 +47,6 @@ class cDriverNoritake800 : public cDriver
 {
     cParallelPort * m_pport;
 
-    cDriverConfig * m_Config;
-    cDriverConfig * m_oldConfig;
-
     int m_iSizeYb;
     int m_nRefreshCounter;
     int m_nWiring;

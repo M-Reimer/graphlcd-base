@@ -29,8 +29,6 @@ private:
 
     unsigned char ** newLCD; // wanted state
     unsigned char ** oldLCD; // current state
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
     int refreshCounter;
     long timeForPortCmdInNs;
     bool useSleepInit;

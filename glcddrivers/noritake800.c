@@ -91,7 +91,7 @@ static const std::string kWiringMZ = "MZ";
 #define SETPOSITION     0xff
 
 
-cDriverNoritake800::cDriverNoritake800(cDriverConfig * config)
+cDriverNoritake800::cDriverNoritake800(cDriverConfig * config) : cDriver(config)
 {
     int x = 0;
     m_bGraphScreen0_On = true;
@@ -99,18 +99,15 @@ cDriverNoritake800::cDriverNoritake800(cDriverConfig * config)
     // default initilaization for the wiring
     m_nWiring = WIRING_LIQUIDMP3;
 
-    m_Config = config;
-    m_oldConfig = new cDriverConfig(* config);
-
     m_pport = new cParallelPort();
 
     m_nTimingAdjustCmd = 0;
     m_nRefreshCounter = 0;
 
-    width = m_Config->width;      // 128
+    width = config->width;      // 128
     if (width <= 0)
         width = 128;
-    height = m_Config->height;    //  64
+    height = config->height;    //  64
     if (height <= 0)
         height = 64;
     m_iSizeYb = (height + 7)/8;   //   8
@@ -118,15 +115,15 @@ cDriverNoritake800::cDriverNoritake800(cDriverConfig * config)
     //
     // initialize wiring
     //
-    for (unsigned int i = 0; i < m_Config->options.size(); i++)
+    for (unsigned int i = 0; i < config->options.size(); i++)
     {
-        if (m_Config->options[i].name == "Wiring")
+        if (config->options[i].name == "Wiring")
         {
-            if (m_Config->options[i].value == kWiringLiquidmp3)
+            if (config->options[i].value == kWiringLiquidmp3)
             {
                 m_nWiring = WIRING_LIQUIDMP3;
             }
-            else if (m_Config->options[i].value == kWiringMZ)
+            else if (config->options[i].value == kWiringMZ)
             {
                 m_nWiring = WIRING_MZ;
             }
@@ -184,7 +181,6 @@ cDriverNoritake800::~cDriverNoritake800()
         }
     delete[] m_pDrawMem;
     delete[] m_pWiringMaskCache;
-    delete m_oldConfig;
     delete m_pport;
 }
 
@@ -213,27 +209,27 @@ int cDriverNoritake800::DeInit()
 
 int cDriverNoritake800::CheckSetup()
 {
-    if (m_Config->device != m_oldConfig->device ||
-        m_Config->port != m_oldConfig->port ||
-        m_Config->width != m_oldConfig->width ||
-        m_Config->height != m_oldConfig->height)
+    if (config->device != oldConfig->device ||
+        config->port != oldConfig->port ||
+        config->width != oldConfig->width ||
+        config->height != oldConfig->height)
     {
         DeInit();
         Init();
         return 0;
     }
 
-    if (m_Config->brightness != m_oldConfig->brightness)
+    if (config->brightness != oldConfig->brightness)
     {
-        m_oldConfig->brightness = m_Config->brightness;
-        SetBrightness(m_Config->brightness);
+        oldConfig->brightness = config->brightness;
+        SetBrightness(config->brightness);
     }
 
-    if (m_Config->upsideDown != m_oldConfig->upsideDown ||
-        m_Config->invert != m_oldConfig->invert)
+    if (config->upsideDown != oldConfig->upsideDown ||
+        config->invert != oldConfig->invert)
     {
-        m_oldConfig->upsideDown = m_Config->upsideDown;
-        m_oldConfig->invert = m_Config->invert;
+        oldConfig->upsideDown = config->upsideDown;
+        oldConfig->invert = config->invert;
         return 1;
     }
     return 0;
@@ -244,23 +240,23 @@ int cDriverNoritake800::Init()
     int x;
     struct timeval tv1, tv2;
 
-    if (m_Config->device == "")
+    if (config->device == "")
     {
         // use DirectIO
-        if (m_pport->Open(m_Config->port) != 0)
+        if (m_pport->Open(config->port) != 0)
             return -1;
         uSleep(10);
     }
     else
     {
         // use ppdev
-        if (m_pport->Open(m_Config->device.c_str()) != 0)
+        if (m_pport->Open(config->device.c_str()) != 0)
             return -1;
     }
 
     if (nSleepInit() != 0)
     {
-        syslog(LOG_ERR, "%s: INFO: cannot change wait parameters  Err: %s (cDriver::Init)\n", m_Config->name.c_str(), strerror(errno));
+        syslog(LOG_ERR, "%s: INFO: cannot change wait parameters  Err: %s (cDriver::Init)\n", config->name.c_str(), strerror(errno));
         m_bSleepIsInit = false;
     }
     else
@@ -270,7 +266,7 @@ int cDriverNoritake800::Init()
 
     // benchmark port access
     m_pport->Claim();
-    syslog(LOG_DEBUG, "%s: benchmark started.\n", m_Config->name.c_str());
+    syslog(LOG_DEBUG, "%s: benchmark started.\n", config->name.c_str());
     gettimeofday(&tv1, 0);
     int nBenchIterations = 10000;
     for (x = 0; x < nBenchIterations; x++)
@@ -281,7 +277,7 @@ int cDriverNoritake800::Init()
     nSleepDeInit();
     // calculate port command duration in nanoseconds
     m_nTimingAdjustCmd = long(double((tv2.tv_sec - tv1.tv_sec) * 1000000000 + (tv2.tv_usec - tv1.tv_usec) * 1000) / double(nBenchIterations));
-    syslog(LOG_DEBUG, "%s: benchmark stopped. Time for Port Command: %ldns\n", m_Config->name.c_str(), m_nTimingAdjustCmd);
+    syslog(LOG_DEBUG, "%s: benchmark stopped. Time for Port Command: %ldns\n", config->name.c_str(), m_nTimingAdjustCmd);
     m_pport->Release();
 
     // initialize display
@@ -291,13 +287,13 @@ int cDriverNoritake800::Init()
     for (n=0; n < 15; n++)
     {
         N800Cmd(0x62);
-        nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+        nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
         N800Cmd(n);
-        nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+        nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
         N800Data(0xff);
-        nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+        nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
     }
-    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
 
 
     N800Cmd(LAYERSOFF | LAYER0ON); // layer 0 of the graphic RAM on
@@ -313,15 +309,15 @@ int cDriverNoritake800::Init()
 
     m_pport->Release();
 
-    *m_oldConfig = *m_Config;
+    //*oldConfig = *config;
 
     // Set Display SetBrightness
-    SetBrightness(m_Config->brightness);
+    SetBrightness(config->brightness);
     // clear display
     ClearVFDMem();
     Refresh(true);
 
-    syslog(LOG_INFO, "%s: initialization done.\n", m_Config->name.c_str());
+    syslog(LOG_INFO, "%s: initialization done.\n", config->name.c_str());
     return 0;
 }
 
@@ -335,9 +331,9 @@ void cDriverNoritake800::Refresh(bool refreshAll)
     if (!m_pVFDMem || !m_pDrawMem)
         return;
 
-    if (m_Config->refreshDisplay > 0)
+    if (config->refreshDisplay > 0)
     {
-        m_nRefreshCounter = (m_nRefreshCounter + 1) % m_Config->refreshDisplay;
+        m_nRefreshCounter = (m_nRefreshCounter + 1) % config->refreshDisplay;
         if (m_nRefreshCounter == 0)
             refreshAll = true;
     }
@@ -357,7 +353,7 @@ void cDriverNoritake800::Refresh(bool refreshAll)
                     m_nRefreshCounter = 0;
                 // actually write to display
                 N800WriteByte(
-                    (m_pVFDMem[xb][yb]) ^ ((m_Config->invert != 0) ? 0xff : 0x00),
+                    (m_pVFDMem[xb][yb]) ^ ((config->invert != 0) ? 0xff : 0x00),
                     xb,
                     yb,
                     0);
@@ -376,13 +372,13 @@ void cDriverNoritake800::N800Cmd(unsigned char data)
     m_pport->WriteControl(m_pWiringMaskCache[0x00]);
     // write to data port
     m_pport->WriteData(data);
-    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
     // set /WR on the control port
     m_pport->WriteControl(m_pWiringMaskCache[VFDSGN_WR]);
-    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
     // reset /WR on the control port
     m_pport->WriteControl(m_pWiringMaskCache[0x00]);
-    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
     // set direction to "port_input"
     m_pport->WriteControl(LPT_CTL_HI_DIR | m_pWiringMaskCache[0x00]);
 }
@@ -396,13 +392,13 @@ void cDriverNoritake800::N800Data(unsigned char data)
     m_pport->WriteControl(m_pWiringMaskCache[VFDSGN_CD]);
     // write to data port
     m_pport->WriteData(data);
-    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
     // set /WR on the control port
     m_pport->WriteControl(m_pWiringMaskCache[VFDSGN_CD | VFDSGN_WR]);
-    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
     // reset /WR on the control port
     m_pport->WriteControl(m_pWiringMaskCache[VFDSGN_CD]);
-    nSleep(100 + (100 * m_Config->adjustTiming) - m_nTimingAdjustCmd);
+    nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
     // set direction to "port_input"
     m_pport->WriteControl(LPT_CTL_HI_DIR | m_pWiringMaskCache[0x00]);
 }
@@ -419,7 +415,7 @@ void cDriverNoritake800::SetPixel(int x, int y, uint32_t data)
     if (y >= height || y < 0)
         return;
 
-    if (m_Config->upsideDown)
+    if (config->upsideDown)
     {
         x = width - 1 - x;
         y = height - 1 - y;
@@ -427,7 +423,7 @@ void cDriverNoritake800::SetPixel(int x, int y, uint32_t data)
 
     c = 0x80 >> (y % 8);
 
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         m_pDrawMem[x][y/8] |= c;
     else
         m_pDrawMem[x][y/8] &= ( 0xFF ^ c);

@@ -131,10 +131,8 @@ const unsigned char kYASEDWCSLO = kSelectLow;
 
 
 cDriverSED1330::cDriverSED1330(cDriverConfig * config)
-:   config(config)
+:   cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
-
     port = new cParallelPort();
 
     refreshCounter = 0;
@@ -143,7 +141,6 @@ cDriverSED1330::cDriverSED1330(cDriverConfig * config)
 cDriverSED1330::~cDriverSED1330()
 {
     delete port;
-    delete oldConfig;
 }
 
 int cDriverSED1330::Init()
@@ -555,7 +552,7 @@ void cDriverSED1330::SetPixel(int x, int y, uint32_t data)
         pos = 7 - pos; // reverse bit position
     }
 
-    if (data == GLCD::cColor::White)
+    if (data == GRAPHLCD_White)
         newLCD[x / 8][y] |= (1 << pos);
     else
         newLCD[x / 8][y] &= ( 0xFF ^ (1 << pos) );

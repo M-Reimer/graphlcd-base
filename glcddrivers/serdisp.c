@@ -45,17 +45,10 @@ static bool simpleTouchChanged=false;
 
 
 cDriverSerDisp::cDriverSerDisp(cDriverConfig * config)
-:   config(config)
+:   cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
-
     dd = (void *) NULL;
     simpleTouchChanged = false;
-}
-
-cDriverSerDisp::~cDriverSerDisp(void)
-{
-    delete oldConfig;
 }
 
 int cDriverSerDisp::Init(void)
@@ -86,8 +79,8 @@ int cDriverSerDisp::Init(void)
 
     /* pre-init some flags, function pointers, ... */
     supports_options = 0;
-    fgcol = GLCD::cColor::Black;  /* set foreground colour to black */
-    bgcol = GLCD::cColor::ERRCOL;
+    fgcol = GRAPHLCD_Black;  /* set foreground colour to black */
+    bgcol = GRAPHLCD_ERRCOL;
 
     // get serdisp version
     fp_serdisp_getversioncode = (long int (*)()) dlsym(sdhnd, "serdisp_getversioncode");
@@ -297,9 +290,9 @@ int cDriverSerDisp::Init(void)
     // self-emitting displays (like OLEDs): default background colour => black
     if ( supports_options && fp_serdisp_isoption(dd, "SELFEMITTING") && (fp_serdisp_getoption(dd, "SELFEMITTING", 0)) ) {
        if (!bg_forced)
-         bgcol = GLCD::cColor::Black; /* set background colour to black */
+         bgcol = GRAPHLCD_Black; /* set background colour to black */
        if (!fg_forced)
-         fgcol = GLCD::cColor::White; /* set foreground colour to white */
+         fgcol = GRAPHLCD_White; /* set foreground colour to white */
     }
 
     width = config->width;
@@ -431,7 +424,7 @@ int cDriverSerDisp::CheckSetup()
 
 void cDriverSerDisp::Clear(void)
 {
-    if (bgcol == GLCD::cColor::ERRCOL) // bgcol not set
+    if (bgcol == GRAPHLCD_ERRCOL) // bgcol not set
         fp_serdisp_clearbuffer(dd);
     else {  /* if bgcol is set, draw background 'by hand' */
         int x,y;
@@ -453,7 +446,7 @@ void cDriverSerDisp::Set8Pixels(int x, int y, unsigned char data) {
         pixel = data & (1 << i);
         if (pixel) {
           SetPixel(start + i, y, (long)fgcol);
-        } else if (!pixel && bgcol != GLCD::cColor::ERRCOL) { /* if bgcol is set: use it if pixel is not set */
+        } else if (!pixel && bgcol != GRAPHLCD_ERRCOL) { /* if bgcol is set: use it if pixel is not set */
           SetPixel(start + i, y, (long)bgcol);
         }
     }
@@ -513,11 +506,11 @@ void cDriverSerDisp::SetBrightness(unsigned int percent)
         fp_serdisp_setoption(dd, "BRIGHTNESS", (long)percent);
 }
 
-GLCD::cColor cDriverSerDisp::GetDefaultBackgroundColor(void) {
+uint32_t cDriverSerDisp::GetDefaultBackgroundColor(void) {
     if ( supports_options && fp_serdisp_isoption(dd, "SELFEMITTING") && (fp_serdisp_getoption(dd, "SELFEMITTING", 0)) ) {
-       return GLCD::cColor::Black;
+       return GRAPHLCD_Black;
     }
-    return GLCD::cColor::White;
+    return GRAPHLCD_White;
 }
 
 

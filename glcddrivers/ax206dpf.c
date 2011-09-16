@@ -72,14 +72,8 @@ static int lastbrightness;
 
 
 cDriverAX206DPF::cDriverAX206DPF(cDriverConfig * config)
-:   config(config)
+:   cDriver(config)
 {
-    oldConfig = new cDriverConfig(*config);
-}
-
-cDriverAX206DPF::~cDriverAX206DPF()
-{
-    delete oldConfig;
 }
 
 int cDriverAX206DPF::Init(void)
@@ -532,9 +526,9 @@ void cDriverAX206DPF::Refresh(bool refreshAll)
     //fprintf(stderr, "\n");
 }
 
-GLCD::cColor cDriverAX206DPF::GetBackgroundColor(void)
+uint32_t cDriverAX206DPF::GetBackgroundColor(void)
 {
-    return GLCD::cColor::Black;
+    return GRAPHLCD_Black;
 }
 
 void cDriverAX206DPF::SetSingleDisplayBrightness(unsigned int di, unsigned int percent)

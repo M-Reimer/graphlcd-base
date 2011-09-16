@@ -41,9 +41,6 @@ class cDriverGU256X64_3900 : public cDriver
     cParallelPort * port;
     int portFd;
 
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
-
     int m_iSizeYb;
     int m_nRefreshCounter;
     int interface;
@@ -71,7 +68,6 @@ protected:
     void Write(unsigned char data);
 public:
     cDriverGU256X64_3900(cDriverConfig * config);
-    virtual ~cDriverGU256X64_3900();
 
     virtual int Init();
     virtual int DeInit();

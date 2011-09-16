@@ -37,10 +37,6 @@ ifeq ($(shell pkg-config --exists libusb && echo 1), 1)
 endif    
 
 
-### Inner graphlcd-base dependencies
-LIBS += -L../glcdgraphics -lglcdgraphics
-
-
 ### Implicit rules:
 
 %.o: %.c

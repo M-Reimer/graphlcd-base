@@ -39,8 +39,6 @@ private:
     unsigned char ** oldLCD; // current state
     int refreshCounter;
     long timeForPortCmdInNs;
-    cDriverConfig * config;
-    cDriverConfig * oldConfig;
     bool useSleepInit;
 
     int oscillatorFrequency;
