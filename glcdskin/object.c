@@ -73,6 +73,8 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mAltText(""),                   // alternative text source for text-objects
     mAltCondition(NULL),            // condition when alternative sources are used
     mAction(""),                    // action (e.g. touchscreen action)
+    mMultilineScrollPosition(0),
+    mMultilineRelScroll(this, false),
     mObjects(NULL)
 {
     mColor.SetColor(Parent->Skin()->Config().GetDriver()->GetForegroundColor());
@@ -124,6 +126,8 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
     mAltText(Src.mAltText),
     mAltCondition(Src.mAltCondition),
     mAction(Src.mAction),
+    mMultilineScrollPosition(Src.mMultilineScrollPosition),
+    mMultilineRelScroll(Src.mMultilineRelScroll),
     mObjects(NULL)
 {
     if (Src.mObjects)
@@ -632,6 +636,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                     mCurrText = text;
                     mScrollLoopReached = false;
                     mLastChange = timestamp;
+                    mMultilineScrollPosition = 0;
                 }
 
                 if (mMultiline)
@@ -640,7 +645,24 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                     mScrollLoopReached = true;  // avoid check in NeedsUpdate()
 
                     std::vector <std::string> lines;
-                    font->WrapText(Size().w, Size().h, text, lines);
+                    font->WrapText(Size().w, 0/*Size().h*/, text, lines);
+
+                    int amount_lines = Size().h / font->LineHeight();
+
+                    if (amount_lines < lines.size()) {
+                        int multilineRelScroll = mMultilineRelScroll.Evaluate();
+                        if (multilineRelScroll != 0) {
+                            if (multilineRelScroll < 0) {
+                                mMultilineScrollPosition += multilineRelScroll;
+                                if (mMultilineScrollPosition < 0)
+                                    mMultilineScrollPosition = 0;
+                            } else if (multilineRelScroll > 0) {
+                                mMultilineScrollPosition += multilineRelScroll;
+                                if (mMultilineScrollPosition > (lines.size() - amount_lines) )
+                                    mMultilineScrollPosition = lines.size() - amount_lines;
+                            }
+                        }
+                    }
 
                     // vertical alignment, calculate y offset
                     int yoff = 0;
@@ -655,9 +677,13 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         default: yoff = 0;
                     }
 
-                    for (size_t i = 0; i < lines.size(); i++)
+                    int end_line = amount_lines;
+                    if (amount_lines > lines.size() )
+                        end_line = lines.size();
+
+                    for (size_t i = 0; i < (size_t)end_line; i++)
                     {
-                        int w = font->Width(lines[i]);
+                        int w = font->Width(lines[i + mMultilineScrollPosition]);
                         int x = 0;
                         if (w < Size().w)
                         {
@@ -673,7 +699,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         for (loop = 0; loop < loops; loop++) {
                             pane->DrawText(
                                 varx[loop] + x, vary[loop] + yoff + i * font->LineHeight(), 
-                                x + Size().w - 1, lines[i], font, varcol[loop], mBackgroundColor
+                                x + Size().w - 1, lines[i + mMultilineScrollPosition], font, varcol[loop], mBackgroundColor
                             );
                         }
                     }

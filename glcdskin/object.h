@@ -169,6 +169,9 @@ private:
     cSkinFunction * mAltCondition;  // condition when alternative sources are used
     std::string     mAction;        // action attached to this object
 
+    int mMultilineScrollPosition;   // current scolling position of mMultiline
+    cSkinString mMultilineRelScroll;// relative scrolling amount of mMultiline (default: 0)
+
     cSkinObjects * mObjects;        // used for block objects such as <list>
 
 public:
