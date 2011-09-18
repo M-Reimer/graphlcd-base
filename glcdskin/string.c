@@ -55,18 +55,23 @@ std::string tSkinToken::Token(const tSkinToken & Token)
     return result;
 }
 
+#if 0
 cSkinString::tStringList cSkinString::mStrings;
+#endif
 
 cSkinString::cSkinString(cSkinObject *Parent, bool Translate)
 :   mObject(Parent),
     mSkin(Parent->Skin()),
     mTranslate(Translate)
 {
+#if 0
     mStrings.push_back(this);
+#endif
 }
 
 cSkinString::~cSkinString()
 {
+#if 0
     tStringList::iterator it = mStrings.begin();
     for (; it != mStrings.end(); ++it) {
         if ((*it) == this) {
@@ -74,8 +79,10 @@ cSkinString::~cSkinString()
             break;
         }
     }
+#endif
 }
 
+#if 0
 void cSkinString::Reparse(void)
 {
     tStringList::iterator it = mStrings.begin();
@@ -84,6 +91,7 @@ void cSkinString::Reparse(void)
             (*it)->Parse((*it)->mOriginal, true);
     }
 }
+#endif
 
 
 // copied from xml.c (should be valid for parsing variable names too ...)

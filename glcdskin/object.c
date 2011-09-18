@@ -647,7 +647,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                     std::vector <std::string> lines;
                     font->WrapText(Size().w, 0/*Size().h*/, text, lines);
 
-                    int amount_lines = Size().h / font->LineHeight();
+                    size_t amount_lines = Size().h / font->LineHeight();
 
                     if (amount_lines < lines.size()) {
                         int multilineRelScroll = mMultilineRelScroll.Evaluate();

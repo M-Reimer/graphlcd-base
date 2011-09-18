@@ -60,16 +60,16 @@ public:
    cColor(uint32_t col) { color = col; }
    cColor(const cColor & col) { color = col.color; }
 
-   static const uint32_t Black       = GRAPHLCD_Black;
-   static const uint32_t White       = GRAPHLCD_White;
-   static const uint32_t Red         = 0xFFFF0000;
-   static const uint32_t Green       = 0xFF00FF00;
-   static const uint32_t Blue        = 0xFF0000FF;
-   static const uint32_t Magenta     = 0xFFFF00FF;
-   static const uint32_t Cyan        = 0xFF00FFFF;
-   static const uint32_t Yellow      = 0xFFFFFF00;
-   static const uint32_t Transparent = GRAPHLCD_Transparent;
-   static const uint32_t ERRCOL      = GRAPHLCD_ERRCOL;
+   static const uint32_t Black;
+   static const uint32_t White;
+   static const uint32_t Red;
+   static const uint32_t Green;
+   static const uint32_t Blue;
+   static const uint32_t Magenta;
+   static const uint32_t Cyan;
+   static const uint32_t Yellow;
+   static const uint32_t Transparent;
+   static const uint32_t ERRCOL;
 
    uint32_t GetColor (void)         { return color; }
    void     SetColor (uint32_t col) { color = col; }
@@ -79,15 +79,7 @@ public:
    operator uint32_t(void) { return GetColor(); }
 
    static cColor ParseColor (std::string col);
-   static uint32_t AlignAlpha  (uint32_t col) { 
-       switch (col) {
-           case Transparent:
-           case ERRCOL:
-               return col;
-           default:
-               return (col & 0xFF000000) ? col : (col | 0xFF000000);
-       }
-   }
+   static uint32_t AlignAlpha  (uint32_t col);
 };
 
 

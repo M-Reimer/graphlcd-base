@@ -27,6 +27,17 @@
 namespace GLCD
 {
 
+const uint32_t cColor::Black       = GRAPHLCD_Black;
+const uint32_t cColor::White       = GRAPHLCD_White;
+const uint32_t cColor::Red         = 0xFFFF0000;
+const uint32_t cColor::Green       = 0xFF00FF00;
+const uint32_t cColor::Blue        = 0xFF0000FF;
+const uint32_t cColor::Magenta     = 0xFFFF00FF;
+const uint32_t cColor::Cyan        = 0xFF00FFFF;
+const uint32_t cColor::Yellow      = 0xFFFFFF00;
+const uint32_t cColor::Transparent = GRAPHLCD_Transparent;
+const uint32_t cColor::ERRCOL      = GRAPHLCD_ERRCOL;
+
 
 cColor cColor::ParseColor(std::string col) {
     if (col == "black")            return cColor(cColor::Black);
@@ -61,6 +72,15 @@ cColor cColor::Invert(void)
     return cColor( (uint32_t)(color ^ 0x00FFFFFF) ) ;
 }
 
+uint32_t cColor::AlignAlpha  (uint32_t col) { 
+    switch (col) {
+        case Transparent:
+        case ERRCOL:
+            return col;
+        default:
+            return (col & 0xFF000000) ? col : (col | 0xFF000000);
+    }
+}
 
 const unsigned char bitmask[8]  = {0x80, 0x40, 0x20, 0x10, 0x08, 0x04, 0x02, 0x01};
 const unsigned char bitmaskl[8] = {0x80, 0xc0, 0xe0, 0xf0, 0xf8, 0xfc, 0xfe, 0xff};

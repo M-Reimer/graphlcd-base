@@ -86,8 +86,10 @@ class cSkin;
 class cSkinString
 {
 private:
+#if 0
     typedef std::vector<cSkinString*> tStringList;
     static tStringList mStrings;
+#endif
 
     cSkinObject *           mObject;
     cSkin *                 mSkin;
@@ -97,7 +99,9 @@ private:
     bool                    mTranslate;
 
 public:
+#if 0
     static void Reparse(void);
+#endif
 
     cSkinString(cSkinObject *Parent, bool Translate);
     ~cSkinString();
