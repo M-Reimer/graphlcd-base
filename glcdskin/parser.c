@@ -22,6 +22,9 @@
 #include "xml.h"
 #include "skin.h"
 
+/* workaround for thread-safe parsing */
+#include <pthread.h>
+
 namespace GLCD
 {
 
@@ -502,11 +505,28 @@ bool EndElem(const std::string & name)
     return true;
 }
 
+static   pthread_mutex_t parse_mutex;  // temp. workaround of thread-safe parsing problem
+
 cSkin * XmlParse(cSkinConfig & Config, const std::string & Name, const std::string & fileName, std::string & errorString)
 {
+    pthread_mutex_lock(&parse_mutex);  // temp. workaround
+    //fprintf(stderr, ">>>>> XmlParse, Config: %s, Name: %s\n", Config.GetDriver()->ConfigName().c_str(), Name.c_str());
     skin = new cSkin(Config, Name);
     context.clear();
 
+    { // temp. workaround for thread-safe parsing
+        font = NULL;
+        variable = NULL;
+        variable_default = NULL;
+        display = NULL;
+        parents.clear();
+        object = NULL;
+        oindex = 0;
+        errorDetail = "";
+        condblock_cond = "";
+        includeDepth = 0;
+        subErrorDetail = "";
+    }      
     cXML xml(fileName, skin->Config().CharSet());
     xml.SetNodeStartCB(StartElem);
     xml.SetNodeEndCB(EndElem);
@@ -526,12 +546,16 @@ cSkin * XmlParse(cSkinConfig & Config, const std::string & Name, const std::stri
         display = NULL;
         delete object;
         object = NULL;
+        //fprintf(stderr, "<<<<< XmlParse ERROR, Config: %s, Name: %s\n", Config.GetDriver()->ConfigName().c_str(), Name.c_str());
+        pthread_mutex_unlock(&parse_mutex);
         return NULL;
     }
 
     cSkin * result = skin;
     skin = NULL;
     errorString = "";
+    //fprintf(stderr, "<<<<< XmlParse, Config: %s, Name: %s\n", Config.GetDriver()->ConfigName().c_str(), Name.c_str());
+    pthread_mutex_unlock(&parse_mutex);
     return result;
 }
 
