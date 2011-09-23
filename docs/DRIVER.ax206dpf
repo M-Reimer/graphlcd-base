@@ -37,14 +37,15 @@ continue until all needed displays are detected.
 
 Non-root users
 --------------
-The driver needs write access to /dev/proc/usb. So the calling user 
-must be root or you have to modify the access rights for /dev/proc/usb.
-For Debian/Ubuntu this can be done with a custom udev rule like:
-SUBSYSTEM=="usb", ENV{DEVTYPE}=="usb_device", MODE="0664", GROUP="<user_group>"
-Replace <user_group> with a group the calling user belongs to.
-Put this rule in a new file "nn-usbuser.rules" in /etc/udev/rules.d.
-Replace "nn" by two digits that are lower than any existing usb rule.
-For my Ubuntu 10.04 system I used "/etc/udev/rules.d/35-usbuser.rules".
+The driver needs write access to the USB port of the display module.
+If the enclosed udev-rules file '99-graphlcd-base.rules' is installed, add
+the user(s) that should be authorised to use the display to the group 'uucp'.
+
+If the enclosed udev-rule will not be used a custom rule needs to be provided if
+other users than root are to be authorised:
+
+ATTRS{idVendor}=="1908", ATTRS{idProduct}=="0102", GROUP="<user_group>", MODE="0660"
+Replace <user_group> through a unix group of your desire.
 
 
 Configuration Parameters

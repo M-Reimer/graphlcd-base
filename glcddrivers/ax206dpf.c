@@ -29,9 +29,10 @@
  * HISTORY
  * 
  * v0.1 - 10 Aug 2011 - Inital release
- * V0.2 - 20 Aug 2011 - Optimized display data transfer
+ * v0.2 - 20 Aug 2011 - Optimized display data transfer
  *                      SetBrightness() implemented
  *                      Multi-display support
+ * v0.3 - 02 Sep 2011 - Fixed multi-thread problem
  * 
  * 
  */
@@ -52,23 +53,8 @@
 
 namespace GLCD
 {
-typedef struct display_handle {
-    bool attached;
-    char address[8];
-    bool isPortrait;
-    bool rotate90;
-    bool flip;
-    int minx, maxx;
-    int miny, maxy;
-    LIBDPF::DPFContext *dpfh;
-    unsigned char * LCD;
-} DISPLAYHANDLE;
 
-static DISPLAYHANDLE *dh[MAX_DPFS];
 static	pthread_mutex_t libax_mutex;
-static  std::string flips = "";
-static time_t lastscan;
-static int lastbrightness;
 
 
 cDriverAX206DPF::cDriverAX206DPF(cDriverConfig * config)

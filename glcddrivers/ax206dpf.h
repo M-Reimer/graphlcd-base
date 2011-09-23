@@ -25,15 +25,17 @@
  *
  * (c) 2011      Lutz Neumann <superelchi AT wolke7.net>
  * 
- * HISTORY
- * 
- * v0.1 - 10 Aug 2011 - Inital release
  */
 
 #ifndef _GLCDDRIVERS_AX206DPF_H_
 #define _GLCDDRIVERS_AX206DPF_H_
 
 #include "driver.h"
+
+namespace LIBDPF {
+struct dpf_context;
+typedef dpf_context DPFContext;
+}
 
 namespace GLCD
 {
@@ -44,6 +46,19 @@ namespace GLCD
 #define DEFAULT_BPP    2
 
 #define USB_SCAN_INTERVALL  10       // seconds between usb scans for missing displays
+
+typedef struct display_handle {
+    bool attached;
+    char address[8];
+    bool isPortrait;
+    bool rotate90;
+    bool flip;
+    int minx, maxx;
+    int miny, maxy;
+    LIBDPF::DPFContext *dpfh;
+    unsigned char * LCD;
+} DISPLAYHANDLE;
+
 
 class cDriverConfig;
 
@@ -60,6 +75,12 @@ private:
     unsigned int sizex;             // logical horizontal size of one display
     unsigned int sizey;             // logical vertical size of one display
     unsigned int bpp;               // bits per pixel
+    
+    DISPLAYHANDLE *dh[MAX_DPFS];
+    std::string flips;
+    time_t lastscan;
+    int lastbrightness;
+
     
     int CheckSetup();
     void ResetMinMax();
