@@ -54,6 +54,10 @@ public:
     void SetUpdate(uint32_t UpdateIn) { mUpdateIn = UpdateIn; }
     uint32_t UpdateIn(void) const { return mUpdateIn; }
 
+    bool IsString(void)  const { return (mType == string); }
+    bool IsNumber(void)  const { return (mType == number); }
+    bool IsBoolean(void) const { return (mType == boolean); }
+
     operator std::string () const { return String(); }
     operator int         () const { return Number(); }
     operator bool        () const;

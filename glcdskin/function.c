@@ -360,8 +360,21 @@ cType cSkinFunction::Evaluate(void) const
         case variable:
         {
             cSkinVariable * variable = mSkin->GetVariable(mVariableId);
-            if (variable)
-                return variable->Value();
+            if (variable) {
+                cType rv = variable->Value();
+                if (rv.IsString()) {
+                    std::string val = rv;
+                    if (val.find("{") != std::string::npos || val.find("#") != std::string::npos) {
+                        cSkinString *result = new cSkinString(mObject, false);
+                        if (result->Parse(val)) {
+                            val = (std::string) result->Evaluate();
+                            rv = cType(val);
+                        }
+                        delete result;
+                    }
+                }
+                return rv;
+            }
             return false;
         }
 
