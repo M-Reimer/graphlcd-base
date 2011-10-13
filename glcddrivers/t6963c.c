@@ -387,6 +387,7 @@ void cDriverT6963C::SetPixel(int x, int y, uint32_t data)
         {
             x = width - 1 - x;
             y = height - 1 - y;
+        } else {
             pos = 5 - pos; // reverse bit position
         }
 
@@ -406,6 +407,7 @@ void cDriverT6963C::SetPixel(int x, int y, uint32_t data)
         {
             x = width - 1 - x;
             y = height - 1 - y;
+        } else {
             pos = 7 - pos; // reverse bit position
         }
 
