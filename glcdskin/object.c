@@ -658,7 +658,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                                     mMultilineScrollPosition = 0;
                             } else if (multilineRelScroll > 0) {
                                 mMultilineScrollPosition += multilineRelScroll;
-                                if (mMultilineScrollPosition > (lines.size() - amount_lines) )
+                                if (mMultilineScrollPosition > (int)((lines.size() - amount_lines)) )
                                     mMultilineScrollPosition = lines.size() - amount_lines;
                             }
                         }

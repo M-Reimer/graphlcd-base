@@ -136,18 +136,20 @@ void cDriverImage::SetPixel(int x, int y, uint32_t data)
     if (x >= width || y >= height)
         return;
 
+    int cols = (width + 7 ) >> 3;
     int pos = x % 8;
     if (config->upsideDown)
     {
         x = width - 1 - x;
         y = height - 1 - y;
+    } else {
         pos = 7 - pos; // reverse bit position
     }
 
     if (data == GRAPHLCD_White)
-        newLCD[y * x] |= ( 1 << pos );
+        newLCD[y * cols + (x >> 3)] |= ( 1 << pos );
     else
-        newLCD[y * x] &= ( 0xFF ^ ( 1 << pos) );
+        newLCD[y * cols + (x >> 3)] &= ( 0xFF ^ ( 1 << pos) );
 }
 
 void cDriverImage::Refresh(bool refreshAll)
