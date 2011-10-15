@@ -72,7 +72,6 @@ cImage * cImageCache::Get(const std::string & path, uint16_t & scalew, uint16_t 
         return NULL;
       }
     }
-    
 
     maxCounter = 0;
     item = NULL;
@@ -80,7 +79,7 @@ cImage * cImageCache::Get(const std::string & path, uint16_t & scalew, uint16_t 
     {
         uint16_t scw = 0, sch = 0;
         (*it)->ScalingGeometry(scw, sch);
-        if (item == NULL && path == (*it)->Path() && ( (scw == 0 && sch == 0) || (scw == scalew && sch == scaleh)))
+        if (item == NULL && path == (*it)->Path() && ( (scw == 0 && sch == 0 && ! (scalew || scaleh)) || (scw == scalew && sch == scaleh)))
         {
             (*it)->ResetCounter();
             item = (*it);
@@ -108,8 +107,6 @@ cImage * cImageCache::Get(const std::string & path, uint16_t & scalew, uint16_t 
             images.erase(oldest);
         }
         images.push_back(item);
-        scalew = item->Image()->Width();
-        scaleh = item->Image()->Height();
         return item->Image();
     } else {
       failedpaths.push_back(path);
@@ -119,6 +116,7 @@ cImage * cImageCache::Get(const std::string & path, uint16_t & scalew, uint16_t 
 
 cImageItem * cImageCache::LoadImage(const std::string & path, uint16_t scalew, uint16_t scaleh)
 {
+    //fprintf(stderr, "### loading image  %s\n", path.c_str());
     cImageItem * item;
     cImage * image;
     char str[8];
@@ -175,7 +173,7 @@ cImageItem * cImageCache::LoadImage(const std::string & path, uint16_t scalew, u
     uint16_t scale_width = scalew;
     uint16_t scale_height = scaleh;
     // scale_width and scale_height are set to 0 if image was NOT scaled
-    if (!imgFile || (imgFile->LoadScaled(*image, file, scale_width, scale_height) == false) ) {
+    if (!imgFile || (imgFile->LoadScaled(*image, file, scalew /*scale_width*/, scaleh /*scale_height*/) == false) ) {
         delete image;
         if (imgFile) delete imgFile;
         return NULL;

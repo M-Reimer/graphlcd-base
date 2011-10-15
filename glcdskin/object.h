@@ -70,6 +70,7 @@ enum eEffect
 enum eScale
 {
     tscNone,
+    tscAuto,
     tscAutoX,
     tscAutoY,
     tscFill

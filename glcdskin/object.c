@@ -233,6 +233,8 @@ bool cSkinObject::ParseScale(const std::string & Text)
 {
     if (Text == "none")
         mScale = tscNone;
+    else if (Text == "auto")
+        mScale = tscAuto;
     else if (Text == "autox")
         mScale = tscAutoX;
     else if (Text == "autoy")
@@ -434,6 +436,27 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
             uint16_t scaleh = 0;
             
             switch (mScale) {
+                case tscAuto:
+                    {
+                        uint16_t w_temp = 0;
+                        uint16_t h_temp = 0;
+                        // get dimensions of unscaled image
+                        GLCD::cImage * image = cache->Get(evalPath, w_temp, h_temp);
+                        if (image) {
+                            w_temp = image->Width();
+                            h_temp = image->Height();
+                            if (w_temp != Size().w || h_temp != Size().h) {
+                                double fw = (double)Size().w / (double)w_temp;
+                                double fh = (double)Size().h / (double)h_temp;
+                                if (fw < fh) {
+                                    scalew = Size().w;
+                                } else {
+                                    scaleh = Size().h;
+                                }
+                            }
+                        }
+                    }
+                    break;
                 case tscAutoX:
                     scalew = Size().w;
                     break;
@@ -458,10 +481,20 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
 
                 if (bitmap)
                 {
+                    uint16_t xoff = 0;
+                    uint16_t yoff = 0;
+                    if (scalew || scaleh) {
+                        if (image->Width() < Size().w) {
+                            xoff = (Size().w - image->Width() ) / 2;
+                        } else if (image->Height() < Size().h) {
+                            yoff = (Size().h - image->Height() ) / 2;
+                        }
+                    }
+
                     if (mColor == cColor::ERRCOL)
-                        screen->DrawBitmap(Pos().x, Pos().y, *bitmap);
+                        screen->DrawBitmap(Pos().x + xoff, Pos().y + yoff, *bitmap);
                     else
-                        screen->DrawBitmap(Pos().x, Pos().y, *bitmap, mColor, mBackgroundColor, mOpacity);
+                        screen->DrawBitmap(Pos().x + xoff, Pos().y + yoff, *bitmap, mColor, mBackgroundColor, mOpacity);
                 }
 
                 if (mScrollLoopMode != -1)  // if == -1: currScrollLoopMode already contains correct value
