@@ -23,10 +23,12 @@
 namespace GLCD
 {
 
-cImageItem::cImageItem(const std::string & path, cImage * image)
+cImageItem::cImageItem(const std::string & path, cImage * image, uint16_t scalew, uint16_t scaleh)
 :   path(path),
     counter(0),
-    image(image)
+    image(image),
+    scale_width(scalew),
+    scale_height(scaleh)
 {
 }
 
@@ -44,6 +46,11 @@ cImageCache::cImageCache(cSkin * Parent, int Size)
 
 cImageCache::~cImageCache()
 {
+    Clear();
+}
+
+void cImageCache::Clear(void)
+{
     for (unsigned int i = 0; i < images.size(); i++)
     {
         delete images[i];
@@ -52,7 +59,7 @@ cImageCache::~cImageCache()
     failedpaths.clear();
 }
 
-cImage * cImageCache::Get(const std::string & path)
+cImage * cImageCache::Get(const std::string & path, uint16_t & scalew, uint16_t & scaleh)
 {
     std::vector <cImageItem *>::iterator it;
     cImageItem * item;
@@ -71,7 +78,9 @@ cImage * cImageCache::Get(const std::string & path)
     item = NULL;
     for (it = images.begin(); it != images.end(); it++)
     {
-        if (item == NULL && path == (*it)->Path())
+        uint16_t scw = 0, sch = 0;
+        (*it)->ScalingGeometry(scw, sch);
+        if (item == NULL && path == (*it)->Path() && ( (scw == 0 && sch == 0) || (scw == scalew && sch == scaleh)))
         {
             (*it)->ResetCounter();
             item = (*it);
@@ -91,7 +100,7 @@ cImage * cImageCache::Get(const std::string & path)
         return item->Image();
     }
 
-    item = LoadImage(path);
+    item = LoadImage(path, scalew, scaleh);
     if (item)
     {
         if (images.size() == size)
@@ -99,6 +108,8 @@ cImage * cImageCache::Get(const std::string & path)
             images.erase(oldest);
         }
         images.push_back(item);
+        scalew = item->Image()->Width();
+        scaleh = item->Image()->Height();
         return item->Image();
     } else {
       failedpaths.push_back(path);
@@ -106,7 +117,7 @@ cImage * cImageCache::Get(const std::string & path)
     return NULL;
 }
 
-cImageItem * cImageCache::LoadImage(const std::string & path)
+cImageItem * cImageCache::LoadImage(const std::string & path, uint16_t scalew, uint16_t scaleh)
 {
     cImageItem * item;
     cImage * image;
@@ -150,6 +161,28 @@ cImageItem * cImageCache::LoadImage(const std::string & path)
         }
         file += path;
     }
+    
+    cImageFile* imgFile = NULL;
+
+    if (strcmp(str, "PBM") == 0) {
+        imgFile = new cPBMFile();
+    } else if (strcmp(str, "GLCD") == 0) {
+        imgFile = new cGLCDFile();
+    } else {
+        imgFile = new cExtFormatFile();
+    }
+
+    uint16_t scale_width = scalew;
+    uint16_t scale_height = scaleh;
+    // scale_width and scale_height are set to 0 if image was NOT scaled
+    if (!imgFile || (imgFile->LoadScaled(*image, file, scale_width, scale_height) == false) ) {
+        delete image;
+        if (imgFile) delete imgFile;
+        return NULL;
+    }
+    delete imgFile;
+    
+#if 0
     if (strcmp(str, "PBM") == 0)
     {
         cPBMFile pbm;
@@ -180,8 +213,9 @@ cImageItem * cImageCache::LoadImage(const std::string & path)
           return NULL;
         }
     }
+#endif
 
-    item = new cImageItem(path, image);
+    item = new cImageItem(path, image, scale_width, scale_height);
     if (!item)
     {
         delete image;

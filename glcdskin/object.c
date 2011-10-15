@@ -64,6 +64,7 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mStoredImagePath(""),
     mImageFrameId(0),               // start with 1st frame
     mOpacity(255),                  // default: full opacity
+    mScale(tscNone),                // scale image: default: don't scale
     mScrollLoopMode(-1),            // scroll (text) or loop (image) mode: default (-1)
     mScrollLoopReached(false),      // if scroll/loop == once: already looped once?
     mScrollSpeed(0),                // scroll speed: default (0)
@@ -117,6 +118,7 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
     mStoredImagePath(Src.mStoredImagePath),
     mImageFrameId(0),
     mOpacity(Src.mOpacity),
+    mScale(Src.mScale),
     mScrollLoopMode(Src.mScrollLoopMode),
     mScrollLoopReached(Src.mScrollLoopReached),
     mScrollSpeed(Src.mScrollSpeed),
@@ -222,6 +224,21 @@ bool cSkinObject::ParseEffect(const std::string & Text)
         mEffect = tfxShadow;
     else if (Text == "outline")
         mEffect = tfxOutline;
+    else
+        return false;
+    return true;
+}
+
+bool cSkinObject::ParseScale(const std::string & Text)
+{
+    if (Text == "none")
+        mScale = tscNone;
+    else if (Text == "autox")
+        mScale = tscAutoX;
+    else if (Text == "autoy")
+        mScale = tscAutoY;
+    else if (Text == "fill")
+        mScale = tscFill;
     else
         return false;
     return true;
@@ -413,7 +430,26 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                 mChangeDelay = -1;
             }
 
-            GLCD::cImage * image = cache->Get(evalPath);
+            uint16_t scalew = 0;
+            uint16_t scaleh = 0;
+            
+            switch (mScale) {
+                case tscAutoX:
+                    scalew = Size().w;
+                    break;
+                case tscAutoY:
+                    scaleh = Size().h;
+                    break;
+                case tscFill:
+                    scalew = Size().w;
+                    scaleh = Size().h;
+                    break;
+                default:
+                    scalew = 0;
+                    scaleh = 0;
+            }
+            
+            GLCD::cImage * image = cache->Get(evalPath, scalew, scaleh);
             if (image)
             {
                 int framecount = image->Count();

@@ -67,6 +67,14 @@ enum eEffect
     tfxOutline
 };
 
+enum eScale
+{
+    tscNone,
+    tscAutoX,
+    tscAutoY,
+    tscFill
+};
+
 
 
 class cSkinColor
@@ -157,6 +165,7 @@ private:
     std::string mStoredImagePath;   // stored image path
     int  mImageFrameId;             // frame ID of image
     int  mOpacity;                  // opacity of an image ([0, 255], default 255)
+    eScale mScale;                  // image scaling (['none', 'autox', 'autoy', 'fill'], default: none)
 
     int mScrollLoopMode;            // scroll (text) or loop (image) mode: -1: default, 0: never, 1: once, 2: always
     bool mScrollLoopReached;        // if scroll/loop == once: already looped once?
@@ -185,6 +194,7 @@ public:
     bool ParseAlignment(const std::string &Text);
     bool ParseVerticalAlignment(const std::string &Text);
     bool ParseEffect(const std::string &Text);
+    bool ParseScale(const std::string &Text);
     bool ParseFontFace(const std::string &Text);
     bool ParseIntParam(const std::string &Text, int & Param);
     //bool ParseWidth(const std::string &Text);

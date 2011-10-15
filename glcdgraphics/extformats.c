@@ -49,6 +49,13 @@ cExtFormatFile::~cExtFormatFile()
 
 bool cExtFormatFile::Load(cImage & image, const string & fileName)
 {
+    uint16_t scalew = 0;
+    uint16_t scaleh = 0;
+    return LoadScaled(image, fileName, scalew, scaleh);
+}
+
+bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_t & scalew, uint16_t & scaleh)
+{
 #ifdef HAVE_IMAGEMAGICK
   std::vector<Image> extimages;
   try {
@@ -81,10 +88,32 @@ bool cExtFormatFile::Load(cImage & image, const string & fileName)
       if (firstImage) {
         width = (uint16_t)((*it).columns());
         height = (uint16_t)((*it).rows());
+        firstImage = false;
+
+        // one out of scalew/h == 0 ? -> auto aspect ratio
+        if (scalew && ! scaleh) {
+          scaleh = (uint16_t)( ((uint32_t)scalew * (uint32_t)height) / (uint32_t)width );
+        } else if (!scalew && scaleh) {
+          scalew = (uint16_t)( ((uint32_t)scaleh * (uint32_t)width) / (uint32_t)height );
+        }
+
+        // scale image
+        if (scalew && ! (scalew == width && scaleh == height)) {
+          (*it).scale(Geometry(scalew, scaleh));
+          width = scalew;
+          height = scaleh;
+        } else {
+          // not scaled => reset to 0
+          scalew = 0;
+          scaleh = 0;
+        }
+
         image.SetWidth(width);
         image.SetHeight(height);
-        firstImage = false;
       } else {
+        if (scalew && scaleh) {
+          (*it).scale(Geometry(scalew, scaleh));
+        } else 
         if ( (width != (uint16_t)((*it).columns())) || (height != (uint16_t)((*it).rows())) ) {
           ignoreImage = true;
         }

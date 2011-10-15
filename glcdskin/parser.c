@@ -332,6 +332,7 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
                 ATTRIB_MAN_FUNC("path", object->mPath.Parse);
                 ATTRIB_OPT_FUNC("loop", object->ParseScrollLoopMode);
                 ATTRIB_OPT_FUNC_PARAM("opacity", object->ParseIntParam, object->mOpacity);
+                ATTRIB_OPT_FUNC("scale", object->ParseScale);
             }
             else if (name == "text"
                 || name == "scrolltext")

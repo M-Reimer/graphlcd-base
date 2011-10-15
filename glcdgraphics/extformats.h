@@ -28,6 +28,9 @@ public:
     virtual ~cExtFormatFile();
     virtual bool Load(cImage & image, const std::string & fileName);
     virtual bool Save(cImage & image, const std::string & fileName);
+
+    virtual bool SupportsScaling(void) { return true; }
+    virtual bool LoadScaled(cImage & image, const std::string & fileName, uint16_t & scalew, uint16_t & scaleh);
 };
 
 } // end of namespace

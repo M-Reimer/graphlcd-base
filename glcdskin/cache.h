@@ -29,11 +29,13 @@ private:
     std::string path;
     uint64_t counter;
     cImage * image;
+    uint16_t scale_width, scale_height;
 public:
-    cImageItem(const std::string & path, cImage * image);
+    cImageItem(const std::string & path, cImage * image, uint16_t scalew, uint16_t scaleh);
     ~cImageItem();
 
     const std::string & Path() const { return path; }
+    void ScalingGeometry(uint16_t & scalew, uint16_t & scaleh) { scalew = scale_width; scaleh = scale_height; }
     uint64_t Counter() const { return counter; }
     cImage * Image() { return image; }
     void ResetCounter() { counter = 0; }
@@ -48,12 +50,19 @@ private:
     std::vector <cImageItem *> images;
     std::vector <std::string> failedpaths;
 
-    cImageItem * LoadImage(const std::string & path);
+    cImageItem * LoadImage(const std::string & path, uint16_t scalew, uint16_t scaleh);
 public:
     cImageCache(cSkin * Parent, int Size);
     ~cImageCache();
 
-    cImage * Get(const std::string & path);
+    cImage * Get(const std::string & path, uint16_t & scalew, uint16_t & scaleh);
+    cImage * Get(const std::string & path) {
+        uint16_t scalew = 0;
+        uint16_t scaleh = 0;
+        return Get(path, scalew, scaleh) ;
+    }
+    
+    void Clear(void);
 };
 
 } // end of namespace
