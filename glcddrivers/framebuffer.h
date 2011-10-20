@@ -34,9 +34,16 @@ private:
     long int screensize;
     void *fbp;
     int zoom;
+    int damage;
+    int bbox[4];
+    int depth;
+    uint32_t roff, boff, goff, aoff;
+    uint32_t rlen, blen, glen, alen;
 
     int CheckSetup();
-
+    void processDamage (void);
+protected:
+    virtual bool GetDriverFeature  (const std::string & Feature, int & value);  
 public:
     cDriverFramebuffer(cDriverConfig * config);
 
