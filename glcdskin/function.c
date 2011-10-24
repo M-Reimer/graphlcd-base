@@ -176,7 +176,7 @@ bool cSkinFunction::Parse(const std::string & Text)
             {
                 if (inExpr == 0)
                 {
-                    syslog(LOG_ERR, "ERROR: Unmatched '%c' in expression", *ptr);
+                    syslog(LOG_ERR, "ERROR: Unmatched '%c' in expression (%s)", *ptr, Text.c_str());
                     return false;
                 }
 

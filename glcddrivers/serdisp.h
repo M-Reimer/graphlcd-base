@@ -51,6 +51,15 @@ typedef struct SDGP_evpkt_simpletouch_s { /* 16 bytes */
   int16_t    norm_touch;          /* normalised touch value */
 } SDGP_evpkt_simpletouch_t;
 
+
+typedef struct {
+    bool simpleTouchChanged;
+    int  simpleTouchX;
+    int  simpleTouchY;
+    int  simpleTouchT;
+}  tTouchEvent;
+
+
 typedef void (*fp_eventlistener_t) (void* dd, SDGP_event_t* recylce);
 
 class cDriverConfig;
@@ -94,6 +103,8 @@ private:
     int CheckSetup();
 
     void  eventListener                (void* dd, SDGP_event_t* recycle);
+    
+    tTouchEvent*                       touchEvent;
 
 protected:
     virtual bool GetDriverFeature  (const std::string & Feature, int & value);

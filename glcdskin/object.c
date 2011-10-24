@@ -484,9 +484,9 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                     uint16_t xoff = 0;
                     uint16_t yoff = 0;
                     if (scalew || scaleh) {
-                        if (image->Width() < Size().w) {
+                        if (image->Width() < (uint16_t)Size().w) {
                             xoff = (Size().w - image->Width() ) / 2;
-                        } else if (image->Height() < Size().h) {
+                        } else if (image->Height() < (uint16_t)Size().h) {
                             yoff = (Size().h - image->Height() ) / 2;
                         }
                     }

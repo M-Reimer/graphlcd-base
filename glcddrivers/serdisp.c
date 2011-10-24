@@ -22,6 +22,8 @@
 // for memcpy
 #include <string.h>
 
+#include <map>
+
 #define SERDISP_VERSION(a,b) ((long)(((a) << 8) + (b)))
 #define SERDISP_VERSION_GET_MAJOR(_c)  ((int)( (_c) >> 8 ))
 #define SERDISP_VERSION_GET_MINOR(_c)  ((int)( (_c) & 0xFF ))
@@ -40,15 +42,13 @@ namespace GLCD
 
 static void wrapEventListener(void* dd, SDGP_event_t* recylce);
 
-static int simpleTouchX=0, simpleTouchY=0, simpleTouchT=0;
-static bool simpleTouchChanged=false;
+static std::map<void* ,tTouchEvent*>  touchEvents;
 
 
 cDriverSerDisp::cDriverSerDisp(cDriverConfig * config)
 :   cDriver(config)
 {
     dd = (void *) NULL;
-    simpleTouchChanged = false;
 }
 
 int cDriverSerDisp::Init(void)
@@ -335,6 +335,10 @@ int cDriverSerDisp::Init(void)
     // clear display
     Clear();
 
+    touchEvent = new tTouchEvent;
+    touchEvent->simpleTouchChanged = false;
+    touchEvents[dd] = touchEvent;
+    
     syslog(LOG_INFO, "%s: SerDisp with %s initialized.\n", config->name.c_str(), controller.c_str());
     return 0;
 }
@@ -343,6 +347,10 @@ int cDriverSerDisp::DeInit(void)
 {
     if (!dd)
       return 0;
+
+    touchEvents.erase(dd);
+    delete touchEvent;
+    touchEvent = NULL;
 
     //fp_serdisp_quit(dd);
     /* use serdisp_close instead of serdisp_quit so that showpic and showtext are usable together with serdisplib */
@@ -502,12 +510,12 @@ void cDriverSerDisp::Refresh(bool refreshAll)
 
 void cDriverSerDisp::SetBrightness(unsigned int percent)
 {
-    if ( supports_options && (fp_serdisp_isoption(dd, "BRIGHTNESS") == 1) )  /* if == 1: option is existing AND r/w */
+    if ( dd && supports_options && (fp_serdisp_isoption(dd, "BRIGHTNESS") == 1) )  /* if == 1: option is existing AND r/w */
         fp_serdisp_setoption(dd, "BRIGHTNESS", (long)percent);
 }
 
 uint32_t cDriverSerDisp::GetDefaultBackgroundColor(void) {
-    if ( supports_options && fp_serdisp_isoption(dd, "SELFEMITTING") && (fp_serdisp_getoption(dd, "SELFEMITTING", 0)) ) {
+    if ( dd && supports_options && fp_serdisp_isoption(dd, "SELFEMITTING") && (fp_serdisp_getoption(dd, "SELFEMITTING", 0)) ) {
        return GRAPHLCD_Black;
     }
     return GRAPHLCD_White;
@@ -516,7 +524,7 @@ uint32_t cDriverSerDisp::GetDefaultBackgroundColor(void) {
 
 bool cDriverSerDisp::SetFeature (const std::string & Feature, int value)
 {
-    if (strcasecmp(Feature.c_str(), "TOUCHSCREEN") == 0 || strcasecmp(Feature.c_str(), "TOUCH") == 0) {
+    if (dd && (strcasecmp(Feature.c_str(), "TOUCHSCREEN") == 0 || strcasecmp(Feature.c_str(), "TOUCH") == 0)) {
         if (fp_SDGPI_search && fp_SDGPI_isenabled && fp_SDGPI_enable) {
             uint8_t gpid = fp_SDGPI_search(dd, Feature.c_str());
             if (gpid == 0xFF)
@@ -566,15 +574,17 @@ bool cDriverSerDisp::GetDriverFeature  (const std::string & Feature, int & value
 }
 
 cGLCDEvent * cDriverSerDisp::GetEvent(void) {
-    if (GLCD::simpleTouchChanged == false)
+    tTouchEvent* tev = touchEvents[dd];
+    if (tev && tev->simpleTouchChanged == false)
         return NULL;
 
     cSimpleTouchEvent * ev = new cSimpleTouchEvent();
 
-    ev->x = simpleTouchX;
-    ev->y = simpleTouchY;
-    ev->touch = simpleTouchT;
-    simpleTouchChanged = false;
+    ev->x = tev->simpleTouchX;
+    ev->y = tev->simpleTouchY;
+    ev->touch = tev->simpleTouchT;
+    tev->simpleTouchChanged = false;
+
     return ev;
 }
 
@@ -583,10 +593,14 @@ static void wrapEventListener(void* dd, SDGP_event_t* event) {
     if (event->type == SDGPT_SIMPLETOUCH) {
         SDGP_evpkt_simpletouch_t  simpletouch;
         memcpy(&simpletouch, &event->data, sizeof(SDGP_evpkt_simpletouch_t));
-        simpleTouchChanged = true;
-        simpleTouchX = simpletouch.norm_x;
-        simpleTouchY = simpletouch.norm_y;
-        simpleTouchT = simpletouch.norm_touch;
+        
+        tTouchEvent* tev = touchEvents[dd];
+        if (tev) {
+            tev->simpleTouchChanged = true;
+            tev->simpleTouchX = simpletouch.norm_x;
+            tev->simpleTouchY = simpletouch.norm_y;
+            tev->simpleTouchT = simpletouch.norm_touch;
+        }
     }
 }
 

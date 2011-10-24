@@ -17,6 +17,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <syslog.h>
+
 #include "cache.h"
 #include "skin.h"
 
@@ -102,6 +104,7 @@ cImage * cImageCache::Get(const std::string & path, uint16_t & scalew, uint16_t 
     item = LoadImage(path, scalew, scaleh);
     if (item)
     {
+        syslog(LOG_INFO, "INFO: graphlcd: successfully loaded image '%s'\n", path.c_str());
         if (images.size() == size)
         {
             images.erase(oldest);
