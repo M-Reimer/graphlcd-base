@@ -21,6 +21,8 @@ cSkin::cSkin(cSkinConfig & Config, const std::string & Name)
     name(Name)
 {
     mImageCache = new cImageCache(this, 100);
+    tsEvalTick = 0;
+    tsEvalSwitch = 0;
 }
 
 cSkin::~cSkin(void)

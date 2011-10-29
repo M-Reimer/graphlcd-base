@@ -247,6 +247,7 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
     {
         variable = new cSkinVariable(skin);
         ATTRIB_MAN_STRING("id", variable->mId);
+        ATTRIB_OPT_FUNC("evaluate", variable->ParseEvalMode);
         ATTRIB_MAN_FUNC("value", variable->ParseValue);
         if (context[context.size() - 1] == "condblock") {
           if (attrs.find("condition") != attrs.end()) {

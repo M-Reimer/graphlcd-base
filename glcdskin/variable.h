@@ -23,6 +23,16 @@
 namespace GLCD
 {
 
+enum eEvalMode
+{
+    tevmAlways,
+    tevmTick,
+    tevmSwitch,
+    tevmOnce,
+    tevmInterval
+};
+
+
 class cSkin;
 
 class cSkinVariable
@@ -38,17 +48,21 @@ private:
     cSkinFunction * mFunction;
     cSkinDisplay mDummyDisplay;
     cSkinObject mDummyObject;
+    eEvalMode mEvalMode;
+    int mEvalInterval;
+    uint64_t mTimestamp;
 
 public:
     cSkinVariable(cSkin * Parent);
 
+    bool ParseEvalMode(const std::string & Text);
     bool ParseValue(const std::string & Text);
     bool ParseCondition(const std::string & Text);
 
     cSkin * Skin(void) const { return mSkin; }
     const std::string & Id(void) const { return mId; }
 //    const cType & Value(void) const { return mValue; }
-    const cType & Value(void) { if (mFunction != NULL) { mValue = mFunction->Evaluate(); } return mValue; } ;
+    const cType & Value(void);
     cSkinFunction * Condition(void) const { return mCondition; }
 };
 

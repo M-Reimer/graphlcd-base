@@ -43,6 +43,8 @@ private:
     cSkinDisplays displays;
     cSkinVariables mVariables;
     cImageCache * mImageCache;
+    uint64_t  tsEvalTick;
+    uint64_t  tsEvalSwitch;
 
 public:
     cSkin(cSkinConfig & Config, const std::string & Name);
@@ -66,6 +68,11 @@ public:
 
     cColor GetBackgroundColor(void) { return config.GetDriver()->GetBackgroundColor(); }
     cColor GetForegroundColor(void) { return config.GetDriver()->GetForegroundColor(); }
+    
+    void     SetTSEvalTick(uint64_t ts) { tsEvalTick = ts; }
+    void     SetTSEvalSwitch(uint64_t ts) { tsEvalSwitch = ts; }
+    const uint64_t GetTSEvalTick(void) { return tsEvalTick; }
+    const uint64_t GetTSEvalSwitch(void) { return tsEvalSwitch; }
 };
 
 } // end of namespace
