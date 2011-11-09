@@ -99,6 +99,8 @@ private:
     int   (*fp_SDGPI_isenabled)        (void* dd, uint8_t gpid);
     int   (*fp_SDGPI_enable)           (void* dd, uint8_t gpid, int enable);
     int   (*fp_SDEVLP_add_listener)    (void* dd, uint8_t gpid, fp_eventlistener_t eventlistener );
+    const char*
+          (*fp_serdisp_defaultdevice)  (const char* dispname);
 
     int CheckSetup();
 

@@ -208,6 +208,8 @@ int cDriverSerDisp::Init(void)
     fp_SDGPI_isenabled = (int     (*)(void*, uint8_t))      dlsym(sdhnd, "SDGPI_isenabled");
     fp_SDGPI_enable    = (int     (*)(void*, uint8_t, int)) dlsym(sdhnd, "SDGPI_enable");
     fp_SDEVLP_add_listener = (int (*)(void*, uint8_t, fp_eventlistener_t)) dlsym(sdhnd, "SDEVLP_add_listener");
+    fp_serdisp_defaultdevice = (const char* (*)(const char*)) dlsym(sdhnd, "serdisp_defaultdevice");
+
 
 
     // done loading all required symbols
@@ -246,14 +248,9 @@ int cDriverSerDisp::Init(void)
     }
 
 
-    if (config->device == "")
+    if (config->device == "" && config->port > 0)  /* port will only be used if device is not set */
     {
         // use DirectIO
-
-        // neither device nor port is set
-        if (config->port == 0)
-            return -1;
-
         char temp[10];
         snprintf(temp, 8, "0x%x", config->port);
 
@@ -269,7 +266,16 @@ int cDriverSerDisp::Init(void)
     }
     else
     {
-        sdcd = fp_SDCONN_open(config->device.c_str());
+        if (config->device == "") {
+            if (fp_serdisp_defaultdevice) { // supported only in serdisplib >= v2.00
+                sdcd = fp_SDCONN_open(fp_serdisp_defaultdevice(controller.c_str()));
+            } else {
+                // neither device nor port is set and getting default device expression is not supported -> exit
+                return -1;
+            }
+        } else {
+            sdcd = fp_SDCONN_open(config->device.c_str());
+        }
 
         if (sdcd == 0) {
             syslog(LOG_ERR, "%s: error: unable to open device %s for display %s. (cDriver::Init)\n",
