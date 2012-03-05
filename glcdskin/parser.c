@@ -384,13 +384,15 @@ bool StartElem(const std::string & name, std::map<std::string,std::string> & att
             else if (name == "progress"
                 || name == "scrollbar")
             {
-                ATTRIB_OPT_FUNC_PARAM("color", object->ParseColor, object->mColor);
-                ATTRIB_OPT_NUMBER("direction", object->mDirection);
-                ATTRIB_OPT_FUNC("current", object->mCurrent.Parse);
-                ATTRIB_OPT_FUNC("total", object->mTotal.Parse);
-                ATTRIB_OPT_FUNC("peak", object->mPeak.Parse);
-                ATTRIB_OPT_FUNC_PARAM("peakcolor", object->ParseColor, object->mPeakColor);
-                ATTRIB_OPT_NUMBER("radius", object->mRadius);
+                ATTRIB_OPT_FUNC_PARAM( "color",         object->ParseColor, object->mColor);
+                ATTRIB_OPT_NUMBER(     "direction",     object->mDirection);
+                ATTRIB_OPT_FUNC(       "current",       object->mCurrent.Parse);
+                ATTRIB_OPT_FUNC(       "total",         object->mTotal.Parse);
+                ATTRIB_OPT_FUNC(       "peak",          object->mPeak.Parse);
+                ATTRIB_OPT_FUNC_PARAM( "peakcolor",     object->ParseColor, object->mPeakGradientColor);
+                ATTRIB_OPT_FUNC(       "gradient",      object->ParseGradient);
+                ATTRIB_OPT_FUNC_PARAM( "gradientcolor", object->ParseColor, object->mPeakGradientColor);
+                ATTRIB_OPT_NUMBER(     "radius",        object->mRadius);
             }
 #if 0
             else if (name == "item") {
@@ -431,7 +433,7 @@ bool CharData(const std::string & text)
             return false;
     }
     else
-        syslog(LOG_ERR, "ERROR: Bad character data");
+        syslog(LOG_ERR, "ERROR: graphlcd/skin: Bad character data");
     return true;
 }
 

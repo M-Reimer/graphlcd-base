@@ -75,7 +75,7 @@ cSkinFunction::~cSkinFunction()
         delete mParams[i];
 }
 
-bool cSkinFunction::Parse(const std::string & Text)
+bool cSkinFunction::Parse(const std::string & Text, bool reparse)
 {
     const char *text = Text.c_str();
     const char *ptr = text, *last = text;
@@ -90,7 +90,8 @@ bool cSkinFunction::Parse(const std::string & Text)
             || (*ptr == '\'' && *(ptr + strlen(ptr) - 1) != '\'')
             || (*ptr == '{' && *(ptr + strlen(ptr) - 1) != '}'))
         {
-            syslog(LOG_ERR, "ERROR: Unmatched string end\n");
+            if (!reparse) // only log this error when not reparsing
+                syslog(LOG_ERR, "ERROR: graphlcd/skin/function: Unmatched string end\n");
             return false;
         }
 
@@ -114,7 +115,8 @@ bool cSkinFunction::Parse(const std::string & Text)
         // must be a variable id
         if (strlen(ptr) < 2)
         {
-            syslog(LOG_ERR, "ERROR: No variable id given\n");
+            if (!reparse) // only log this error when not reparsing
+                syslog(LOG_ERR, "ERROR: graphlcd/skin/function: No variable id given\n");
             return false;
         }
 
@@ -166,7 +168,8 @@ bool cSkinFunction::Parse(const std::string & Text)
 
                     if (Internals[i] == NULL)
                     {
-                        syslog(LOG_ERR, "ERROR: Unknown function %.*s", (int)(ptr - last), last);
+                        if (!reparse) // only log this error when not reparsing
+                            syslog(LOG_ERR, "ERROR: graphlcd/skin/function: Unknown function %.*s", (int)(ptr - last), last);
                         return false;
                     }
                     last = ptr + 1;
@@ -176,7 +179,8 @@ bool cSkinFunction::Parse(const std::string & Text)
             {
                 if (inExpr == 0)
                 {
-                    syslog(LOG_ERR, "ERROR: Unmatched '%c' in expression (%s)", *ptr, Text.c_str());
+                    if (!reparse) // only log this error when not reparsing
+                        syslog(LOG_ERR, "ERROR: graphlcd/skin/function: Unmatched '%c' in expression (%s)", *ptr, Text.c_str());
                     return false;
                 }
 
@@ -191,8 +195,9 @@ bool cSkinFunction::Parse(const std::string & Text)
 
                     if (mNumParams == MAXPARAMETERS)
                     {
-                        syslog(LOG_ERR, "ERROR: Too many parameters to function, maximum is %d",
-                            MAXPARAMETERS);
+                        if (!reparse) // only log this error when not reparsing
+                            syslog(LOG_ERR, "ERROR: graphlcd/skin/function: Too many parameters to function, maximum is %d",
+                                   MAXPARAMETERS);
                         return false;
                     }
 
@@ -268,7 +273,7 @@ bool cSkinFunction::Parse(const std::string & Text)
 
                         if (params != -1 && mNumParams != (uint32_t) params)
                         {
-                            syslog(LOG_ERR, "ERROR: Text2Skin: Wrong number of parameters to %s, "
+                            syslog(LOG_ERR, "ERROR: graphlcd/skin/function: Wrong number of parameters to %s, "
                                     "expecting %d", Internals[mType - INTERNAL], params);
                             return false;
                         }
@@ -281,7 +286,9 @@ bool cSkinFunction::Parse(const std::string & Text)
 
         if (inExpr > 0)
         {
-            syslog(LOG_ERR, "ERROR: Expecting ')' in expression");
+            // only log this error when not reparsing
+            if (!reparse)
+                syslog(LOG_ERR, "ERROR: Expecting ')' in expression");
             return false;
         }
     }
@@ -483,7 +490,7 @@ cType cSkinFunction::Evaluate(void) const
 
         default:
             //Dprintf("unknown function code\n");
-            syslog(LOG_ERR, "ERROR: Unknown function code called (this shouldn't happen)");
+            syslog(LOG_ERR, "ERROR: graphlcd/skin/function: Unknown function code called (this shouldn't happen)");
             break;
     }
     return false;

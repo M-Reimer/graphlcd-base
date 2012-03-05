@@ -97,7 +97,7 @@ public:
     cSkinFunction(const cSkinFunction &Src);
     ~cSkinFunction();
 
-    bool Parse(const std::string &Text);
+    bool Parse(const std::string &Text, bool reparse = false);
     cType Evaluate(void) const;
 
     void SetListIndex(int MaxItems, int Index);

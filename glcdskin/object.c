@@ -58,7 +58,8 @@ cSkinObject::cSkinObject(cSkinDisplay * Parent)
     mCondition(NULL),
     mEffect(tfxNone),
     mEffectColor(this, cColor(cColor::White)),
-    mPeakColor(this, cColor(cColor::ERRCOL)), // if ERRCOL -> use mColor
+    mPeakGradientColor(this, cColor(cColor::ERRCOL)), // color for peak or gradient; if ERRCOL -> use mColor
+    mGradient(tgrdNone),            // default: no gradient
     mLastChange(0),
     mChangeDelay(-1),               // delay between two images frames: -1: not animated / don't care
     mStoredImagePath(""),
@@ -112,7 +113,8 @@ cSkinObject::cSkinObject(const cSkinObject & Src)
     mCondition(Src.mCondition),
     mEffect(Src.mEffect),
     mEffectColor(Src.mEffectColor),
-    mPeakColor(Src.mPeakColor),
+    mPeakGradientColor(Src.mPeakGradientColor),
+    mGradient(Src.mGradient),
     mLastChange(0),
     mChangeDelay(-1),
     mStoredImagePath(Src.mStoredImagePath),
@@ -241,6 +243,21 @@ bool cSkinObject::ParseScale(const std::string & Text)
         mScale = tscAutoY;
     else if (Text == "fill")
         mScale = tscFill;
+    else
+        return false;
+    return true;
+}
+
+bool cSkinObject::ParseGradient(const std::string & Text)
+{
+    if (Text == "none")
+        mGradient = tgrdNone;
+    else if (Text == "total" || Text == "default")
+        mGradient = tgrdTotal;
+    else if (Text == "current" || Text == "currentonly")
+        mGradient = tgrdCurrent;
+    else if (Text == "vertical")
+        mGradient = tgrdVertical;
     else
         return false;
     return true;
@@ -571,48 +588,122 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
 
             int peakSize = 0;
             int peakBarSize = 2;
-            uint32_t peakColor = (mPeakColor == cColor::ERRCOL) ? mColor : mPeakColor;
-            if (peak > 0) {
-                peakSize =  maxSize * peak / total;
-                if (mRadius <= 0) {
-                    peakBarSize = maxSize / 20;
-                    if (peakBarSize < 2)
-                        peakBarSize = 2;
-                } else {
-                    peakBarSize = mRadius;
+            uint32_t peakGradientColor = (mPeakGradientColor == cColor::ERRCOL) ? mColor : mPeakGradientColor;
+            
+            bool gradient = false;
+            
+            if (peakGradientColor != mColor) {
+                if (mGradient != tgrdNone) {
+                    gradient = true;
+                } else if (peak > 0) {
+                    peakSize =  maxSize * peak / total;
+                    if (mRadius <= 0) {
+                        peakBarSize = maxSize / 20;
+                        if (peakBarSize < 2)
+                            peakBarSize = 2;
+                    } else {
+                        peakBarSize = mRadius;
+                    }
+                    // at least peakBarSize of empty space between normal progress bar and peak marker. if too small: don't show peak marker
+                    if (currSize + peakBarSize + (peakBarSize / 2) >= peakSize)
+                        peakSize = 0;  // don't show at all
                 }
-                // at least peakBarSize of empty space between normal progress bar and peak marker. if too small: don't show peak marker
-                if (currSize + peakBarSize + (peakBarSize / 2) >= peakSize)
-                    peakSize = 0;  // don't show at all
             }
 
-            if (mDirection == 0)
-            {
-                if (currSize > 0)
-                    screen->DrawRectangle(Pos().x, Pos().y, Pos().x + currSize - 1, Pos().y + Size().h - 1, mColor, true);
-                if (peakSize > 0)
-                    screen->DrawRectangle(Pos().x + peakSize-1, Pos().y, Pos().x + peakSize-1 + peakBarSize-1, Pos().y + Size().h - 1, peakColor, true);
-            }
-            else if (mDirection == 1)
-            {
-                if (currSize > 0)
-                    screen->DrawRectangle(Pos().x, Pos().y, Pos().x + Size().w - 1, Pos().y + currSize - 1, mColor, true);
-                if (peakSize > 0)
-                    screen->DrawRectangle(Pos().x, Pos().y + peakSize-1, Pos().x + Size().w - 1, Pos().y + peakSize-1 + peakBarSize-1, peakColor, true);
-            }
-            else if (mDirection == 2)
-            {
-                if (currSize > 0)
-                    screen->DrawRectangle(Pos().x + Size().w - currSize, Pos().y, Pos().x + Size().w - 1, Pos().y + Size().h - 1, mColor, true);
-                if (peakSize > 0)
-                    screen->DrawRectangle(Pos().x + Size().w + maxSize - peakSize, Pos().y, Pos().x + maxSize - peakSize + peakBarSize-1, Pos().y + Size().h - 1, peakColor, true);
-            }
-            else if (mDirection == 3)
-            {
-                if (currSize > 0)
-                    screen->DrawRectangle(Pos().x, Pos().y + Size().h - currSize, Pos().x + Size().w - 1, Pos().y + Size().h - 1, mColor, true);
-                if (peakSize > 0)
-                    screen->DrawRectangle(Pos().x, Pos().y + maxSize - peakSize, Pos().x + Size().w - 1, Pos().y + maxSize - peakSize + peakBarSize-1, peakColor, true);
+            if (! gradient) {
+                if (mDirection == 0)
+                {
+                    if (currSize > 0)
+                        screen->DrawRectangle(Pos().x               , Pos().y,
+                                              Pos().x + currSize - 1, Pos().y + Size().h - 1, mColor, true);
+                    if (peakSize > 0)
+                        screen->DrawRectangle(Pos().x + peakSize-1                , Pos().y,
+                                              Pos().x + peakSize-1 + peakBarSize-1, Pos().y + Size().h - 1, peakGradientColor, true);
+                }
+                else if (mDirection == 1)
+                {
+                    if (currSize > 0)
+                        screen->DrawRectangle(Pos().x               , Pos().y,
+                                              Pos().x + Size().w - 1, Pos().y + currSize - 1, mColor, true);
+                    if (peakSize > 0)
+                        screen->DrawRectangle(Pos().x               , Pos().y + peakSize-1,
+                                              Pos().x + Size().w - 1, Pos().y + peakSize-1 + peakBarSize-1, peakGradientColor, true);
+                }
+                else if (mDirection == 2)
+                {
+                    if (currSize > 0)
+                        screen->DrawRectangle(Pos().x + Size().w - currSize, Pos().y,
+                                              Pos().x + Size().w - 1       , Pos().y + Size().h - 1, mColor, true);
+                    if (peakSize > 0)
+                        screen->DrawRectangle(Pos().x + Size().w + maxSize - peakSize     , Pos().y,
+                                              Pos().x + maxSize - peakSize + peakBarSize-1, Pos().y + Size().h - 1, peakGradientColor, true);
+                }
+                else if (mDirection == 3)
+                {
+                    if (currSize > 0)
+                        screen->DrawRectangle(Pos().x               , Pos().y + Size().h - currSize,
+                                              Pos().x + Size().w - 1, Pos().y + Size().h - 1       , mColor, true);
+                    if (peakSize > 0)
+                        screen->DrawRectangle(Pos().x               , Pos().y + maxSize - peakSize,
+                                              Pos().x + Size().w - 1, Pos().y + maxSize - peakSize + peakBarSize-1, peakGradientColor, true);
+                }
+            } else {
+                if (currSize > 0) {
+                    int     s_a  = (mColor &  0xFF000000) >> 24;
+                    int     s_r  = (mColor &  0x00FF0000) >> 16;
+                    int     s_g  = (mColor &  0x0000FF00) >>  8;
+                    int     s_b  = (mColor &  0x000000FF)      ;
+                    int delta_a  = ((peakGradientColor & 0xFF000000) >> 24) - s_a;
+                    int delta_r  = ((peakGradientColor & 0x00FF0000) >> 16) - s_r;
+                    int delta_g  = ((peakGradientColor & 0x0000FF00) >>  8) - s_g;
+                    int delta_b  = ((peakGradientColor & 0x000000FF)      ) - s_b;
+                    int c_a, c_r, c_g, c_b;
+                    double fact;
+                    uint32_t currCol;
+                    int gradSize = 0;
+                    switch (mGradient) {
+                        case tgrdCurrent:  gradSize = currSize; break;
+                        case tgrdVertical: gradSize = (mDirection % 2 == 0) ? Size().h : Size().w ; break;
+                        default:           gradSize = maxSize;  break;
+                    }
+
+                    for (int i = 0; i < ((mGradient == tgrdVertical) ? gradSize : currSize); i++) {
+                        fact = (double)i / (double)(gradSize - 1);
+                        c_a = s_a + int( double(delta_a) * fact );
+                        c_r = s_r + int( double(delta_r) * fact );
+                        c_g = s_g + int( double(delta_g) * fact );
+                        c_b = s_b + int( double(delta_b) * fact );
+                        currCol = (c_a << 24) | (c_r << 16) | (c_g << 8) | c_b;
+                        //fprintf(stderr, "i: %d / %08x -> %08x / currCol: %08x\n", i, (uint32_t)mColor, peakGradientColor, currCol);
+                        if (mGradient == tgrdVertical) {
+                            if (mDirection == 0)
+                                screen->DrawLine(Pos().x,                Pos().y + i,
+                                                 Pos().x + currSize - 1, Pos().y + i, currCol);
+                            else if (mDirection == 2)
+                                screen->DrawLine(Pos().x + Size().w - currSize, Pos().y + i,
+                                                 Pos().x + Size().w - 1,        Pos().y + i, currCol);
+                            else if (mDirection == 1)
+                                screen->DrawLine(Pos().x + Size().w - 1 - i, Pos().y,
+                                                 Pos().x + Size().w - 1 - i, Pos().y + currSize - 1, currCol);
+                            else if (mDirection == 3)
+                                screen->DrawLine(Pos().x + i, Pos().y + Size().h - currSize,
+                                                 Pos().x + i, Pos().y + Size().h - 1       , currCol);
+                        } else {
+                            if (mDirection == 0)
+                                screen->DrawLine(Pos().x + i, Pos().y,
+                                                 Pos().x + i, Pos().y + Size().h - 1, currCol);
+                            else if (mDirection == 2)
+                                screen->DrawLine(Pos().x + Size().w - 1 - i, Pos().y,
+                                                 Pos().x + Size().w - 1 - i, Pos().y + Size().h - 1, currCol);
+                            else if (mDirection == 1)
+                                screen->DrawLine(Pos().x               , Pos().y + i,
+                                                 Pos().x + Size().w - 1, Pos().y + i, currCol);
+                            else if (mDirection == 3)
+                                screen->DrawLine(Pos().x               , Pos().y + Size().h - 1 - i,
+                                                 Pos().x + Size().w - 1, Pos().y + Size().h - 1 - i , currCol);
+                        }
+                    }
+                }
             }
             break;
         }

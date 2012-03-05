@@ -118,7 +118,7 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
     for (; *ptr; ++ptr) {
         if (inToken && *ptr == '\\') {
             if (*(ptr + 1) == '\0') {
-                syslog(LOG_ERR, "ERROR: Stray \\ in token attribute\n");
+                syslog(LOG_ERR, "ERROR: graphlcd/skin/string: Stray \\ in token attribute\n");
                 return false;
             }
 
@@ -127,7 +127,7 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
         }
         else if (*ptr == '#') {
           if (inToken) {
-              syslog(LOG_ERR, "ERROR: Unexpected '#' in token");
+              syslog(LOG_ERR, "ERROR: graphlcd/skin/string: Unexpected '#' in token");
               return false;
           }
 
@@ -150,7 +150,7 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
         }
         else if (*ptr == '{') {
             if (inToken) {
-                syslog(LOG_ERR, "ERROR: Unexpected '{' in token");
+                syslog(LOG_ERR, "ERROR: graphlcd/skin/string: Unexpected '{' in token");
                 return false;
             }
 
@@ -160,13 +160,13 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
         }
         else if (*ptr == '}' || (inToken && *ptr == ':')) {
             if (!inToken) {
-                syslog(LOG_ERR, "ERROR: Unexpected '}' outside of token");
+                syslog(LOG_ERR, "ERROR: graphlcd/skin/string: Unexpected '}' outside of token");
                 return false;
             }
 
             if (inAttrib) {
                 if (*ptr == ':') {
-                    syslog(LOG_ERR, "ERROR: Unexpected ':' inside of token attribute");
+                    syslog(LOG_ERR, "ERROR: graphlcd/skin/string: Unexpected ':' inside of token attribute");
                     return false;
                 }
 
@@ -214,7 +214,7 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
                 }
                 else
                 {
-                    syslog(LOG_ERR, "ERROR: Unexpected token {%.*s}", (int)(ptr - last), last);
+                    syslog(LOG_ERR, "ERROR: graphlcd/skin/string: Unexpected token {%.*s}", (int)(ptr - last), last);
                     return false;
                 }
 
@@ -231,7 +231,7 @@ bool cSkinString::Parse(const std::string & Text, bool Translate)
     }
 
     if (inToken) {
-        syslog(LOG_ERR, "ERROR: Expecting '}' in token");
+        syslog(LOG_ERR, "ERROR: graphlcd/skin/string: Expecting '}' in token");
         return false;
     }
 
@@ -286,7 +286,7 @@ cType cSkinString::Evaluate(void) const
     // re-evaluate resulting string
     if ((mText.size() > 0) && mText[0] != '#' && mObject != NULL ) {
         cSkinFunction *result = new cSkinFunction(mObject);
-        if (result->Parse(result_trans))  {
+        if (result->Parse(result_trans, true))  {
             std::string result_rescan = (std::string)result->Evaluate();
             if (result_rescan != "")
                 result_trans = result_rescan;            
