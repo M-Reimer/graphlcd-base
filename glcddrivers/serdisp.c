@@ -7,7 +7,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2003-2011 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2003-2012 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <stdio.h>
@@ -61,10 +61,27 @@ int cDriverSerDisp::Init(void)
     std::string optionstring = "";
     std::string wiringstring;
 
+    int chk_major = 0;
+    std::string libname = "";
 
     // dynamically load serdisplib using dlopen() & co.
+    sdhnd = NULL;
+    chk_major = 3; // max major version to check
 
-    sdhnd = dlopen("libserdisp.so", RTLD_LAZY);
+    while ( ! sdhnd && chk_major > 0) {
+        libname = "libserdisp.so.";
+        libname.push_back (chk_major + '0');
+        sdhnd = dlopen(libname.c_str(), RTLD_LAZY);
+        if (!sdhnd) { // try /usr/local/lib
+            libname.insert(0, "/usr/local/lib/");
+            sdhnd = dlopen(libname.c_str(), RTLD_LAZY);
+        }
+        chk_major --;
+    }
+
+    if (!sdhnd) { // try libserdisp.so without major version
+        sdhnd = dlopen("libserdisp.so", RTLD_LAZY);
+    }
     if (!sdhnd) { // try /usr/local/lib
         sdhnd = dlopen("/usr/local/lib/libserdisp.so", RTLD_LAZY);
     }
