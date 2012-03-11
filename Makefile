@@ -8,8 +8,8 @@ ARCHIVE = $(PROJECT)-$(VERSION)
 PACKAGE = $(ARCHIVE)
 TMPDIR = /tmp
 
-UDEVRULESDIR = /etc/udev/rules.d/
-UDEVRULE = "99-graphlcd-base.rules"
+UDEVRULESDIR ?= /etc/udev/rules.d/
+UDEVRULE ?= 99-graphlcd-base.rules
 
 ### Targets:
 
@@ -24,7 +24,7 @@ install:
 	@$(MAKE) -C glcddrivers install
 	@$(MAKE) -C glcdskin install
 	@$(MAKE) -C tools install
-	test -d "${UDEVRULESDIR}" || install -m 644 -o root -g root $(UDEVRULE) $(UDEVRULESDIR)
+	test -d "${UDEVRULESDIR}" && install -m 644 -o root -g root "$(UDEVRULE)" "$(UDEVRULESDIR)"
 
 uninstall:
 	@$(MAKE) -C glcdgraphics uninstall
