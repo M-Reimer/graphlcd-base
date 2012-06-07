@@ -10,7 +10,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
- * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2010-2012 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  *               Andreas 'randy' Weinberger 
  */
 
@@ -127,7 +127,7 @@ public:
     cBitmap * SubBitmap(int x1, int y1, int x2, int y2) const;
     uint32_t GetPixel(int x, int y) const;
 
-    void SetMonochrome(bool mono) { ismonochrome = mono; }
+    void SetMonochrome(bool ismono) { ismonochrome = ismono; }
     bool IsMonochrome(void) const { return ismonochrome; }
 
     void SetProcessAlpha(bool procAlpha) { processAlpha = procAlpha; }

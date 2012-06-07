@@ -8,7 +8,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2011      Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2011-2012 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #ifndef _GLCDGRAPHICS_EXTFORMATS_H_

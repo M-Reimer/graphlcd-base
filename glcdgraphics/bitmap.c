@@ -10,7 +10,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
- * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2010-2012 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  *               Andreas 'randy' Weinberger 
  */
 
@@ -570,7 +570,7 @@ void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, u
 
     uint32_t cl = 0;
     const uint32_t * data = bitmap.Data();
-    bool ismonochrome = bitmap.IsMonochrome();
+    bool ismono = bitmap.IsMonochrome();
 
     int xt, yt;
     uint32_t alpha;
@@ -583,7 +583,7 @@ void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, u
           {
             cl = data[(yt * bitmap.Width())+xt];
             if (cl != cColor::Transparent) {
-              if (ismonochrome) {
+              if (ismono) {
                 cl = (cl == cColor::Black) ? color : bgcolor;
               }
               if (opacity != 255) {

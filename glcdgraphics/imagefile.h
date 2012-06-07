@@ -6,7 +6,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2006 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2006      Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2012 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #ifndef _GLCDGRAPHICS_IMAGEFILE_H_

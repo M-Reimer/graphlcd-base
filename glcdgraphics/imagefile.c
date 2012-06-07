@@ -6,7 +6,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2006 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2006      Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2012 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #include "image.h"
@@ -96,6 +97,8 @@ bool cImageFile::Scale(cImage & image, uint16_t scalew, uint16_t scaleh, bool An
         cBitmap *b = new cBitmap(scalew, scaleh, GRAPHLCD_Transparent);
         
         cBitmap *currFrame = image.GetBitmap(frame);
+        
+        b->SetMonochrome(currFrame->IsMonochrome());
       
         if (downscale) {
             // Downscaling - no anti-aliasing:
@@ -140,8 +143,13 @@ bool cImageFile::Scale(cImage & image, uint16_t scalew, uint16_t scaleh, bool An
     image.SetWidth(scalew);
     image.SetHeight(scaleh);
     // re-add bitmaps from scaled image container
+    cBitmap * b;
+    cBitmap * tempb;
     for (unsigned int frame = 0; frame < tempImg.Count(); frame ++) {
-      image.AddBitmap(new cBitmap(scalew, scaleh, (uint32_t*)tempImg.GetBitmap(frame)->Data()));
+      tempb = tempImg.GetBitmap(frame);
+      b = new cBitmap(scalew, scaleh, (uint32_t*)tempb->Data());
+      b->SetMonochrome(tempb->IsMonochrome());
+      image.AddBitmap(b);
     }
     return true;
 }

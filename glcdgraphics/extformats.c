@@ -8,7 +8,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2011      Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2011-2012 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #include <stdio.h>
@@ -23,7 +23,6 @@
 
 #ifdef HAVE_IMAGEMAGICK
 #include <Magick++.h>
-using namespace Magick;
 //#elif defined(HAVE_IMLIB2)
 //#include "quantize.h"
 //#include <Imlib2.h>
@@ -39,7 +38,7 @@ using namespace std;
 cExtFormatFile::cExtFormatFile()
 {
 #ifdef HAVE_IMAGEMAGICK
-  InitializeMagick(NULL);
+  Magick::InitializeMagick(NULL);
 #endif    
 }
 
@@ -57,14 +56,14 @@ bool cExtFormatFile::Load(cImage & image, const string & fileName)
 bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_t & scalew, uint16_t & scaleh)
 {
 #ifdef HAVE_IMAGEMAGICK
-  std::vector<Image> extimages;
+  std::vector<Magick::Image> extimages;
   try {
     uint16_t width = 0;
     uint16_t height = 0;
     //uint16_t count;
     uint32_t delay;
 
-    std::vector<Image>::iterator it;
+    std::vector<Magick::Image>::iterator it;
     readImages(&extimages, fileName);
     if (extimages.size() == 0) {
       syslog(LOG_ERR, "ERROR: graphlcd: Couldn't load %s", fileName.c_str());
@@ -81,7 +80,7 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
     for (it = extimages.begin(); it != extimages.end(); ++it) {
       bool ignoreImage = false;
 
-      //(*it).quantizeColorSpace( RGBColorspace );
+      //(*it).quantizeColorSpace( Magick::RGBColorspace );
       //(*it).quantizeColors( 256*256*256 /*colors*/ );
       //(*it).quantize();
 
@@ -99,7 +98,7 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
 
         // scale image
         if (scalew && ! (scalew == width && scaleh == height)) {
-          (*it).scale(Geometry(scalew, scaleh));
+          (*it).sample(Magick::Geometry(scalew, scaleh));
           width = scalew;
           height = scaleh;
         } else {
@@ -112,7 +111,7 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
         image.SetHeight(height);
       } else {
         if (scalew && scaleh) {
-          (*it).scale(Geometry(scalew, scaleh));
+          (*it).sample(Magick::Geometry(scalew, scaleh));
         } else 
         if ( (width != (uint16_t)((*it).columns())) || (height != (uint16_t)((*it).rows())) ) {
           ignoreImage = true;
@@ -131,7 +130,7 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
 
         bool isMatte = (*it).matte();
         //bool isMonochrome = ((*it).totalColors() <= 2) ? true : false;
-        const PixelPacket *pix = (*it).getConstPixels(0, 0, (int)width, (int)height);
+        const Magick::PixelPacket *pix = (*it).getConstPixels(0, 0, (int)width, (int)height);
 
         for (int iy = 0; iy < (int)height; ++iy) {
           for (int ix = 0; ix < (int)width; ++ix) {
@@ -159,7 +158,7 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
         bmpdata = NULL;
       }
     }
-  } catch (Exception &e) {
+  } catch (Magick::Exception &e) {
     syslog(LOG_ERR, "ERROR: graphlcd: Couldn't load %s: %s", fileName.c_str(), e.what());
     return false;
   } catch (...) {
