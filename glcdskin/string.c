@@ -301,6 +301,34 @@ cType cSkinString::Evaluate(void) const
         }
         delete result;
     }
+
+    // look for $(..)$-expressions
+    result_raw = result_trans;
+    result_trans = "";
+    idxstart = 0;
+    pos = 0;
+    bool err = false;
+    while ( !err && ((idxstart = result_raw.find("$(", idxstart)) != std::string::npos) ) {
+      result_trans.append (result_raw.substr(pos, idxstart - pos) );
+      idxend = result_raw.find(")$", idxstart + 2);
+      if ( idxend == std::string::npos ) {  // no $) found: ignore leading $( and pass rest of whole string unparsed
+        result_trans.append(result_raw.substr(pos));
+        err = true;
+      } else {
+        std::string func = result_raw.substr( idxstart + 2, idxend - idxstart - 2 );
+        cSkinFunction *result = new cSkinFunction(mObject);
+        if (result->Parse(func, true))  {
+            std::string result_rescan = (std::string)result->Evaluate();
+            if (result_rescan != "")
+                result_trans.append( result_rescan );
+        }
+        delete result;
+        
+        idxstart = idxend + 2;
+        pos = idxstart;
+      }
+    }
+    result_trans.append( result_raw.substr(pos) );
     return result_trans;
 }
 
