@@ -20,11 +20,11 @@ all: $(PRGNAME)
 # Implicit rules:
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(DEFINES) $(INCLUDES) $<
+	$(CXX) $(CXXEXTRA) $(CXXFLAGS) $(LDFLAGS) -c $(DEFINES) $(INCLUDES) $<
 
 # Dependencies:
 
-MAKEDEP = $(CXX) -MM -MG
+#MAKEDEP = $(CXX) -MM -MG
 DEPFILE = .dependencies
 $(DEPFILE): Makefile
 	@$(MAKEDEP) $(DEFINES) $(INCLUDES) $(OBJS:%.o=%.c) > $@

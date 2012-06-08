@@ -32,11 +32,11 @@ HEADERS = bitmap.h font.h glcd.h image.h imagefile.h pbm.h extformats.h
 ### Implicit rules:
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) $(LDFLAGS) -c $(DEFINES) $(INCLUDES) $<
+	$(CXX) $(CXXEXTRA) $(CXXFLAGS) $(LDFLAGS) -c $(DEFINES) $(INCLUDES) $<
 
 # Dependencies:
 
-MAKEDEP = g++ -MM -MG
+#MAKEDEP = g++ -MM -MG
 DEPFILE = .dependencies
 $(DEPFILE): Makefile
 	@$(MAKEDEP) $(DEFINES) $(INCLUDES) $(OBJS:%.o=%.c) > $@

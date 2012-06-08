@@ -27,11 +27,11 @@ LIBS += -L../glcdgraphics -lglcdgraphics -L../glcddrivers -lglcddrivers
 ### Implicit rules:
 
 %.o: %.c
-	$(CXX) $(CXXFLAGS) -I.. -c $(DEFINES) $(INCLUDES) $<
+	$(CXX) $(CXXEXTRA) $(CXXFLAGS) -I.. -c $(DEFINES) $(INCLUDES) $<
 
 # Dependencies:
 
-MAKEDEP = g++ -MM -MG
+#MAKEDEP = g++ -MM -MG
 DEPFILE = .dependencies
 $(DEPFILE): Makefile
 	@$(MAKEDEP) $(DEFINES) $(INCLUDES) $(OBJS:%.o=%.c) > $@
