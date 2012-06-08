@@ -379,7 +379,7 @@ int cDriverSerDisp::DeInit(void)
     /* use serdisp_close instead of serdisp_quit so that showpic and showtext are usable together with serdisplib */
     fp_serdisp_close(dd);
 
-    (int) dlclose(sdhnd);
+    dlclose(sdhnd);
     sdhnd = NULL;
 
     return 0;

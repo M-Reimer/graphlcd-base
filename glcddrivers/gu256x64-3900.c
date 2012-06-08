@@ -22,7 +22,7 @@
  *
  * (c) 2004      Ralf Mueller (ralf AT bj-ig.de)
  * (c) 2005-2010 Andreas Regel <andreas.regel AT powarman.de>
- * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net> 
+ * (c) 2011-2012 Wolfgang Astleitner <mrwastl AT users.sourceforge.net> 
  */
 
 #include <errno.h>
@@ -257,7 +257,7 @@ int cDriverGU256X64_3900::DeInit()
         if (portFd >= 0)
         {
             close(portFd);
-            portFd =- 1;
+            portFd = -1;
         }
     }
     if (port)

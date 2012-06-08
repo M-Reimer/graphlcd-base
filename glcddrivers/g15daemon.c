@@ -8,7 +8,7 @@
 * to the COPYING file distributed with this package.
 *
 * (c) 2005-2010 Andreas Regel <andreas.regel AT powarman.de>
-* (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+* (c) 2011-2012 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
 */
 
 #include <fcntl.h>
@@ -146,8 +146,8 @@ int cDriverG15daemon::Init()
 
 int cDriverG15daemon::DeInit()
 {
-    if (offbuff);
-    delete[] offbuff;
+    if (offbuff)
+        delete[] offbuff;
     if (-1 != sockfd)
         close(sockfd);
 

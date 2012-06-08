@@ -9,7 +9,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004      Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2010-2012 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #include <ctype.h>
@@ -219,7 +220,7 @@ std::string trim(const std::string & s)
         start++;
     }
     end = s.length() - 1;
-    while (end >= 0)
+    while (end > start)
     {
         if (!isspace(s[end]))
             break;
