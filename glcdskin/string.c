@@ -263,23 +263,31 @@ cType cSkinString::Evaluate(void) const
     while ( (idxstart=result_raw.find("#", idxstart)) != std::string::npos ) {
       result_trans.append(result_raw.substr(pos, idxstart-pos));
       idxend = result_raw.find("#", idxstart+1);
-      cSkinVariable * variable = mSkin->GetVariable(result_raw.substr(idxstart+1, idxend-idxstart-1));
-      if (variable) {
-        std::string val = (std::string) variable->Value();
+      if (idxend != std::string::npos) {
+        cSkinVariable * variable = mSkin->GetVariable(result_raw.substr(idxstart+1, idxend-idxstart-1));
+        if (variable) {
+          std::string val = (std::string) variable->Value();
 
-        // if value of variable contains token definions: reparse value
-        if (val.find("{") != std::string::npos) {
-          cSkinString *result = new cSkinString(Object(), false);
-          if (result->Parse(val)) {
-            val = (std::string) result->Evaluate();
+          // if value of variable contains token definions: reparse value
+          if (val.find("{") != std::string::npos) {
+            cSkinString *result = new cSkinString(Object(), false);
+            if (result->Parse(val)) {
+              val = (std::string) result->Evaluate();
+            }
+            delete result;
           }
-          delete result;
+          result_trans.append (val);
+          //   syslog(LOG_ERR, "string variable %s", trans.c_str());
+        } else {
+          result_trans.append (result_raw.substr(idxstart, idxend-idxstart)); // no variable found: print as raw text
         }
-        result_trans.append (val);
-        //   syslog(LOG_ERR, "string variable %s", trans.c_str());
+        idxstart = idxend+1;
+        pos = idxstart;
+      } else {
+        result_trans.append ("#");  // no closing '#' -> print # as raw text
+        idxstart ++;
+        pos = idxstart;
       }
-      idxstart = idxend+1;
-      pos = idxstart;
     }
     result_trans.append(result_raw.substr(pos));
 

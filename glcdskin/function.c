@@ -406,22 +406,22 @@ cType cSkinFunction::Evaluate(void) const
 
         case fun_equal:
         case fun_eq:
-            return mParams[0]->Evaluate() == mParams[1]->Evaluate();
+            return (std::string) mParams[0]->Evaluate() == (std::string) mParams[1]->Evaluate();
 
         case fun_ne:
-            return mParams[0]->Evaluate() != mParams[1]->Evaluate();
+            return (std::string) mParams[0]->Evaluate() != (std::string) mParams[1]->Evaluate();
 
         case fun_gt:
-            return mParams[0]->Evaluate() >  mParams[1]->Evaluate();
+            return (int) mParams[0]->Evaluate() >  (int) mParams[1]->Evaluate();
 
         case fun_lt:
-            return mParams[0]->Evaluate() <  mParams[1]->Evaluate();
+            return (int) mParams[0]->Evaluate() <  (int) mParams[1]->Evaluate();
 
         case fun_ge:
-            return mParams[0]->Evaluate() >= mParams[1]->Evaluate();
+            return (int) mParams[0]->Evaluate() >= (int) mParams[1]->Evaluate();
 
         case fun_le:
-            return mParams[0]->Evaluate() <= mParams[1]->Evaluate();
+            return (int) mParams[0]->Evaluate() <= (int) mParams[1]->Evaluate();
 
         case fun_file:
             return FunFile(mParams[0]->Evaluate());
