@@ -23,6 +23,10 @@ HEADERS = cache.h config.h display.h font.h function.h object.h parser.h skin.h 
 ### Inner graphlcd-base dependencies
 LIBS += -L../glcdgraphics -lglcdgraphics -L../glcddrivers -lglcddrivers
 
+ifdef HAVE_FONTCONFIG
+  LIBS +=  -lfontconfig
+  DEFINES += -DHAVE_FONTCONFIG
+endif
 
 ### Implicit rules:
 

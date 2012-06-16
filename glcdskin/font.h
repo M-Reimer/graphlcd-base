@@ -49,8 +49,11 @@ private:
     cSkinDisplay mDummyDisplay;
     cSkinObject mDummyObject;
 
+    static int FcInitCount;
+
 public:
     cSkinFont(cSkin * Parent);
+    ~cSkinFont(void);
 
     bool ParseUrl(const std::string & Text);
     bool ParseCondition(const std::string & Text);
