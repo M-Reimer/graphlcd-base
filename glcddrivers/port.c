@@ -6,7 +6,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2004      Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2011-2012 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <errno.h>
@@ -25,23 +26,33 @@
 
 #include "port.h"
 
+#if defined(__linux__) && (defined(__i386__) || defined(__x86_64__))
+  #define __HAS_DIRECTIO__ 1
+#endif
+
 namespace GLCD
 {
 
 static inline int port_in(int port)
 {
+#ifdef __HAS_DIRECTIO__
     unsigned char value;
     __asm__ volatile ("inb %1,%0"
                       : "=a" (value)
                       : "d" ((unsigned short) port));
     return value;
+#else
+    return 0;
+#endif
 }
 
 static inline void port_out(unsigned short int port, unsigned char val)
 {
+#ifdef __HAS_DIRECTIO__
     __asm__ volatile ("outb %0,%1\n"
                       :
                       : "a" (val), "d" (port));
+#endif
 }
 
 cParallelPort::cParallelPort()
@@ -57,6 +68,7 @@ cParallelPort::~cParallelPort()
 
 int cParallelPort::Open(int portIO)
 {
+#ifdef __HAS_DIRECTIO__
     usePPDev = false;
     port = portIO;
 
@@ -79,6 +91,10 @@ int cParallelPort::Open(int portIO)
         }
     }
     return 0;
+#else
+    syslog(LOG_ERR, "glcd drivers: ERROR: direct IO/parport is not available on this architecture / operating system\n");
+    return -1;
+#endif
 }
 
 int cParallelPort::Open(const char * device)
@@ -130,6 +146,7 @@ int cParallelPort::Close()
     }
     else
     {
+#ifdef __HAS_DIRECTIO__
         if (port < 0x400)
         {
             if (ioperm(port, 3, 0) == -1)
@@ -144,6 +161,9 @@ int cParallelPort::Close()
                 return -1;
             }
         }
+#else
+        return -1;  // should never make it until here ...
+#endif
     }
     return 0;
 }
