@@ -4,6 +4,7 @@
  * gu256x64-372.c  -  8-bit driver module for Noritake GU256x64-372
  *                    VFD displays. The VFD is operating in its 8-bit
  *                    mode connected to a single PC parallel port.
+ *                    Should also work for GU256x64-355 and -352.
  *
  * based on:
  *   gu256x32f driver module for graphlcd
@@ -17,7 +18,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2004-2011 Andreas 'randy' Weinberger (randy AT smue.org)
- * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2011-2012 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <errno.h>
@@ -320,12 +321,12 @@ void cDriverGU256X64_372::GU256X64Cmd(unsigned char data)
     if (m_bSleepIsInit)
         nSleepInit();
 
-    port->WriteControl(CDHI | WRHI | RDLO);
+    port->WriteControl(CDHI | WRHI);
     port->WriteData(data);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
-    port->WriteControl(CDHI | WRLO | RDLO);
+    port->WriteControl(CDHI | WRLO);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
-    port->WriteControl(CDHI | WRHI | RDLO);
+    port->WriteControl(CDHI | WRHI);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
 }
 
@@ -334,12 +335,12 @@ void cDriverGU256X64_372::GU256X64Data(unsigned char data)
     if (m_bSleepIsInit)
         nSleepInit();
 
-    port->WriteControl(CDLO | WRHI | RDLO);
+    port->WriteControl(CDLO | WRHI);
     port->WriteData(data);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
-    port->WriteControl(CDLO | WRLO | RDLO);
+    port->WriteControl(CDLO | WRLO);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
-    port->WriteControl(CDLO | WRHI | RDLO);
+    port->WriteControl(CDLO | WRHI);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
 }
 
