@@ -591,7 +591,8 @@ void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, u
                   alpha = (alpha * opacity) / 255;
                   cl = (cl & 0x00FFFFFF) | (alpha << 24);
               }
-              DrawPixel(xt+x, yt+y, cl);
+              if (cl & 0xFF000000) // only draw if alpha > 0
+                DrawPixel(xt+x, yt+y, cl);
            }
          }
        }
