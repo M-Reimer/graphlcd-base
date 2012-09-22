@@ -26,6 +26,10 @@
 //#elif defined(HAVE_IMLIB2)
 //#include "quantize.h"
 //#include <Imlib2.h>
+ /* ImageMagick threw away deprecated MaxRGB in a recent version (~ 6.7.0) but GraphicsMagick still doesn't have QuantumRange (1.3.x) */
+ #ifndef QuantumRange
+  #define QuantumRange MaxRGB
+ #endif
 #endif
 
 
@@ -134,11 +138,11 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
 
         for (int iy = 0; iy < (int)height; ++iy) {
           for (int ix = 0; ix < (int)width; ++ix) {
-            if ( isMatte && pix->opacity == MaxRGB ) {
+            if ( isMatte && pix->opacity == QuantumRange ) {
                 bmpdata[iy*width+ix] = cColor::Transparent;
             } else {
                 //bmpdata[iy*width+ix] = (uint32_t)( 0xFF000000 | (int(pix->red * 255 / MaxRGB) << 16) | (int(pix->green * 255 / MaxRGB) << 8) | int(pix->blue * 255 / MaxRGB));
-                bmpdata[iy*width+ix] = (uint32_t)( (int(255 - (pix->opacity * 255 / MaxRGB)) << 24)  | (int(pix->red * 255 / MaxRGB) << 16) | (int(pix->green * 255 / MaxRGB) << 8) | int(pix->blue * 255 / MaxRGB));
+                bmpdata[iy*width+ix] = (uint32_t)( (int(255 - (pix->opacity * 255 / QuantumRange)) << 24)  | (int(pix->red * 255 / QuantumRange) << 16) | (int(pix->green * 255 / QuantumRange) << 8) | int(pix->blue * 255 / QuantumRange));
                 //if ( isMonochrome ) {  // if is monochrome: exchange black and white
                 //    uint32_t c = bmpdata[iy*width+ix];
                 //    switch(c) {
