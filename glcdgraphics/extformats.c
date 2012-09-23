@@ -28,8 +28,6 @@
 //#include <Imlib2.h>
 #endif
 
-#include <math.h>
-
 
 namespace GLCD
 {
@@ -131,17 +129,20 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
         //Dprintf("this image has %d colors\n", (*it).totalColors());
 
         bool isMatte = (*it).matte();
-        size_t qrange = (size_t)pow(2.0, (*it).depth()) - 1;
         //bool isMonochrome = ((*it).totalColors() <= 2) ? true : false;
         const Magick::PixelPacket *pix = (*it).getConstPixels(0, 0, (int)width, (int)height);
 
         for (int iy = 0; iy < (int)height; ++iy) {
           for (int ix = 0; ix < (int)width; ++ix) {
-            if ( isMatte && pix->opacity == qrange ) {
+            if ( isMatte && Magick::Color::scaleQuantumToDouble(pix->opacity) * 255 == 255 ) {
                 bmpdata[iy*width+ix] = cColor::Transparent;
             } else {
-                //bmpdata[iy*width+ix] = (uint32_t)( 0xFF000000 | (int(pix->red * 255 / MaxRGB) << 16) | (int(pix->green * 255 / MaxRGB) << 8) | int(pix->blue * 255 / MaxRGB));
-                bmpdata[iy*width+ix] = (uint32_t)( (int(255 - (pix->opacity * 255 / qrange)) << 24)  | (int(pix->red * 255 / qrange) << 16) | (int(pix->green * 255 / qrange) << 8) | int(pix->blue * 255 / qrange));
+                bmpdata[iy*width+ix] = (uint32_t)(
+                                        (uint32_t(255 - (Magick::Color::scaleQuantumToDouble(pix->opacity) * 255)) << 24)  |
+                                        (uint32_t( Magick::Color::scaleQuantumToDouble(pix->red) * 255) << 16) |
+                                        (uint32_t( Magick::Color::scaleQuantumToDouble(pix->green) * 255) << 8) |
+                                         uint32_t( Magick::Color::scaleQuantumToDouble(pix->blue) * 255)
+                                       );
                 //if ( isMonochrome ) {  // if is monochrome: exchange black and white
                 //    uint32_t c = bmpdata[iy*width+ix];
                 //    switch(c) {
