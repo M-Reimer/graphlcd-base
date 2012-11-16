@@ -45,6 +45,7 @@ class cParallelPort;
 
 class cDriverNoritake800 : public cDriver
 {
+private:
     cParallelPort * m_pport;
 
     int m_iSizeYb;

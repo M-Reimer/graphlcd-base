@@ -240,23 +240,31 @@ int cDriverNoritake800::Init()
     int x;
     struct timeval tv1, tv2;
 
-    if (config->device == "")
+    if (config->device == "" && m_pport->IsDirectIO())
     {
         // use DirectIO
+        syslog(LOG_INFO, "INFO (cDriverNoritake800::Init): using Direct IO port access\n");
         if (m_pport->Open(config->port) != 0)
+        {
+            syslog(LOG_ERR, "ERROR (cDriverNoritake800::Init): cannot open configured port %x,  Err: %s\n", config->port, strerror(errno));
             return -1;
+        }
         uSleep(10);
     }
     else
     {
         // use ppdev
+        syslog(LOG_INFO, "INFO (cDriverNoritake800::Init): using PPDEV port access\n");
         if (m_pport->Open(config->device.c_str()) != 0)
+        {
+            syslog(LOG_ERR, "ERROR (cDriverNoritake800::Init): cannot open configured device %s,  Err: %s\n", config->device.c_str(), strerror(errno));
             return -1;
+        }
     }
 
     if (nSleepInit() != 0)
     {
-        syslog(LOG_ERR, "%s: INFO: cannot change wait parameters  Err: %s (cDriver::Init)\n", config->name.c_str(), strerror(errno));
+        syslog(LOG_INFO, "INFO (cDriverNoritake800::Init): cannot change wait parameters  Err: %s\n", strerror(errno));
         m_bSleepIsInit = false;
     }
     else
@@ -264,8 +272,13 @@ int cDriverNoritake800::Init()
         m_bSleepIsInit = true;
     }
 
+    // claim port if not already done
+    if (!m_pport->Claim())
+    {
+        syslog(LOG_ERR, "ERROR (cDriverNoritake800::Init): cannot claim port  Err: %s\n", strerror(errno));
+        return -1;
+    }
     // benchmark port access
-    m_pport->Claim();
     syslog(LOG_DEBUG, "%s: benchmark started.\n", config->name.c_str());
     gettimeofday(&tv1, 0);
     int nBenchIterations = 10000;
@@ -278,6 +291,7 @@ int cDriverNoritake800::Init()
     // calculate port command duration in nanoseconds
     m_nTimingAdjustCmd = long(double((tv2.tv_sec - tv1.tv_sec) * 1000000000 + (tv2.tv_usec - tv1.tv_usec) * 1000) / double(nBenchIterations));
     syslog(LOG_DEBUG, "%s: benchmark stopped. Time for Port Command: %ldns\n", config->name.c_str(), m_nTimingAdjustCmd);
+
     m_pport->Release();
 
     // initialize display
@@ -317,7 +331,7 @@ int cDriverNoritake800::Init()
     ClearVFDMem();
     Refresh(true);
 
-    syslog(LOG_INFO, "%s: initialization done.\n", config->name.c_str());
+    syslog(LOG_INFO, "INFO (cDriverNoritake800::Init): initialization done.\n");
     return 0;
 }
 
@@ -338,7 +352,12 @@ void cDriverNoritake800::Refresh(bool refreshAll)
             refreshAll = true;
     }
 
-    m_pport->Claim();
+    if (!m_pport->Claim())
+    {
+        syslog(LOG_ERR, "ERROR (cDriverNoritake800::Refresh): cannot claim port  Err: %s\n", strerror(errno));
+        return;
+    }
+
     for (xb = 0; xb < width; ++xb)
     {
         for (yb = 0; yb < m_iSizeYb; ++yb)
@@ -360,16 +379,23 @@ void cDriverNoritake800::Refresh(bool refreshAll)
             }
         }
     }
+
     m_pport->Release();
 }
 
 void cDriverNoritake800::N800Cmd(unsigned char data)
 {
+    if (!m_pport->Claim())
+    {
+        syslog(LOG_ERR, "ERROR (cDriverNoritake800::N800Cmd): cannot claim port  Err: %s\n", strerror(errno));
+        return;
+    }
+
     if (m_bSleepIsInit)
         nSleepInit();
 
     // set direction to "port_output" & C/D to C
-    m_pport->WriteControl(m_pWiringMaskCache[0x00]);
+    m_pport->SetDirection(kForward);
     // write to data port
     m_pport->WriteData(data);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
@@ -380,16 +406,24 @@ void cDriverNoritake800::N800Cmd(unsigned char data)
     m_pport->WriteControl(m_pWiringMaskCache[0x00]);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
     // set direction to "port_input"
-    m_pport->WriteControl(LPT_CTL_HI_DIR | m_pWiringMaskCache[0x00]);
+    m_pport->SetDirection(kReverse);
+
+    m_pport->Release();
 }
 
 void cDriverNoritake800::N800Data(unsigned char data)
 {
+    if (!m_pport->Claim())
+    {
+        syslog(LOG_ERR, "ERROR (cDriverNoritake800::N800Data): cannot claim port  Err: %s\n", strerror(errno));
+        return;
+    }
+
     if (m_bSleepIsInit)
         nSleepInit();
 
     // set direction to "port_output" & C/D to C
-    m_pport->WriteControl(m_pWiringMaskCache[VFDSGN_CD]);
+    m_pport->SetDirection(kForward);
     // write to data port
     m_pport->WriteData(data);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
@@ -400,7 +434,9 @@ void cDriverNoritake800::N800Data(unsigned char data)
     m_pport->WriteControl(m_pWiringMaskCache[VFDSGN_CD]);
     nSleep(100 + (100 * config->adjustTiming) - m_nTimingAdjustCmd);
     // set direction to "port_input"
-    m_pport->WriteControl(LPT_CTL_HI_DIR | m_pWiringMaskCache[0x00]);
+    m_pport->SetDirection(kReverse);
+
+    m_pport->Release();
 }
 
 void cDriverNoritake800::SetPixel(int x, int y, uint32_t data)
@@ -447,6 +483,12 @@ void cDriverNoritake800::Set8Pixels(int x, int y, unsigned char data)
 
 void cDriverNoritake800::SetBrightness(unsigned int percent)
 {
+    if (!m_pport->Claim())
+    {
+        syslog(LOG_ERR, "ERROR (cDriverNoritake800::SetBrightness): cannot claim port  Err: %s\n", strerror(errno));
+        return;
+    }
+
     // display can do 16 brightness levels,
     //  0 = light
     // 15 = dark
@@ -458,8 +500,8 @@ void cDriverNoritake800::SetBrightness(unsigned int percent)
     }
     unsigned int darkness = 16 - (unsigned int)((double)percent * 16.0 / 100.0);
 
-    m_pport->Claim();
     N800Cmd(0x40 + (darkness & 0xf));
+
     m_pport->Release();
 }
 
