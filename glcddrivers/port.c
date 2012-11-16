@@ -17,6 +17,7 @@
 #include <syslog.h>
 #include <unistd.h>
 #include <termios.h>
+#include <pthread.h>
 #include <sys/io.h>
 #include <sys/ioctl.h>
 #include <linux/ppdev.h>
@@ -32,6 +33,8 @@
 
 namespace GLCD
 {
+
+static pthread_mutex_t claimport_mutex;
 
 static inline int port_in(int port)
 {
@@ -58,7 +61,8 @@ static inline void port_out(unsigned short int port, unsigned char val)
 cParallelPort::cParallelPort()
 :   fd(-1),
     port(0),
-    usePPDev(false)
+    usePPDev(false),
+    portClaimed(false)
 {
 }
 
@@ -109,7 +113,7 @@ int cParallelPort::Open(const char * device)
         return -1;
     }
 
-    if (ioctl(fd, PPCLAIM, NULL) == -1)
+    if (!Claim())
     {
         syslog(LOG_ERR, "glcd drivers: ERROR cannot claim %s. Err:%s (cParallelPort::Init)\n",
                device, strerror(errno));
@@ -118,7 +122,7 @@ int cParallelPort::Open(const char * device)
     }
 
     int mode = PARPORT_MODE_PCSPP;
-    if (ioctl(fd, PPSETMODE, &mode) == -1)
+    if (ioctl(fd, PPSETMODE, &mode) != 0)
     {
         syslog(LOG_ERR, "glcd drivers: ERROR cannot setmode %s. Err:%s (cParallelPort::Init)\n",
                device, strerror(errno));
@@ -168,16 +172,27 @@ int cParallelPort::Close()
     return 0;
 }
 
-void cParallelPort::Claim()
+bool cParallelPort::Claim()
 {
-    if (usePPDev)
-        ioctl(fd, PPCLAIM);
+    if (!IsPortClaimed())
+    {
+        if (usePPDev)
+            portClaimed = (ioctl(fd, PPCLAIM) == 0);
+        else
+            portClaimed = (pthread_mutex_lock(&claimport_mutex) == 0);
+    }
+    return IsPortClaimed();
 }
 
 void cParallelPort::Release()
 {
-    if (usePPDev)
-        ioctl(fd, PPRELEASE);
+    if (IsPortClaimed())
+    {
+        if (usePPDev)
+            portClaimed = !(ioctl(fd, PPRELEASE) == 0);
+        else
+            portClaimed = !(pthread_mutex_unlock(&claimport_mutex) == 0);
+    }
 }
 
 void cParallelPort::SetDirection(int direction)

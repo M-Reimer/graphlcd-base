@@ -33,6 +33,7 @@ private:
     int fd;
     int port;
     bool usePPDev;
+    bool portClaimed;
 
 public:
     cParallelPort();
@@ -45,8 +46,9 @@ public:
     bool IsDirectIO() const { return (!usePPDev); }
     int GetPortHandle() const { return ((usePPDev) ? fd : port); }
 
-    void Claim();
+    bool Claim();
     void Release();
+    bool IsPortClaimed() const { return (portClaimed); }
 
     void SetDirection(int direction);
     unsigned char ReadControl();
