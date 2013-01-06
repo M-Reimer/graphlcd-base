@@ -43,6 +43,9 @@ enum eDriver
 #ifdef HAVE_AX206DPF_EXPERIMENTAL
     kDriverAX206DPF      = 17,
 #endif    
+#ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
+    kDriverPicoLCD_256x64 = 18,
+#endif    
     kDriverSerDisp       = 100,
     kDriverG15daemon     = 200
 };

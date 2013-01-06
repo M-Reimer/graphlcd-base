@@ -34,8 +34,13 @@ ifeq ($(shell pkg-config --exists libusb && echo 1), 1)
         LIBS += $(shell pkg-config --libs libusb)
         DEFINES += -DHAVE_AX206DPF_EXPERIMENTAL
     endif
-endif    
-
+    ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
+        OBJS += picoLCD_256x64.o
+        INCLUDES += $(shell pkg-config --cflags libusb)
+        LIBS += $(shell pkg-config --libs libusb)
+        DEFINES += -DHAVE_picoLCD_256x64_EXPERIMENTAL
+    endif
+endif  
 
 ### Implicit rules:
 

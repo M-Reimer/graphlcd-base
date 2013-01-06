@@ -33,6 +33,9 @@
 #ifdef HAVE_AX206DPF_EXPERIMENTAL
 #include "ax206dpf.h"
 #endif
+#ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
+#include "picoLCD_256x64.h"
+#endif
 
 namespace GLCD
 {
@@ -59,6 +62,9 @@ tDriver drivers[] =
     {"g15daemon",     kDriverG15daemon},
 #ifdef HAVE_AX206DPF_EXPERIMENTAL
     {"ax206dpf",      kDriverAX206DPF},
+#endif    
+#ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
+    {"picolcd256x64", kDriverPicoLCD_256x64},
 #endif    
     {"",              kDriverUnknown}
 };
@@ -121,6 +127,10 @@ cDriver * CreateDriver(int driverID, cDriverConfig * config)
 #ifdef HAVE_AX206DPF_EXPERIMENTAL
         case kDriverAX206DPF:
             return new cDriverAX206DPF(config);
+#endif
+#ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
+        case kDriverPicoLCD_256x64:
+            return new cDriverPicoLCD_256x64(config);
 #endif
         case kDriverUnknown:
         default:
