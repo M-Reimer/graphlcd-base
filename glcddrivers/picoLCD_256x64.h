@@ -37,7 +37,7 @@
 #define SCREEN_H			64
 #define SCREEN_W			256
 
-#if 0
+#ifdef HAVE_DEBUG
 #define DEBUG(x) fprintf(stderr,"picoLCD_256x64: %s(): " #x "\n", __FUNCTION__);
 #define DEBUG1(x,...) fprintf(stderr,"picoLCD_256x64: %s(): " #x "\n", __FUNCTION__, __VA_ARGS__);
 #else

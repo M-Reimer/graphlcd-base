@@ -188,7 +188,7 @@ bool cGLCDFile::Load(cImage & image, const string & fileName)
                     }
                 }
             }
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) - filename: '%s', count %d\n", __FILE__, __FUNCTION__, __LINE__, fileName.c_str(), n);
 #endif
             cBitmap * b = new cBitmap(width, height, bmpdata);

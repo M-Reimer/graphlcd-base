@@ -878,7 +878,7 @@ static struct usb_device *find_dev(int index)
 				else enumeration++;
 			}
 
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
 			printf("%04x %04x\n",
 				   d->descriptor.idVendor,
 				   d->descriptor.idProduct);
