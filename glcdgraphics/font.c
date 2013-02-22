@@ -29,6 +29,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <iconv.h>
+#else
+#include <string.h>
 #endif
 
 namespace GLCD
