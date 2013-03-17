@@ -36,7 +36,7 @@ $(PRGNAME): $(OBJS)
 
 install: $(PRGNAME)
 	install -d $(BINDIR)
-	install -m 755 -o root -g root $(PRESTRIP) $(PRGNAME) $(BINDIR)
+	install -m 755 -o root -g root $(HAVE_STRIP) $(PRGNAME) $(BINDIR)
 
 uninstall:
 	rm -f $(BINDIR)/$(PRGNAME)
