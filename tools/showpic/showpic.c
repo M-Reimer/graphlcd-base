@@ -10,7 +10,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
- * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2010-2013 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  *               Andreas 'randy' Weinberger
  */
 
@@ -214,6 +214,8 @@ int main(int argc, char *argv[])
 	GLCD::cGLCDFile glcd;
 	GLCD::cExtFormatFile extformat;
 
+	GLCD::cBitmap * buffer = new GLCD::cBitmap(lcd->Width(), lcd->Height());
+
 	int optFile;
 	std::string picFile;
 
@@ -234,8 +236,8 @@ int main(int argc, char *argv[])
 		lcd->Refresh(true);
 		while ((bitmap = image.GetBitmap()) != NULL && !stopProgramm)
 		{
-//			lcd->SetScreen(bitmap->Data(), bitmap->Width(), bitmap->Height(), bitmap->LineSize());
-			lcd->SetScreen(bitmap->Data(), bitmap->Width(), bitmap->Height());
+			buffer->DrawBitmap(0, 0, *bitmap);
+			lcd->SetScreen(buffer->Data(), buffer->Width(), buffer->Height());
 			lcd->Refresh(false);
 
 			if (image.Next(0)) // Select next image
@@ -257,6 +259,7 @@ int main(int argc, char *argv[])
 			optFile = optind;
 	}
 
+	delete buffer;
 	lcd->DeInit();
 	delete lcd;
 
