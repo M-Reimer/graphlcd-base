@@ -66,8 +66,8 @@ Installation and Configuration:
 
   tar xzf graphlcd-base-0.1.2.tgz
 
-2. Configure if you want FreeType2 support by commenting/uncommenting
-   HAVE_FREETYPE2 in Make.config.
+2. Configure the package to your needs, by following the comments in the
+  "Build & install configuration" section in Make.config.
 
 3. Compile the libraries and tools.
 

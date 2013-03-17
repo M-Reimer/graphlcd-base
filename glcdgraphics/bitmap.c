@@ -93,7 +93,7 @@ cBitmap::cBitmap(int width, int height, uint32_t * data)
     ismonochrome(false),
     processAlpha(true)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) cBitmap Size %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, width, height);
 #endif
     if (width > 0 && height > 0) {
@@ -113,7 +113,7 @@ cBitmap::cBitmap(int width, int height, uint32_t initcol)
     ismonochrome(false),
     processAlpha(true)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) cBitmap Size %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, width, height);
 #endif
 
@@ -146,7 +146,7 @@ cBitmap::~cBitmap()
 
 void cBitmap::Clear(uint32_t color)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) %03d * %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, width, height, color);
 #endif
     //uint32_t col = initcol; //(initcol == cColor::Transparent) ? backgroundColor : initcol;
@@ -262,7 +262,7 @@ void cBitmap::DrawLine(int x1, int y1, int x2, int y2, uint32_t color)
 
 void cBitmap::DrawHLine(int x1, int y, int x2, uint32_t color)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) %03d -> %03d, %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, x1, x2, y, color);
 #endif
     color = cColor::AlignAlpha(color);
@@ -276,7 +276,7 @@ void cBitmap::DrawHLine(int x1, int y, int x2, uint32_t color)
 
 void cBitmap::DrawVLine(int x, int y1, int y2, uint32_t color)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) %03d, %03d -> %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, x, y1, y2, color);
 #endif
     color = cColor::AlignAlpha(color);
@@ -290,7 +290,7 @@ void cBitmap::DrawVLine(int x, int y1, int y2, uint32_t color)
 
 void cBitmap::DrawRectangle(int x1, int y1, int x2, int y2, uint32_t color, bool filled)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) %03d * %03d -> %03d * %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, x1, y1, x2, y2, color);
 #endif
     int y;
@@ -318,7 +318,7 @@ void cBitmap::DrawRectangle(int x1, int y1, int x2, int y2, uint32_t color, bool
 
 void cBitmap::DrawRoundRectangle(int x1, int y1, int x2, int y2, uint32_t color, bool filled, int type)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) %03d * %03d -> %03d * %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, x1, y1, x2, y2, color);
 #endif
     color = cColor::AlignAlpha(color);
@@ -376,7 +376,7 @@ void cBitmap::DrawRoundRectangle(int x1, int y1, int x2, int y2, uint32_t color,
 
 void cBitmap::DrawEllipse(int x1, int y1, int x2, int y2, uint32_t color, bool filled, int quadrants)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) %03d * %03d -> %03d * %03d (color %08x)\n", __FILE__, __FUNCTION__, __LINE__, x1, y1, x2, y2, color);
 #endif
     color = cColor::AlignAlpha(color);
@@ -522,7 +522,7 @@ void cBitmap::DrawEllipse(int x1, int y1, int x2, int y2, uint32_t color, bool f
 
 void cBitmap::DrawSlope(int x1, int y1, int x2, int y2, uint32_t color, int type)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) %03d * %03d -> %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, x1, y1, x2, y2);
 #endif
     color = cColor::AlignAlpha(color);
@@ -562,7 +562,7 @@ void cBitmap::DrawSlope(int x1, int y1, int x2, int y2, uint32_t color, int type
 
 void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, uint32_t bgcolor, int opacity)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) '%03d' x '%03d' \n", __FILE__, __FUNCTION__, __LINE__, x, y);
 #endif
     color = cColor::AlignAlpha(color);
@@ -602,7 +602,7 @@ void cBitmap::DrawBitmap(int x, int y, const cBitmap & bitmap, uint32_t color, u
 int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cFont * font,
                       uint32_t color, uint32_t bgcolor, bool proportional, int skipPixels)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) text '%s', color '%08x'/'%08x'\n", __FILE__, __FUNCTION__, __LINE__, text.c_str(), color, bgcolor);
 #endif
     int xt;
@@ -704,7 +704,7 @@ int cBitmap::DrawText(int x, int y, int xmax, const std::string & text, const cF
 int cBitmap::DrawCharacter(int x, int y, int xmax, uint32_t c, const cFont * font,
                            uint32_t color, uint32_t bgcolor, int skipPixels)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) %03d * %03d char '%c' color '%08x' bgcolor '%08x'\n", __FILE__, __FUNCTION__, __LINE__, x, y, c, color, bgcolor);
 #endif
     const cBitmap * charBitmap;
@@ -763,7 +763,7 @@ uint32_t cBitmap::GetPixel(int x, int y) const
 
 cBitmap * cBitmap::SubBitmap(int x1, int y1, int x2, int y2) const
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d) %03d * %03d / %03d * %03d\n", __FILE__, __FUNCTION__, __LINE__, x1, y1, x2, y2);
 #endif
     int w, h;
@@ -857,7 +857,7 @@ const cBitmap* cBitmap::ConvertFrom1BPP(const unsigned char* monobmp, int w, int
 #if 0
 bool cBitmap::LoadPBM(const std::string & fileName)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d)\n", __FILE__, __FUNCTION__, __LINE__);
 #endif
     FILE * pbmFile;
@@ -948,7 +948,7 @@ bool cBitmap::LoadPBM(const std::string & fileName)
 
 void cBitmap::SavePBM(const std::string & fileName)
 {
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
     printf("%s:%s(%d)\n", __FILE__, __FUNCTION__, __LINE__);
 #endif
     int i;

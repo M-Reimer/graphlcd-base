@@ -29,6 +29,8 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include <iconv.h>
+#else
+#include <string.h>
 #endif
 
 namespace GLCD
@@ -168,7 +170,7 @@ bool cFont::LoadFNT(const std::string & fileName, const std::string & encoding)
         character = chdr[0] | (chdr[1] << 8);
         charWidth = chdr[2] | (chdr[3] << 8);
         fread(buffer, fontHeight * ((charWidth + 7) / 8), 1, fontFile);
-#ifdef DEBUG
+#ifdef HAVE_DEBUG
         printf ("fontHeight %0d - charWidth %0d - character %0d - bytes %0d\n", fontHeight, charWidth, character,fontHeight * ((charWidth + 7) / 8));
 #endif
  
