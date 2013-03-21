@@ -10,7 +10,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
- * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2010-2013 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  *               Andreas 'randy' Weinberger
  */
 
@@ -69,7 +69,7 @@ bool cGLCDFile::Load(cImage & image, const string & fileName)
     fp = fopen(fileName.c_str(), "rb");
     if (!fp)
     {
-        syslog(LOG_ERR, "glcdgraphics: open %s failed (cGLCDFile::Load).", fileName.c_str());
+        syslog(LOG_ERR, "glcdgraphics: opening of '%s' failed (cGLCDFile::Load).", fileName.c_str());
         return false;
     }
 
@@ -98,7 +98,7 @@ bool cGLCDFile::Load(cImage & image, const string & fileName)
     // check header sign
     if (strncmp(sign, kGLCDFileSign, 3) != 0)
     {
-        syslog(LOG_ERR, "glcdgraphics: load %s failed, wrong header (cGLCDFile::Load).", fileName.c_str());
+        syslog(LOG_ERR, "glcdgraphics: loading of '%s' failed, wrong header (cGLCDFile::Load).", fileName.c_str());
         fclose(fp);
         return false;
     }
@@ -114,7 +114,7 @@ bool cGLCDFile::Load(cImage & image, const string & fileName)
     height = (buf[3] << 8) | buf[2];
     if (width == 0 || height == 0)
     {
-        syslog(LOG_ERR, "glcdgraphics: load %s failed, wrong header (cGLCDFile::Load).", fileName.c_str());
+        syslog(LOG_ERR, "glcdgraphics: loading of '%s' failed, wrong header (cGLCDFile::Load).", fileName.c_str());
         fclose(fp);
         return false;
     }
@@ -126,7 +126,7 @@ bool cGLCDFile::Load(cImage & image, const string & fileName)
         // check file length
         if (fileSize != (long) (height * ((width + 7) / 8) + 8))
         {
-            syslog(LOG_ERR, "glcdgraphics: load %s failed, wrong size (cGLCDFile::Load).", fileName.c_str());
+            syslog(LOG_ERR, "glcdgraphics: loading of '%s' failed, wrong size (cGLCDFile::Load).", fileName.c_str());
             fclose(fp);
             return false;
         }
@@ -136,7 +136,7 @@ bool cGLCDFile::Load(cImage & image, const string & fileName)
         // read count and delay
         if (fread(buf, 6, 1, fp) != 1)
         {
-            syslog(LOG_ERR, "glcdgraphics: load %s failed, wrong header (cGLCDFile::Load).", fileName.c_str());
+            syslog(LOG_ERR, "glcdgraphics: loading of '%s' failed, wrong header (cGLCDFile::Load).", fileName.c_str());
             fclose(fp);
             return false;
         }
@@ -146,7 +146,7 @@ bool cGLCDFile::Load(cImage & image, const string & fileName)
         if (count == 0 ||
             fileSize != (long) (count * (height * ((width + 7) / 8)) + 14))
         {
-            syslog(LOG_ERR, "glcdgraphics: load %s failed, wrong size (cGLCDFile::Load).", fileName.c_str());
+            syslog(LOG_ERR, "glcdgraphics: loading of '%s' failed, wrong size (cGLCDFile::Load).", fileName.c_str());
             fclose(fp);
             return false;
         }
@@ -156,7 +156,7 @@ bool cGLCDFile::Load(cImage & image, const string & fileName)
     }
     else
     {
-        syslog(LOG_ERR, "glcdgraphics: load %s failed, wrong header (cGLCDFile::Load).", fileName.c_str());
+        syslog(LOG_ERR, "glcdgraphics: loading of '%s' failed, wrong header (cGLCDFile::Load).", fileName.c_str());
         fclose(fp);
         return false;
     }
@@ -213,7 +213,7 @@ bool cGLCDFile::Load(cImage & image, const string & fileName)
     if (bmpdata_raw)
         delete[] bmpdata_raw;
 
-    syslog(LOG_DEBUG, "glcdgraphics: image %s loaded.", fileName.c_str());
+    syslog(LOG_DEBUG, "glcdgraphics: image '%s' loaded.", fileName.c_str());
     return true;
 }
 
@@ -234,7 +234,7 @@ bool cGLCDFile::Save(cImage & image, const string & fileName)
     fp = fopen(fileName.c_str(), "wb");
     if (!fp)
     {
-        syslog(LOG_ERR, "glcdgraphics: open %s failed (cGLCDFile::Save).", fileName.c_str());
+        syslog(LOG_ERR, "glcdgraphics: opening '%s' failed (cGLCDFile::Save).", fileName.c_str());
         return false;
     }
 
@@ -285,8 +285,7 @@ bool cGLCDFile::Save(cImage & image, const string & fileName)
         {
             if (bitmap->Width() == width && bitmap->Height() == height)
             {
-//                if (fwrite(bitmap->Data(), height * ((width + 7) / 8), 1, fp) != 1)
-                if (fwrite(bitmap->Data(), height * width, 1, fp) != 1)
+                if (fwrite( cBitmap::ConvertTo1BPP(*bitmap), height * ((width + 7) / 8), 1, fp) != 1)
                 {
                     fclose(fp);
                     return false;
@@ -296,7 +295,7 @@ bool cGLCDFile::Save(cImage & image, const string & fileName)
     }
     fclose(fp);
 
-    syslog(LOG_DEBUG, "glcdgraphics: image %s saved.", fileName.c_str());
+    syslog(LOG_DEBUG, "glcdgraphics: image '%s' saved.", fileName.c_str());
     return true;
 }
 

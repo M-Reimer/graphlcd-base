@@ -8,7 +8,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2011-2012 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2011-2013 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #include <stdio.h>
@@ -66,7 +66,7 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
     std::vector<Magick::Image>::iterator it;
     readImages(&extimages, fileName);
     if (extimages.size() == 0) {
-      syslog(LOG_ERR, "ERROR: graphlcd: Couldn't load %s", fileName.c_str());
+      syslog(LOG_ERR, "glcdgraphics: Couldn't load '%s' (cExtFormatFile::LoadScaled)", fileName.c_str());
       return false;
     }
 
@@ -163,16 +163,16 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
       }
     }
   } catch (Magick::Exception &e) {
-    syslog(LOG_ERR, "ERROR: graphlcd: Couldn't load %s: %s", fileName.c_str(), e.what());
+    syslog(LOG_ERR, "glcdgraphics: Couldn't load '%s': %s (cExtFormatFile::LoadScaled)", fileName.c_str(), e.what());
     return false;
   } catch (...) {
-    syslog(LOG_ERR, "ERROR: graphlcd: Couldn't load %s: Unknown exception caught", fileName.c_str());
+    syslog(LOG_ERR, "glcdgraphics: Couldn't load '%s': Unknown exception caught (cExtFormatFile::LoadScaled)", fileName.c_str());
     return false;
   }
   return true;
 #else
   return false;
-#endif    
+#endif
 }
 
 // to be done ...

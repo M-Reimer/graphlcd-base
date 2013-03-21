@@ -6,7 +6,7 @@
 
 PRGNAME = convpic
 
-OBJS = $(PRGNAME).o bmp.o tiff.o tuxbox.o
+OBJS = $(PRGNAME).o
 
 INCLUDES += -I../../
 LIBDIRS += -L../../glcdgraphics/

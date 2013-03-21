@@ -7,7 +7,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2006      Andreas Regel <andreas.regel AT powarman.de>
- * (c) 2010-2012 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2010-2013 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #ifndef _GLCDGRAPHICS_IMAGEFILE_H_
@@ -22,10 +22,6 @@ class cImage;
 
 class cImageFile
 {
-private:
-    uint32_t Blend(uint32_t fgcol, uint32_t bgcol, uint8_t level, double antiAliasGranularity = 0.0) const;
-protected:
-    bool Scale(cImage & image, uint16_t scalew, uint16_t scaleh, bool AntiAlias = false);
 public:
     cImageFile();
     virtual ~cImageFile();

@@ -7,7 +7,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2006-2010 Andreas Regel <andreas.regel AT powarman.de>
- * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2010-2013 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  *               Andreas 'randy' Weinberger
  */
 
@@ -152,7 +152,7 @@ bool cPBMFile::Load(cImage & image, const std::string & fileName)
         return false;
     }
     fclose(pbmFile);
-    syslog(LOG_DEBUG, "glcdgraphics: image %s loaded.", fileName.c_str());
+    syslog(LOG_DEBUG, "glcdgraphics: image '%s' loaded.", fileName.c_str());
 
     return true;
 }
@@ -189,7 +189,6 @@ bool cPBMFile::Save(cImage & image, const std::string & fileName)
                 }
                 sprintf(str, "P4\n%d %d\n", bitmap->Width(), bitmap->Height());
                 fwrite(str, strlen(str), 1, fp);
-//                fwrite(bitmap->Data(), bitmap->LineSize() * bitmap->Height(), 1, fp);
                 fwrite(rawdata, rawdata_size, 1, fp);
             }
             fclose(fp);
@@ -201,10 +200,17 @@ bool cPBMFile::Save(cImage & image, const std::string & fileName)
     {
         uint16_t i;
         char tmpStr[256];
+        size_t pos = fileName.find_last_of('.');
+        std::string fileExt = "";
+        std::string fileBase = fileName;
+        if (pos != std::string::npos) {
+          fileExt = fileName.substr(pos);
+          fileBase = fileName.substr(0, fileName.length() - fileExt.length());
+        }
 
         for (i = 0; i < image.Count(); i++)
         {
-            sprintf(tmpStr, "%.248s.%05d", fileName.c_str(), i);
+            sprintf(tmpStr, "%.244s-%05d%s", fileBase.c_str(), i, fileExt.c_str());
             fp = fopen(tmpStr, "wb");
             if (fp)
             {
@@ -226,7 +232,6 @@ bool cPBMFile::Save(cImage & image, const std::string & fileName)
                     }
                     sprintf(str, "P4\n%d %d\n", bitmap->Width(), bitmap->Height());
                     fwrite(str, strlen(str), 1, fp);
-//                    fwrite(bitmap->Data(), bitmap->LineSize() * bitmap->Height(), 1, fp);
                     fwrite(rawdata, rawdata_size, 1, fp);
                 }
                 fclose(fp);

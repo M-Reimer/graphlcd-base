@@ -10,6 +10,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2004 Andreas Regel <andreas.regel AT powarman.de>
+ * (c) 2013 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #ifndef _GLCDGRAPHICS_IMAGE_H_
@@ -18,6 +19,7 @@
 #include <stdint.h>
 
 #include <vector>
+#include <string>
 
 namespace GLCD
 {
@@ -33,6 +35,8 @@ private:
     unsigned int curBitmap;
     uint64_t lastChange;
     std::vector <cBitmap *> bitmaps;
+
+    uint32_t Blend(uint32_t fgcol, uint32_t bgcol, uint8_t level, double antiAliasGranularity = 0.0) const;
 public:
     cImage();
     ~cImage();
@@ -51,6 +55,12 @@ public:
     cBitmap * GetBitmap() const;
     void AddBitmap(cBitmap * Bitmap) { bitmaps.push_back(Bitmap); }
     void Clear();
+
+    bool Scale(uint16_t scalew, uint16_t scaleh, bool AntiAlias = false);
+
+    static bool LoadImage(cImage & image, const std::string & fileName);
+    static bool SaveImage(cImage & image, const std::string & fileName);
+    static const std::string GetFilenameExtension(const std::string & fileName);
 };
 
 } // end of namespace
