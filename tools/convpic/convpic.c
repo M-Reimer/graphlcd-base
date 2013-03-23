@@ -50,15 +50,20 @@ unsigned int delay = 250;
 void usage(void) {
     fprintf(stdout, "\n");
     fprintf(stdout, "%s v%s\n", prgname, VERSION);
-    fprintf(stdout, "%s is a tool to convert images to a simple format (*.glcd)\n", prgname);
-    fprintf(stdout, "        that is used by the graphlcd plugin for VDR.\n\n");
+    fprintf(stdout, "%s is a tool to convert images to or from a GLCD file.\n\n", prgname);
     fprintf(stdout, "  Usage: %s [-n] -i file[s...] -o outfile \n\n", prgname);
-    fprintf(stdout, "  -n  --invert      inverts the output (default: none)\n");
-    fprintf(stdout, "  -i  --infile      specifies the name of the input file[s]\n");
+    fprintf(stdout, "  -n  --invert      inverts the output (default: no)\n");
+    fprintf(stdout, "  -i  --infile      specifies the name of the input file(s)\n");
     fprintf(stdout, "  -o  --outfile     specifies the name of the output file\n");
-    fprintf(stdout, "  -d  --delay       specifies the delay between multiple images [Default: %d ms] \n",delay);
+    fprintf(stdout, "  -d  --delay       specifies the delay (in ms) between multiple images (default: %d)\n",delay);
     fprintf(stdout, "\n" );
-    fprintf(stdout, "  example: %s -i vdr-logo.bmp -o vdr-logo.glcd \n", prgname );
+    fprintf(stdout, "  examples:\n");
+    fprintf(stdout, "     # convert an input image to a single frame GLCD\n");
+    fprintf(stdout, "     %s -i vdr-logo.bmp -o vdr-logo.glcd\n", prgname );
+    fprintf(stdout, "     # convert multiple input images to an animated GLCD (delay: 500 ms between two frames)\n");
+    fprintf(stdout, "     %s -d 500 -i vdr-logo-??.bmp -o vdr-logo.glcd\n", prgname );
+    fprintf(stdout, "     # convert a GLCD file to PBM file(s)\n");
+    fprintf(stdout, "     %s -i vdr-logo.glcd -o vdr-logo.pbm\n", prgname );
 }
 
 
