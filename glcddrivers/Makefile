@@ -42,6 +42,13 @@ ifeq ($(shell pkg-config --exists libusb && echo 1), 1)
     endif
 endif  
 
+ifeq ($(shell libvncserver-config --version >/dev/null && echo 1), 1)
+    DEFINES += -DHAVE_LIBVNCSERVER
+    OBJS += vncserver.o
+    INCLUDES += $(shell libvncserver-config --cflags)
+    LIBS += $(shell libvncserver-config --libs)
+endif
+
 ### Implicit rules:
 
 %.o: %.c

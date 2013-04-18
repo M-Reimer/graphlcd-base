@@ -36,6 +36,9 @@
 #ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
 #include "picoLCD_256x64.h"
 #endif
+#ifdef HAVE_LIBVNCSERVER
+#include "vncserver.h"
+#endif
 
 namespace GLCD
 {
@@ -65,6 +68,9 @@ tDriver drivers[] =
 #endif    
 #ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
     {"picolcd256x64", kDriverPicoLCD_256x64},
+#endif    
+#ifdef HAVE_LIBVNCSERVER
+    {"vncserver",     kDriverVncServer},
 #endif    
     {"",              kDriverUnknown}
 };
@@ -131,6 +137,10 @@ cDriver * CreateDriver(int driverID, cDriverConfig * config)
 #ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
         case kDriverPicoLCD_256x64:
             return new cDriverPicoLCD_256x64(config);
+#endif
+#ifdef HAVE_LIBVNCSERVER
+        case kDriverVncServer:
+            return new cDriverVncServer(config);
 #endif
         case kDriverUnknown:
         default:

@@ -890,7 +890,7 @@ static struct usb_device *find_dev(int index)
 	return NULL;
 }
 
-char g_buf[] = {
+unsigned char g_buf[] = {
 	0x55, 0x53, 0x42, 0x43, // dCBWSignature
 	0xde, 0xad, 0xbe, 0xef, // dCBWTag
 	0x00, 0x80, 0x00, 0x00, // dCBWLength
@@ -920,7 +920,7 @@ int emulate_scsi(usb_dev_handle *dev, unsigned char *cmd, int cmdlen, char out,
 	g_buf[10] = block_len >> 16;
 	g_buf[11] = block_len >> 24;
 
-	ret = usb_bulk_write(dev, ENDPT_OUT, g_buf, sizeof(g_buf), 1000);
+	ret = usb_bulk_write(dev, ENDPT_OUT, (char*)g_buf, sizeof(g_buf), 1000);
 	if (ret < 0) return ret;
 
 	if (out == DIR_OUT) {

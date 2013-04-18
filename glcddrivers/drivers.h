@@ -46,6 +46,9 @@ enum eDriver
 #ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
     kDriverPicoLCD_256x64 = 18,
 #endif    
+#ifdef HAVE_LIBVNCSERVER
+    kDriverVncServer     = 19,
+#endif    
     kDriverSerDisp       = 100,
     kDriverG15daemon     = 200
 };
