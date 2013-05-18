@@ -10,7 +10,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
- * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2010-2013 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #include "common.h"
@@ -20,7 +20,7 @@
 namespace GLCD
 {
 
-cSimpleTouchEvent::cSimpleTouchEvent() : x(0), y(0), touch(0)
+cTouchEvent::cTouchEvent() : x(0), y(0), touch(0)
 {
 }
 

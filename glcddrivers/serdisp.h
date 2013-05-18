@@ -7,7 +7,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2003-2011 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2003-2013 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #ifndef _GLCDDRIVERS_SERDISP_H_
@@ -51,12 +51,26 @@ typedef struct SDGP_evpkt_simpletouch_s { /* 16 bytes */
   int16_t    norm_touch;          /* normalised touch value */
 } SDGP_evpkt_simpletouch_t;
 
+/* event-payload-type for generic touchscreen events (only importat stuff is defined here, rest is ignored (read only!) */
+typedef struct SDGP_evpkt_generictouch_s { /* 16 bytes */
+  uint8_t    type;                /* event type: 0: up, 1: down, 2: move */
+  uint8_t    flags;               /* 0000 000x ... 0: binary touch, 1: touch with pressure information */
+                                  /* xxxx 0000 ... 0000: union not used */
+                                  /*               0001: raw touch information included in union */
+                                  /*               0010: reserved */
+                                  /*               0011: reserved */
+  int16_t    norm_x;              /* normalised coordinate X (norm_x <= dd->width) */
+  int16_t    norm_y;              /* normalised coordinate Y (norm_y <= dd->height) */
+  uint16_t   norm_touch;          /* normalised touch value */
+  /* ignore all union stuff */
+} SDGP_evpkt_generictouch_t;
+
 
 typedef struct {
-    bool simpleTouchChanged;
-    int  simpleTouchX;
-    int  simpleTouchY;
-    int  simpleTouchT;
+    bool touchChanged;
+    int  touchX;
+    int  touchY;
+    int  touchT;
 }  tTouchEvent;
 
 

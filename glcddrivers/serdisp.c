@@ -7,7 +7,7 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2003-2012 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2003-2013 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <stdio.h>
@@ -36,6 +36,11 @@
 
 // taken from serdisp_gpevents.h
 #define SDGPT_SIMPLETOUCH  0x10  /* simple touch screen event, type: SDGP_evpkt_simpletouch_t */
+#define SDGPT_GENERICTOUCH 0x11  /* generic touch screen event, type: SDGP_evpkt_generictouch_t */
+
+#define SDGPT_TOUCHDOWN    0x0
+#define SDGPT_TOUCHUP      0x1
+#define SDGPT_TOUCHMOVE    0x2
 
 namespace GLCD
 {
@@ -359,7 +364,7 @@ int cDriverSerDisp::Init(void)
     Clear();
 
     touchEvent = new tTouchEvent;
-    touchEvent->simpleTouchChanged = false;
+    touchEvent->touchChanged = false;
     touchEvents[dd] = touchEvent;
     
     syslog(LOG_INFO, "%s: SerDisp with %s initialized.\n", config->name.c_str(), controller.c_str());
@@ -598,15 +603,15 @@ bool cDriverSerDisp::GetDriverFeature  (const std::string & Feature, int & value
 
 cGLCDEvent * cDriverSerDisp::GetEvent(void) {
     tTouchEvent* tev = touchEvents[dd];
-    if (tev && tev->simpleTouchChanged == false)
+    if (tev && tev->touchChanged == false)
         return NULL;
 
-    cSimpleTouchEvent * ev = new cSimpleTouchEvent();
+    cTouchEvent * ev = new cTouchEvent();
 
-    ev->x = tev->simpleTouchX;
-    ev->y = tev->simpleTouchY;
-    ev->touch = tev->simpleTouchT;
-    tev->simpleTouchChanged = false;
+    ev->x = tev->touchX;
+    ev->y = tev->touchY;
+    ev->touch = tev->touchT;
+    tev->touchChanged = false;
 
     return ev;
 }
@@ -619,10 +624,25 @@ static void wrapEventListener(void* dd, SDGP_event_t* event) {
         
         tTouchEvent* tev = touchEvents[dd];
         if (tev) {
-            tev->simpleTouchChanged = true;
-            tev->simpleTouchX = simpletouch.norm_x;
-            tev->simpleTouchY = simpletouch.norm_y;
-            tev->simpleTouchT = simpletouch.norm_touch;
+            tev->touchChanged = true;
+            tev->touchX = simpletouch.norm_x;
+            tev->touchY = simpletouch.norm_y;
+            tev->touchT = simpletouch.norm_touch;
+        }
+    } else if (event->type == SDGPT_GENERICTOUCH) {
+        SDGP_evpkt_generictouch_t  generictouch;
+        memcpy(&generictouch, &event->data, sizeof(SDGP_evpkt_generictouch_t));
+
+        /* ignore all but SDGPT_TOUCHDOWN events */
+        if (generictouch.type != SDGPT_TOUCHDOWN)
+          return;
+
+        tTouchEvent* tev = touchEvents[dd];
+        if (tev) {
+            tev->touchChanged = true;
+            tev->touchX = generictouch.norm_x;
+            tev->touchY = generictouch.norm_y;
+            tev->touchT = (int)generictouch.norm_touch;
         }
     }
 }

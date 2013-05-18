@@ -1209,8 +1209,8 @@ std::string cSkinObject::CheckAction(cGLCDEvent * ev)
             if (mAction == "")
                 return "";
 
-            if (ev && (typeid(*ev) == typeid(cSimpleTouchEvent))) {
-                cSimpleTouchEvent * stev = (cSimpleTouchEvent*)ev;
+            if (ev && (typeid(*ev) == typeid(cTouchEvent))) {
+                cTouchEvent * stev = (cTouchEvent*)ev;
                 // check if touch event is in bounding box of object
                 // uses   >   and  <  -1  instead of  >=  and <  -0   for better results
                 if ( (stev->x > Pos().x) && (stev->x < (Pos().x+Size().w -1)) && 

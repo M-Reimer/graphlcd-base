@@ -10,7 +10,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2004-2010 Andreas Regel <andreas.regel AT powarman.de>
- * (c) 2010-2011 Wolfgang Astleitner <mrwastl AT users sourceforge net>
+ * (c) 2010-2013 Wolfgang Astleitner <mrwastl AT users sourceforge net>
  */
 
 #ifndef _GLCDDRIVERS_DRIVER_H_
@@ -30,12 +30,12 @@ public:
     virtual ~cGLCDEvent() {}
 };
 
-class cSimpleTouchEvent : public cGLCDEvent {
+class cTouchEvent : public cGLCDEvent {
 public:
     int x;
     int y;
     int touch;
-    cSimpleTouchEvent();
+    cTouchEvent();
 };
 
 class cDriverConfig;
