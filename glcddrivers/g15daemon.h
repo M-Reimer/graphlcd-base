@@ -5,7 +5,7 @@
  *                   Output goes to the g15daemon which then displays it
  *
  * (c) 2005-2010 Andreas Regel <andreas.regel AT powarman.de>
- * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2011-2013 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #ifndef _GLCDDRIVERS_G15DAEMON_H_
@@ -22,12 +22,9 @@ class cDriverConfig;
 class cDriverG15daemon : public cDriver
 {
 private:
-    unsigned char ** LCD;
     char *offbuff;
     int sockfd;
     long int screensize;
-    char *fbp;
-    int zoom;
 
     int CheckSetup();
 

@@ -7,8 +7,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004      Stephan Skrodzki
- * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2004       Stephan Skrodzki
+ * (c) 2011-2013  Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #ifndef _GLCDDRIVERS_DM140GINK_H_
@@ -27,8 +27,8 @@ class cDriverDM140GINK : public cDriver
 private:
     int fd;
 
-    int vendor;
-    int product;
+    signed short vendor;
+    signed short product;
 
     char *framebuff;
 

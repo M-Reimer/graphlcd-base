@@ -7,8 +7,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004      Stephan Skrodzki
- * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2004       Stephan Skrodzki
+ * (c) 2011-2013  Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #include <fcntl.h>
@@ -125,8 +125,8 @@ int cDriverDM140GINK::Init()
     if (height <= 0)
         height = 16;
 
-    signed short vendor = 0x040b;
-    signed short product = 0x7001;
+    vendor = 0x040b;
+    product = 0x7001;
 
     for (unsigned int i = 0; i < config->options.size(); i++)
     {

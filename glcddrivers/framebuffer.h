@@ -7,8 +7,8 @@
  * This file is released under the GNU General Public License. Refer
  * to the COPYING file distributed with this package.
  *
- * (c) 2004      Stephan Skrodzki
- * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2004       Stephan Skrodzki
+ * (c) 2011-2013  Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #ifndef _GLCDDRIVERS_FRAMEBUFFER_H_
@@ -26,7 +26,6 @@ class cDriverConfig;
 class cDriverFramebuffer : public cDriver
 {
 private:
-    unsigned char ** LCD;
     char *offbuff;
     int fbfd;
     struct fb_var_screeninfo vinfo;

@@ -24,7 +24,6 @@ class cDriverConfig;
 class cDriverVncServer : public cDriver
 {
 private:
-    unsigned char ** LCD;
     char *offbuff;
     rfbScreenInfoPtr server;
     long int screensize;

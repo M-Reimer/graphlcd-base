@@ -7,7 +7,7 @@
  * to the COPYING file distributed with this package.
  *
  * (c) 2003-2011 Andreas 'randy' Weinberger <vdr AT smue.org>
- * (c) 2011      Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
+ * (c) 2011-2013 Wolfgang Astleitner <mrwastl AT users.sourceforge.net>
  */
 
 #ifndef _GLCDDRIVERS_KS0108_H_
@@ -48,10 +48,6 @@ private:
     int CELO;
     int CDHI;
     int CDLO;
-    int CS1HI;
-    int CS1LO;
-    int CS2HI;
-    int CS2LO;
 
     int CS1;
     int CS2;
