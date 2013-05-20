@@ -100,7 +100,8 @@ bool cSkinFont::ParseUrl(const std::string & url)
         FcPatternAddBool(pat, FC_SCALABLE, FcTrue);
         FcConfigSubstitute(NULL, pat, FcMatchPattern);
         FcDefaultSubstitute(pat);
-        FcFontSet *fontset = FcFontSort(NULL, pat, FcFalse, NULL, NULL);
+        FcResult result;
+        FcFontSet *fontset = FcFontSort(NULL, pat, FcFalse, NULL, &result);
         if (fontset) {
           FcBool scalable;
           for (int i = 0; i < fontset->nfont; i++) {
