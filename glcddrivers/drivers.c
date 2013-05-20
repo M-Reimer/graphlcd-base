@@ -30,13 +30,13 @@
 #include "dm140gink.h"
 #include "serdisp.h"
 #include "g15daemon.h"
-#ifdef HAVE_AX206DPF_EXPERIMENTAL
+#ifdef HAVE_DRIVER_AX206DPF
 #include "ax206dpf.h"
 #endif
-#ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
+#ifdef HAVE_DRIVER_picoLCD_256x64
 #include "picoLCD_256x64.h"
 #endif
-#ifdef HAVE_LIBVNCSERVER
+#ifdef HAVE_DRIVER_VNCSERVER
 #include "vncserver.h"
 #endif
 
@@ -63,13 +63,13 @@ tDriver drivers[] =
     {"dm140gink",     kDriverDM140GINK},
     {"serdisp",       kDriverSerDisp},
     {"g15daemon",     kDriverG15daemon},
-#ifdef HAVE_AX206DPF_EXPERIMENTAL
+#ifdef HAVE_DRIVER_AX206DPF
     {"ax206dpf",      kDriverAX206DPF},
 #endif    
-#ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
+#ifdef HAVE_DRIVER_picoLCD_256x64
     {"picolcd256x64", kDriverPicoLCD_256x64},
 #endif    
-#ifdef HAVE_LIBVNCSERVER
+#ifdef HAVE_DRIVER_VNCSERVER
     {"vncserver",     kDriverVncServer},
 #endif    
     {"",              kDriverUnknown}
@@ -130,15 +130,15 @@ cDriver * CreateDriver(int driverID, cDriverConfig * config)
             return new cDriverSerDisp(config);
         case kDriverG15daemon:
             return new cDriverG15daemon(config);
-#ifdef HAVE_AX206DPF_EXPERIMENTAL
+#ifdef HAVE_DRIVER_AX206DPF
         case kDriverAX206DPF:
             return new cDriverAX206DPF(config);
 #endif
-#ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
+#ifdef HAVE_DRIVER_picoLCD_256x64
         case kDriverPicoLCD_256x64:
             return new cDriverPicoLCD_256x64(config);
 #endif
-#ifdef HAVE_LIBVNCSERVER
+#ifdef HAVE_DRIVER_VNCSERVER
         case kDriverVncServer:
             return new cDriverVncServer(config);
 #endif

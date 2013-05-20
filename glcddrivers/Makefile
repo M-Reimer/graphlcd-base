@@ -28,23 +28,23 @@ endif
 
 ifeq ($(shell pkg-config --exists libusb && echo 1), 1)
     DEFINES += -DHAVE_LIBUSB
-    ifdef HAVE_AX206DPF_EXPERIMENTAL
+    ifdef HAVE_DRIVER_AX206DPF
         OBJS += ax206dpf.o
         INCLUDES += $(shell pkg-config --cflags libusb)
         LIBS += $(shell pkg-config --libs libusb)
-        DEFINES += -DHAVE_AX206DPF_EXPERIMENTAL
+        DEFINES += -DHAVE_DRIVER_AX206DPF
     endif
-    ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
+    ifdef HAVE_DRIVER_picoLCD_256x64
         OBJS += picoLCD_256x64.o
         INCLUDES += $(shell pkg-config --cflags libusb)
         LIBS += $(shell pkg-config --libs libusb)
-        DEFINES += -DHAVE_picoLCD_256x64_EXPERIMENTAL
+        DEFINES += -DHAVE_DRIVER_picoLCD_256x64
     endif
 endif  
 
-ifeq ($(WANT_DRV_VNCSERVER), 1)
+ifeq ($(HAVE_DRIVER_VNCSERVER), 1)
 ifeq ($(shell libvncserver-config --version >/dev/null && echo 1), 1)
-    DEFINES += -DHAVE_LIBVNCSERVER
+    DEFINES += -DHAVE_DRIVER_VNCSERVER
     OBJS += vncserver.o
     INCLUDES += $(shell libvncserver-config --cflags)
     LIBS += $(shell libvncserver-config --libs)

@@ -16,7 +16,7 @@ http://www.pearl.de/a-PX1184-5618.shtml or http://www.pearl.de/a-HPM1184-5618.sh
 Important Notes
 ---------------
 This driver is experimental and not enabled by default.
-To use this driver uncomment the HAVE_AX206DPF_EXPERIMENTAL line in
+To use this driver uncomment the HAVE_DRIVER_AX206DPF line in
 Make.config and recompile the library.
 The DPF does not work out of the box with this driver. 
 It has to be modified with a custom firmware (see "Hacking your DPF").

@@ -40,13 +40,13 @@ enum eDriver
     kDriverNetwork       = 14,
     kDriverGU126X64D_K610A4 = 15,
     kDriverDM140GINK     = 16,
-#ifdef HAVE_AX206DPF_EXPERIMENTAL
+#ifdef HAVE_DRIVER_AX206DPF
     kDriverAX206DPF      = 17,
 #endif    
-#ifdef HAVE_picoLCD_256x64_EXPERIMENTAL
+#ifdef HAVE_DRIVER_picoLCD_256x64
     kDriverPicoLCD_256x64 = 18,
 #endif    
-#ifdef HAVE_LIBVNCSERVER
+#ifdef HAVE_DRIVER_VNCSERVER
     kDriverVncServer     = 19,
 #endif    
     kDriverSerDisp       = 100,
