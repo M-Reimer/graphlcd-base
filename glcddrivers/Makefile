@@ -51,6 +51,12 @@ ifeq ($(shell libvncserver-config --version >/dev/null && echo 1), 1)
 endif
 endif
 
+ifeq ($(HAVE_DRIVER_SSD1306), 1)
+    DEFINES += -DHAVE_DRIVER_SSD1306
+    OBJS += ssd1306.o
+    LIBS += -lwiringPi
+endif
+
 ### Implicit rules:
 
 %.o: %.c

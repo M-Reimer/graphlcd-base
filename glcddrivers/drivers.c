@@ -39,6 +39,9 @@
 #ifdef HAVE_DRIVER_VNCSERVER
 #include "vncserver.h"
 #endif
+#ifdef HAVE_DRIVER_SSD1306
+#include "ssd1306.h"
+#endif
 
 namespace GLCD
 {
@@ -72,6 +75,9 @@ tDriver drivers[] =
 #ifdef HAVE_DRIVER_VNCSERVER
     {"vncserver",     kDriverVncServer},
 #endif    
+#ifdef HAVE_DRIVER_SSD1306
+    {"ssd1306",       kDriverSSD1306},
+#endif
     {"",              kDriverUnknown}
 };
 
@@ -141,6 +147,10 @@ cDriver * CreateDriver(int driverID, cDriverConfig * config)
 #ifdef HAVE_DRIVER_VNCSERVER
         case kDriverVncServer:
             return new cDriverVncServer(config);
+#endif
+#ifdef HAVE_DRIVER_SSD1306
+        case kDriverSSD1306:
+            return new cDriverSSD1306(config);
 #endif
         case kDriverUnknown:
         default:

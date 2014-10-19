@@ -49,6 +49,9 @@ enum eDriver
 #ifdef HAVE_DRIVER_VNCSERVER
     kDriverVncServer     = 19,
 #endif    
+#ifdef HAVE_DRIVER_SSD1306
+    kDriverSSD1306       = 20,
+#endif
     kDriverSerDisp       = 100,
     kDriverG15daemon     = 200
 };
