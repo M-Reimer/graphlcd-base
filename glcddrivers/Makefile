@@ -58,10 +58,7 @@ endif
 
 # Dependencies:
 
-#MAKEDEP = g++ -MM -MG
-DEPFILE = .dependencies
-$(DEPFILE): Makefile
-	@$(MAKEDEP) $(DEFINES) $(INCLUDES) $(OBJS:%.o=%.c) > $@
+DEPFILE = $(OBJS:%.o=%.d)
 
 -include $(DEPFILE)
 
