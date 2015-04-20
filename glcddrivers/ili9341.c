@@ -25,8 +25,8 @@
 namespace GLCD
 {
 
-const int kLcdWidth  = 240;
-const int kLcdHeight = 320;
+const int kLcdWidth  = 320;
+const int kLcdHeight = 240;
 
 const int kSpiBus    = 0;
 
@@ -290,22 +290,22 @@ void cDriverILI9341::Refresh(bool refreshAll)
     refreshAll = true;
     if (refreshAll)
     {
-        SetWindow(0, 0, width - 1, height - 1);
+        SetWindow(0, 0, height - 1, width - 1);
         WriteCommand(kCmdMemoryWrite);
-        for (y = 0; y < height; y++)
+        for (y = 0; y < width; y++)
         {
-            uint8_t line[width * 2];
-            uint32_t * pixel = &newLCD[y * width];
+            uint8_t line[height * 2];
+            uint32_t * pixel = &newLCD[width - 1 - y];
 
-            for (int x = 0; x < (width * 2); x += 2)
+            for (int x = 0; x < (height * 2); x += 2)
             {
                 line[x] = ((*pixel & 0x00F80000) >> 16)
                         | ((*pixel & 0x0000E000) >> 13);
                 line[x + 1] = ((*pixel & 0x00001C00) >> 5)
                             | ((*pixel & 0x000000F8) >> 3);
-                pixel++;
+                pixel += width;
             }
-            WriteData((uint8_t *) line, width * 2);
+            WriteData((uint8_t *) line, height * 2);
         }
         memcpy(oldLCD, newLCD, width * height * sizeof(uint32_t));
         // and reset RefreshCounter
