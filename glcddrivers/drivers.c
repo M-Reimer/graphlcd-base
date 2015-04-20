@@ -42,6 +42,9 @@
 #ifdef HAVE_DRIVER_SSD1306
 #include "ssd1306.h"
 #endif
+#ifdef HAVE_DRIVER_ILI9341
+#include "ili9341.h"
+#endif
 
 namespace GLCD
 {
@@ -68,15 +71,18 @@ tDriver drivers[] =
     {"g15daemon",     kDriverG15daemon},
 #ifdef HAVE_DRIVER_AX206DPF
     {"ax206dpf",      kDriverAX206DPF},
-#endif    
+#endif
 #ifdef HAVE_DRIVER_picoLCD_256x64
     {"picolcd256x64", kDriverPicoLCD_256x64},
-#endif    
+#endif
 #ifdef HAVE_DRIVER_VNCSERVER
     {"vncserver",     kDriverVncServer},
-#endif    
+#endif
 #ifdef HAVE_DRIVER_SSD1306
     {"ssd1306",       kDriverSSD1306},
+#endif
+#ifdef HAVE_DRIVER_ILI9341
+    {"ili9341",       kDriverILI9341},
 #endif
     {"",              kDriverUnknown}
 };
@@ -151,6 +157,10 @@ cDriver * CreateDriver(int driverID, cDriverConfig * config)
 #ifdef HAVE_DRIVER_SSD1306
         case kDriverSSD1306:
             return new cDriverSSD1306(config);
+#endif
+#ifdef HAVE_DRIVER_ILI9341
+        case kDriverILI9341:
+            return new cDriverILI9341(config);
 #endif
         case kDriverUnknown:
         default:

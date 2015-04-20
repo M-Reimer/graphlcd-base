@@ -40,7 +40,7 @@ ifeq ($(shell pkg-config --exists libusb && echo 1), 1)
         LIBS += $(shell pkg-config --libs libusb)
         DEFINES += -DHAVE_DRIVER_picoLCD_256x64
     endif
-endif  
+endif
 
 ifeq ($(HAVE_DRIVER_VNCSERVER), 1)
 ifeq ($(shell libvncserver-config --version >/dev/null && echo 1), 1)
@@ -54,6 +54,12 @@ endif
 ifeq ($(HAVE_DRIVER_SSD1306), 1)
     DEFINES += -DHAVE_DRIVER_SSD1306
     OBJS += ssd1306.o
+    LIBS += -lwiringPi
+endif
+
+ifeq ($(HAVE_DRIVER_ILI9341), 1)
+    DEFINES += -DHAVE_DRIVER_ILI9341
+    OBJS += ili9341.o
     LIBS += -lwiringPi
 endif
 
