@@ -325,11 +325,11 @@ void cDriverILI9341::SetBrightness(unsigned int percent)
 void cDriverILI9341::Reset()
 {
     digitalWrite(kGpioReset, HIGH);
-    usleep(100000);
+    usleep(10000);
     digitalWrite(kGpioReset, LOW);
-    usleep(100000);
+    usleep(20000);
     digitalWrite(kGpioReset, HIGH);
-    usleep(100000);
+    usleep(150000);
 }
 
 void cDriverILI9341::SetWindow(uint16_t x0, uint16_t y0, uint16_t x1, uint16_t y1)
