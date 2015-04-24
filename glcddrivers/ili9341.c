@@ -30,6 +30,7 @@ const int kLcdHeight = 240;
 
 const int kSpiBus    = 0;
 
+const int kGpioPwm   = 13;
 const int kGpioReset = 23;
 const int kGpioDC    = 24;
 
@@ -110,6 +111,9 @@ int cDriverILI9341::Init()
 
     pinMode(kGpioReset, OUTPUT);
     pinMode(kGpioDC, OUTPUT);
+
+    pinMode(kGpioPwm, PWM_OUTPUT);
+    SetBrightness(config->brightness);
 
     digitalWrite(kGpioReset, HIGH);
     digitalWrite(kGpioDC, LOW);
@@ -319,7 +323,32 @@ void cDriverILI9341::Refresh(bool refreshAll)
 
 void cDriverILI9341::SetBrightness(unsigned int percent)
 {
-    //WriteCommand(kCmdSetContrast, percent * 255 / 100);
+    uint32_t value;
+
+    if (percent == 0)
+        value = 0;
+    else if (percent <= 10)
+        value = 4;
+    else if (percent <= 20)
+        value = 8;
+    else if (percent <= 30)
+        value = 16;
+    else if (percent <= 40)
+        value = 32;
+    else if (percent <= 50)
+        value = 64;
+    else if (percent <= 60)
+        value = 128;
+    else if (percent <= 70)
+        value = 192;
+    else if (percent <= 80)
+        value = 320;
+    else if (percent <= 90)
+        value = 512;
+    else
+        value = 1023;
+
+    pwmWrite(kGpioPwm, value);
 }
 
 void cDriverILI9341::Reset()
