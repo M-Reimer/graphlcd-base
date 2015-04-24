@@ -30,8 +30,8 @@ const int kLcdHeight = 240;
 
 const int kSpiBus    = 0;
 
-const int kGpioReset = 4;
-const int kGpioDC    = 5;
+const int kGpioReset = 23;
+const int kGpioDC    = 24;
 
 const uint8_t kCmdNop                       = 0x00;
 const uint8_t kCmdSleepOut                  = 0x11;
@@ -67,7 +67,7 @@ cDriverILI9341::cDriverILI9341(cDriverConfig * config)
 {
     refreshCounter = 0;
 
-    wiringPiSetup();
+    wiringPiSetupGpio();
 }
 
 cDriverILI9341::~cDriverILI9341()
