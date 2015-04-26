@@ -16,6 +16,7 @@ endif
 	@$(MAKE) -C showpic all
 	@$(MAKE) -C showtext all
 	@$(MAKE) -C lcdtestpattern all
+	@$(MAKE) -C skintest all
 
 install:
 	@$(MAKE) -C convpic install
@@ -26,6 +27,7 @@ endif
 	@$(MAKE) -C showpic install
 	@$(MAKE) -C showtext install
 	@$(MAKE) -C lcdtestpattern install
+	@$(MAKE) -C skintest install
 
 uninstall:
 	@$(MAKE) -C convpic uninstall
@@ -36,6 +38,7 @@ endif
 	@$(MAKE) -C showpic uninstall
 	@$(MAKE) -C showtext uninstall
 	@$(MAKE) -C lcdtestpattern uninstall
+	@$(MAKE) -C skintest uninstall
  
 clean:
 	@$(MAKE) -C convpic clean
@@ -44,4 +47,5 @@ clean:
 	@$(MAKE) -C showpic clean
 	@$(MAKE) -C showtext clean
 	@$(MAKE) -C lcdtestpattern clean
+	@$(MAKE) -C skintest clean
 

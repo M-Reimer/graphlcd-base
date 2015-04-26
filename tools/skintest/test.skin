@@ -1,0 +1,50 @@
+<?xml version="1.0"?>
+<skin version="1.0" name="Demo">
+  <font id="small" url="ft2:DejaVuSans.ttf:10"/>
+  <font id="medium" url="ft2:DejaVuSans.ttf:20"/>
+  <font id="large" url="ft2:DejaVuSans.ttf:20"/>
+
+  <display id="normal">
+    <rectangle x1="0" x2="-1" y1="0" y2="-1" color="black" filled="yes"/>
+<!--
+    <rectangle x1="0" x2="100" y1="5" y2="25" color="white" filled="yes"/>
+    <rectangle x1="10" x2="20" y1="10" y2="20" color="black"/>
+    <rectangle x1="30" x2="40" y1="10" y2="20" color="black" filled="yes"/>
+    <rectangle x1="50" x2="60" y1="10" y2="20" color="black" radius="1"/>
+    <rectangle x1="70" x2="80" y1="10" y2="20" color="black" filled="yes" radius="1"/>
+    <rectangle x1="10" x2="20" y1="30" y2="40" color="white"/>
+    <rectangle x1="30" x2="40" y1="30" y2="40" color="white" filled="yes"/>
+    <rectangle x1="50" x2="60" y1="30" y2="40" color="white" radius="3"/>
+    <rectangle x1="70" x2="80" y1="30" y2="40" color="white" filled="yes" radius="1"/>
+    <line x1="10" x2="40" y1="50" y2="70" color="white" filled="yes" arc="0"/>
+    <line x1="50" x2="80" y1="50" y2="50" color="white" filled="yes" arc="1"/>
+    <line x1="90" x2="90" y1="50" y2="70" color="white" filled="yes" arc="2"/>
+    <slope x1="130" x2="160" y1="50" y2="70" color="white" filled="yes" arc="3"/>
+    <slope x1="170" x2="200" y1="50" y2="70" color="white" filled="yes" arc="4"/>
+    <slope x1="50" x2="80" y1="80" y2="100" color="white" filled="yes" arc="5"/>
+    <slope x1="90" x2="120" y1="80" y2="100" color="white" filled="yes" arc="6"/>
+    <slope x1="130" x2="160" y1="80" y2="100" color="white" filled="yes" arc="7"/>
+
+    <image x="100" y="60" color="white" path="ARTE_l.glcd"/>
+    <image x="100" y="50" color="white" path="ARTE_m.glcd"/>
+    <image x="50" y="50" color="white" condition="or(file('ARTE_m.glcd'),file('ARTE_l.glcd'))" path="ARTE_l.glcd"/>
+-->
+
+    <text x1="0" x2="-1" y1="0" y2="-1" color="white" align="left" font="medium">
+    This is a left aligned text.
+    </text>
+    <text x1="0" x2="-1" y1="20" y2="-1" color="blue" align="right" font="medium">
+    This is a right aligned text.
+    </text>
+    <text x1="0" x2="-1" y1="40" y2="-1" color="red" align="center" font="medium">
+    This is a centered text.
+    </text>
+    <text x1="0" x2="-1" y1="60" y2="-1" color="green" align="left" multiline="yes" font="medium">
+    This is a longer text that should be wrapped. It really works!
+    </text>
+<!--
+-->
+    <rectangle x1="10" x2="-10" y1="-30" y2="-10" color="white"/>
+    <progress x1="12" x2="-12" y1="-28" y2="-12" color="white" direction="0" current="{CurrentProgress}" total="20"/>
+  </display>
+</skin>
