@@ -29,6 +29,14 @@ class cBitmapCache;
 
 class cFont
 {
+public:
+    enum eFontType
+    {
+        // native glcd font loaded
+        ftFNT,
+        // freetype2 font loaded
+        ftFT2
+    };
 private:
     int totalWidth;
     int totalHeight;
@@ -37,7 +45,7 @@ private:
     int lineHeight;
 
     cBitmap * characters[256];
-    int fontType; //original or FT2 font, 1-original, 2-ft2
+    eFontType fontType;
 
     bool isutf8;
     wchar_t iconv_lut[256]; // lookup table needed if encoding != UTF-8

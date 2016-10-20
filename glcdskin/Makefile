@@ -44,7 +44,7 @@ DEPFILE = $(OBJS:%.o=%.d)
 all: $(LIBNAME)
 
 $(LIBNAME): $(OBJS)
-	$(CXX) $(CXXFLAGS) -shared $(OBJS) $(LIBS) -Wl,-soname="$(BASENAME).$(VERMAJOR)" -o $@
+	$(CXX) $(CXXFLAGS) $(LDFLAGS) -shared $(OBJS) $(LIBS) -Wl,-soname="$(BASENAME).$(VERMAJOR)" -o $@
 	ln -sf $(LIBNAME) $(BASENAME)
 
 install: all

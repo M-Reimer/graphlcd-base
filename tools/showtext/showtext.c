@@ -277,6 +277,7 @@ int main(int argc, char *argv[])
 
 	lcd->DeInit();
 	delete lcd;
+	delete bitmap;
 
 	return 0;
 }

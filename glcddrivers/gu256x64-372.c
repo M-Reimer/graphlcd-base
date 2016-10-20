@@ -76,10 +76,10 @@ const unsigned char kStandardRDLO = 0x00; //
 const unsigned char kStandardCDHI = 0x00; // 17 / nSELECT
 const unsigned char kStandardCDLO = 0x08; //
 
-const unsigned char kWindowsWRHI = 0x00; // 01 / nSTRB
-const unsigned char kWindowsWRLO = 0x01; //
+const unsigned char kWindowsWRHI = 0x01; // 01 / nSTRB
+const unsigned char kWindowsWRLO = 0x00; //
 const unsigned char kWindowsRDHI = 0x00; // 14 / nLINEFEED
-const unsigned char kWindowsRDLO = 0x02; //
+const unsigned char kWindowsRDLO = 0x00; //
 const unsigned char kWindowsCDHI = 0x00; // 17 / nSELECT
 const unsigned char kWindowsCDLO = 0x08; //
 

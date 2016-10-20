@@ -131,7 +131,7 @@ bool cFont::LoadFNT(const std::string & fileName, const std::string & encoding)
 {
     // cleanup if we already had a loaded font
     Unload();
-    fontType = 1; //original fonts
+    fontType = ftFNT; //original fonts
     isutf8 = (encoding == "UTF-8");
 
     FILE * fontFile;
@@ -275,7 +275,7 @@ bool cFont::LoadFT2(const std::string & fileName, const std::string & encoding,
 {
     // cleanup if we already had a loaded font
     Unload();
-    fontType = 2; // ft2 fonts
+    fontType = ftFT2; // ft2 fonts
     isutf8 = (encoding == "UTF-8");
 
 #ifdef HAVE_FREETYPE2
@@ -436,7 +436,7 @@ int cFont::Height(const std::string & str, unsigned int len) const
 const cBitmap * cFont::GetCharacter(uint32_t ch) const
 {
 #ifdef HAVE_FREETYPE2
-    if ( fontType == 2 ) {
+    if ( fontType == ftFT2 ) {
         //lookup in cache
         cBitmap *ptr=characters_cache->GetBitmap(ch);
         if (ptr)
@@ -506,7 +506,7 @@ const cBitmap * cFont::GetCharacter(uint32_t ch) const
 void cFont::SetCharacter(char ch, cBitmap * bitmapChar)
 {
 #ifdef HAVE_FREETYPE2
-    if ( fontType == 2 ) {
+    if ( fontType == ftFT2 ) {
         syslog(LOG_ERR, "cFont::SetCharacter: is not supported with FreeType2 fonts!!!");
         return;
     }
@@ -539,7 +539,7 @@ void cFont::Init()
     ft2_face = NULL;
     characters_cache = NULL;
 #endif
-    fontType = 1;
+    fontType = ftFNT;
 }
 
 void cFont::Unload()

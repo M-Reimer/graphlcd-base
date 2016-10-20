@@ -40,20 +40,21 @@ enum eDriver
     kDriverNetwork       = 14,
     kDriverGU126X64D_K610A4 = 15,
     kDriverDM140GINK     = 16,
+    kDriverFutabaMDM166A = 17,
 #ifdef HAVE_DRIVER_AX206DPF
-    kDriverAX206DPF      = 17,
+    kDriverAX206DPF      = 18,
 #endif
 #ifdef HAVE_DRIVER_picoLCD_256x64
-    kDriverPicoLCD_256x64 = 18,
+    kDriverPicoLCD_256x64 = 19,
 #endif
 #ifdef HAVE_DRIVER_VNCSERVER
-    kDriverVncServer     = 19,
+    kDriverVncServer     = 20,
 #endif
 #ifdef HAVE_DRIVER_SSD1306
-    kDriverSSD1306       = 20,
+    kDriverSSD1306       = 21,
 #endif
 #ifdef HAVE_DRIVER_ILI9341
-    kDriverILI9341       = 21,
+    kDriverILI9341       = 22,
 #endif
     kDriverSerDisp       = 100,
     kDriverG15daemon     = 200

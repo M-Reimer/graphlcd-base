@@ -31,7 +31,7 @@ GraphLCD base package Revision History
     - scrolling/looping attributes for 'text': 'loop', 'scrollmode', 'scrollspeed', 'scrolltime'
     - new attribute 'default' for variables:
       shortcut for <variable id="name" value="value1" condition="somecondition"/> <variable id="name" value="value2"/>:
-      <variable id="name" value="value1" condition="somecondition" default="value2"/> 
+      <variable id="name" value="value1" condition="somecondition" default="value2"/>
       this will actually be stored in two variable entries (exactly as in the first version)
     - new entity 'condblock': combines variables that use the same condition
       <variable id="id1" condition="condition1" value="val1"/>
@@ -51,6 +51,18 @@ GraphLCD base package Revision History
   - attention: 'condblock' and attributes 'alttext', 'altcondition' are case studies for now and may be removed
 - all changes/modifications/improvements that i've missed in this list
 
+2011-02-13: version 0.1.9
+- fixed compile error. http://www.vdrportal.de/board/thread.php?postid=959952#post959952
+- changed graphlcd.conf back to original: http://projects.vdr-developer.org/issues/524
+- removed unneeded LDFLAGS: http://projects.vdr-developer.org/issues/530
+
+2010-11-02: version 0.1.7
+- added futuba MDM166A driver from andreas brachold: http://projects.vdr-developer.org/issues/351
+- fixed compiler warnings: http://projects.vdr-developer.org/issues/352
+- added new attribute 'valign' (vertical alignment) for text objects.
+- text-object: fix to avoid stumbling scrolling
+- text-object: added support for alternative text / alternative condition
+- glcdskin: bugfixing and improvements
 
 2010-04-23: version 0.1.6_1
 - added additional wiring for GU256x64-372 driver (thanks to mentox, http://www.vdr-portal.de/board/thread.php?postid=895721#post895721)

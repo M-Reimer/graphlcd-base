@@ -30,6 +30,9 @@
 #include "dm140gink.h"
 #include "serdisp.h"
 #include "g15daemon.h"
+#ifdef HAVE_LIBHID
+#include "futabaMDM166A.h"
+#endif
 #ifdef HAVE_DRIVER_AX206DPF
 #include "ax206dpf.h"
 #endif
@@ -67,6 +70,9 @@ tDriver drivers[] =
     {"network",       kDriverNetwork},
     {"gu126x64D-K610A4", kDriverGU126X64D_K610A4},
     {"dm140gink",     kDriverDM140GINK},
+#ifdef HAVE_LIBHID
+    {"futabaMDM166A", kDriverFutabaMDM166A},
+#endif
     {"serdisp",       kDriverSerDisp},
     {"g15daemon",     kDriverG15daemon},
 #ifdef HAVE_DRIVER_AX206DPF
@@ -138,6 +144,10 @@ cDriver * CreateDriver(int driverID, cDriverConfig * config)
             return new cDriverGU126X64D_K610A4(config);
         case kDriverDM140GINK:
             return new cDriverDM140GINK(config);
+#ifdef HAVE_LIBHID
+        case kDriverFutabaMDM166A:
+            return new cDriverFutabaMDM166A(config);
+#endif
         case kDriverSerDisp:
             return new cDriverSerDisp(config);
         case kDriverG15daemon:
