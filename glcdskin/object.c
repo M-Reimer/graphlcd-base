@@ -717,19 +717,23 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
             int currScrollTime = 500;
 
             // get default values from derived config-class if available
-            tSkinToken token = tSkinToken();
-            token.Id = mSkin->Config().GetTokenId("ScrollMode");
-            if (token.Id >= 0) {
+            int tokenid;
+            tSkinToken token;
+            tokenid = mSkin->Config().GetTokenId("ScrollMode");
+            if (tokenid >= 0) {
+                token = tSkinToken(tokenid, "ScrollMode", 0, "");
                 cType t = mSkin->Config().GetToken(token);
                 currScrollLoopMode = (int)(t);
             }
-            token.Id = mSkin->Config().GetTokenId("ScrollSpeed");
-            if (token.Id >= 0) {
+            tokenid = mSkin->Config().GetTokenId("ScrollSpeed");
+            if (tokenid >= 0) {
+                token = tSkinToken(tokenid, "ScrollSpeed", 0, "");
                 cType t = mSkin->Config().GetToken(token);
                 currScrollSpeed = (int)(t);
             }
-            token.Id = mSkin->Config().GetTokenId("ScrollTime");
-            if (token.Id >= 0) {
+            tokenid = mSkin->Config().GetTokenId("ScrollTime");
+            if (tokenid >= 0) {
+                token = tSkinToken(tokenid, "ScrollTime", 0, "");
                 cType t = mSkin->Config().GetToken(token);
                 currScrollTime = (int)(t);
             }
@@ -1142,14 +1146,17 @@ bool cSkinObject::NeedsUpdate(uint64_t CurrentTime)
             }
 
             // get default values from derived config-class if available
-            tSkinToken token = tSkinToken();
-            token.Id = mSkin->Config().GetTokenId("ScrollMode");
-            if (token.Id >= 0) {
+            int tokenid;
+            tSkinToken token;
+            tokenid = mSkin->Config().GetTokenId("ScrollMode");
+            if (tokenid >= 0) {
+                token = tSkinToken(tokenid, "ScrollMode", 0, "");
                 cType t = mSkin->Config().GetToken(token);
                 currScrollLoopMode = (int)(t);
             }
-            token.Id = mSkin->Config().GetTokenId("ScrollTime");
-            if (token.Id >= 0) {
+            tokenid = mSkin->Config().GetTokenId("ScrollTime");
+            if (tokenid >= 0) {
+                token = tSkinToken(tokenid, "ScrollTime", 0, "");
                 cType t = mSkin->Config().GetToken(token);
                 currScrollTime = (int)(t);
             }
