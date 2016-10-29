@@ -121,6 +121,12 @@ int main(int argc, char ** argv)
         fprintf(stdout, "WARNING: No config file specified, using default (%s).\n", configName.c_str());
     }
 
+    if (skinFileName.length() == 0)
+    {
+        fprintf(stderr, "ERROR: Skin file path has to be set using the '-s' parameter on command line!\n");
+        return 1;
+    }
+
     if (GLCD::Config.Load(configName) == false)
     {
         fprintf(stderr, "Error loading config file!\n");
