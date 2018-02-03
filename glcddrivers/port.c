@@ -340,9 +340,6 @@ int cSerialPort::Open(const char * device)
     options.c_cflag &= ~CSIZE;
     options.c_cflag |= CS8;
 
-    // No "hangup" (prevents Arduino firmware reboots)
-    options.c_cflag &= ~HUPCL;
-
     // No hardware flow control
     options.c_cflag &= ~CRTSCTS;
 
@@ -390,6 +387,19 @@ void cSerialPort::SetBaudRate(int speed)
         printf("TCSETS2 ioctl failed!\n");
         return;
     }
+}
+
+// Configures the serial port to not send a "hangup" signal.
+// Returns true if the flag was set and had to be removed and false otherwise.
+bool cSerialPort::DisableHangup()
+{
+    struct termios options;
+    tcgetattr(fd, &options);
+    if (!(options.c_cflag & HUPCL))
+        return false;
+    options.c_cflag &= ~HUPCL;
+    tcsetattr(fd, TCSANOW, &options);
+    return true;
 }
 
 int cSerialPort::ReadData(unsigned char * data)

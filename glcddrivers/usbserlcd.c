@@ -12,6 +12,7 @@
 #include <syslog.h>
 #include <cstring>
 #include <cstdlib>
+#include <unistd.h>
 
 #include "common.h"
 #include "config.h"
@@ -19,6 +20,8 @@
 #include "usbserlcd.h"
 #include "stdint.h"
 
+const int BAUD_RATE = 150000;
+const int BOOT_TIME = 300000;
 
 namespace GLCD
 {
@@ -73,12 +76,20 @@ int cDriverUSBserLCD::Init()
     if (port->Open(config->device.c_str()) != 0)
         return -1;
 
-    port->SetBaudRate(150000);
+    port->SetBaudRate(BAUD_RATE);
 
     *oldConfig = *config;
 
     // clear display
     Clear();
+
+    // Disable the "hangup" signal to prevent Arduino reboots on connect.
+    // We can't catch the first reboot with this (Hangup flag was set).
+    // In this case, wait some milliseconds and do a full refresh.
+    if (port->DisableHangup()) {
+        usleep(BOOT_TIME);
+        Refresh(true);
+    }
 
     syslog(LOG_INFO, "%s: USBserLCD initialized.\n", config->name.c_str());
     return 0;

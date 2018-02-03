@@ -91,6 +91,7 @@ public:
     int Open(const char * device);
     int Close();
     void SetBaudRate(int speed);
+    bool DisableHangup();
 
     int ReadData(unsigned char * data);
     void WriteData(unsigned char data);
