@@ -12,6 +12,9 @@
 #ifndef _GLCDDRIVERS_PORT_H_
 #define _GLCDDRIVERS_PORT_H_
 
+#include <string>
+#include <termios.h>
+
 namespace GLCD
 {
 
@@ -69,10 +72,12 @@ public:
 
     int Open(const char * device);
     int Close();
+    void SetBaudRate(speed_t speed);
 
     int ReadData(unsigned char * data);
     void WriteData(unsigned char data);
     void WriteData(unsigned char * data, unsigned short length);
+    void WriteData(std::string data);
 };
 
 } // end of namespace

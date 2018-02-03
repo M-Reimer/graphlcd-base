@@ -16,7 +16,6 @@
 #include <string.h>
 #include <syslog.h>
 #include <unistd.h>
-#include <termios.h>
 #include <pthread.h>
 #include <sys/io.h>
 #include <sys/ioctl.h>
@@ -335,19 +334,30 @@ int cSerialPort::Open(const char * device)
     cfsetispeed(&options, B921600);
     cfsetospeed(&options, B921600);
 
+    // 8 bits, no parity, no stop bits
     options.c_cflag &= ~PARENB;
     options.c_cflag &= ~CSTOPB;
     options.c_cflag &= ~CSIZE;
     options.c_cflag |= CS8;
 
+    // No "hangup" (prevents Arduino firmware reboots)
+    options.c_cflag &= ~HUPCL;
+
+    // No hardware flow control
     options.c_cflag &= ~CRTSCTS;
 
+    // Enable receiver, ignore status lines
     options.c_cflag |= (CLOCAL | CREAD);
 
+    // disable canonical input, disable echo,
+    // disable visually erase chars
+    // disable terminal-generated signals
     options.c_lflag &= ~(ICANON | ECHO | ECHOE | ISIG);
 
+    // disable input/output flow control, disable restart chars
     options.c_iflag &= ~(IXON | IXOFF | IXANY);
 
+    // disable output processing
     options.c_oflag &= ~OPOST;
 
     tcsetattr(fd, TCSANOW, &options);
@@ -361,6 +371,15 @@ int cSerialPort::Close()
         return -1;
     close(fd);
     return 0;
+}
+
+void cSerialPort::SetBaudRate(speed_t speed)
+{
+    struct termios options;
+    tcgetattr(fd, &options);
+    cfsetispeed(&options, speed);
+    cfsetospeed(&options, speed);
+    tcsetattr(fd, TCSANOW, &options);
 }
 
 int cSerialPort::ReadData(unsigned char * data)
@@ -380,6 +399,10 @@ void cSerialPort::WriteData(unsigned char * data, unsigned short length)
     if (fd == -1)
         return;
     write(fd, data, length);
+}
+
+void cSerialPort::WriteData(std::string data) {
+    WriteData((unsigned char*)data.c_str(), data.length());
 }
 
 } // end of namespace
