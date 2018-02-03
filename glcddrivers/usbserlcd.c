@@ -73,7 +73,7 @@ int cDriverUSBserLCD::Init()
     if (port->Open(config->device.c_str()) != 0)
         return -1;
 
-    port->SetBaudRate(B115200);
+    port->SetBaudRate(150000);
 
     *oldConfig = *config;
 

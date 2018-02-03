@@ -373,13 +373,23 @@ int cSerialPort::Close()
     return 0;
 }
 
-void cSerialPort::SetBaudRate(speed_t speed)
+void cSerialPort::SetBaudRate(int speed)
 {
-    struct termios options;
-    tcgetattr(fd, &options);
-    cfsetispeed(&options, speed);
-    cfsetospeed(&options, speed);
-    tcsetattr(fd, TCSANOW, &options);
+    struct termios2 tio;
+    if (ioctl(fd, TCGETS2, &tio) < 0)
+    {
+        printf("TCGETS2 ioctl failed!\n");
+        return;
+    }
+    tio.c_cflag &= ~CBAUD;
+    tio.c_cflag |= BOTHER;
+    tio.c_ispeed = speed;
+    tio.c_ospeed = speed;
+    if (ioctl(fd, TCSETS2, &tio) < 0)
+    {
+        printf("TCSETS2 ioctl failed!\n");
+        return;
+    }
 }
 
 int cSerialPort::ReadData(unsigned char * data)
