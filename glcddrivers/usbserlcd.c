@@ -174,7 +174,6 @@ void cDriverUSBserLCD::Refresh(bool refreshAll)
 {
     int x,y;
     uint16_t addr = 0;
-    uint16_t len = 0;
 
     if (CheckSetup() == 1)
         refreshAll = true;
@@ -187,12 +186,9 @@ void cDriverUSBserLCD::Refresh(bool refreshAll)
     }
 
     // draw all
-    std::string full_seq = "GLCD";
-    full_seq.reserve(8500);
-    full_seq += PKGTYPE_DATA; // Have to do it this way to get the NULL added
-    full_seq.append((char*)&addr, 2);
-
+    cDriverUSBserLCDBuffer full_seq(8500);
     std::string bytes = "";
+    bytes.reserve(8500);
     for (y = 0; y < height; y++)
     {
         for (x = 0; x < (width + (FS - 1)) / FS; x++)
@@ -203,23 +199,17 @@ void cDriverUSBserLCD::Refresh(bool refreshAll)
                 oldLCD[x][y] = newLCD[x][y];
         }
     }
-    len = bytes.length();
-    full_seq.append((char*)&len, 2);
-    full_seq.append(bytes);
-    // and reset RefreshCounter
-    refreshCounter = 0;
+    full_seq.Append(bytes, 0);
 
     if (refreshAll) {
-        port->WriteData(full_seq);
+        port->WriteData(full_seq.GetString());
+        // and reset RefreshCounter
+        refreshCounter = 0;
         return;
     }
 
     // draw only the changed bytes
-    std::string part_seq = "";
-    part_seq.reserve(8500);
-    std::string block_seq = "GLCD";
-    block_seq.reserve(8500);
-    block_seq += PKGTYPE_DATA;
+    cDriverUSBserLCDBuffer part_seq(8500);
     bool cs = false;
     bytes = "";
     for (y = 0; y < height; y++)
@@ -234,11 +224,7 @@ void cDriverUSBserLCD::Refresh(bool refreshAll)
                         addr = (y * (width / FS)) + x;
                     else
                         addr = (y * (width / FS + 1)) + x;
-                    block_seq = "GLCD";
-                    block_seq += PKGTYPE_DATA;
-                    block_seq.append((char*)&addr, 2);
                     bytes = "";
-                    len = 0;
                     cs = true;
                 }
                 char byte = (newLCD[x][y]) ^ (config->invert ? 0xff : 0x00);
@@ -247,38 +233,55 @@ void cDriverUSBserLCD::Refresh(bool refreshAll)
             }
             else if (bytes != "")
             {
-                part_seq.append(block_seq);
-                len = bytes.length();
-                part_seq.append((char*)&len, 2);
-                part_seq.append(bytes);
+                part_seq.Append(bytes, addr);
                 cs = false;
                 bytes = "";
-                block_seq = "";
             }
         }
     }
 
     if (bytes != "")
-    {
-        part_seq.append(block_seq);
-        len = bytes.length();
-        part_seq.append((char*)&len, 2);
-        part_seq.append(bytes);
-    }
+        part_seq.Append(bytes, addr);
 
     // Send the smaller data block.
-    if (part_seq.length() < full_seq.length())
-        port->WriteData(part_seq);
+    if (part_seq.GetLength() < full_seq.GetLength())
+        port->WriteData(part_seq.GetString());
     else
-        port->WriteData(full_seq);
+        port->WriteData(full_seq.GetString());
 }
 
 void cDriverUSBserLCD::SetBrightness(unsigned int percent)
 {
-  return;
     unsigned char brightness = 255 * percent / 100;
-    std::string pkg = "GLCD" + PKGTYPE_BRIGHTNESS + brightness;
+    std::string pkg = "GLCD";
+    pkg += PKGTYPE_BRIGHTNESS;
+    pkg += brightness;
     port->WriteData(pkg);
 }
 
+
+cDriverUSBserLCDBuffer::cDriverUSBserLCDBuffer(int aExpectedBytes)
+{
+    buffer = "";
+    buffer.reserve(aExpectedBytes);
 }
+void  cDriverUSBserLCDBuffer::Append(std::string aBytes, uint16_t aAddress)
+{
+    buffer += "GLCD";
+    buffer += PKGTYPE_DATA;
+    buffer.append((char*)&aAddress, 2);
+    uint16_t len = aBytes.length();
+    buffer.append((char*)&len, 2);
+    buffer.append(aBytes);
+}
+int  cDriverUSBserLCDBuffer::GetLength() const
+{
+    return buffer.length();
+}
+std::string cDriverUSBserLCDBuffer::GetString() const
+{
+    return buffer;
+}
+
+
+} // end of namespace

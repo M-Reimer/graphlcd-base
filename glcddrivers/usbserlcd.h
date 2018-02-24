@@ -56,6 +56,18 @@ public:
     virtual void SetBrightness(unsigned int percent);
 };
 
+
+class cDriverUSBserLCDBuffer {
+private:
+    std::string buffer;
+
+public:
+    cDriverUSBserLCDBuffer(int aExpectedBytes);
+    int GetLength() const;
+    void Append(std::string aBytes, uint16_t aAddress);
+    std::string GetString() const;
+};
+
 } // end of namespace
 
 #endif
