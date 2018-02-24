@@ -23,12 +23,6 @@ namespace GLCD
 class cDriverConfig;
 class cSerialPort;
 
-// Possible serial package types
-enum glcd_pkgtype: char {
-  PKGTYPE_DATA,
-  PKGTYPE_BRIGHTNESS
-};
-
 class cDriverUSBserLCD : public cDriver
 {
 private:

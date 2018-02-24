@@ -23,6 +23,12 @@
 const int BAUD_RATE = 150000;
 const int BOOT_TIME = 300000;
 
+// Possible serial package types
+enum glcd_pkgtype: char {
+  PKGTYPE_DATA,
+  PKGTYPE_BRIGHTNESS
+};
+
 namespace GLCD
 {
 
