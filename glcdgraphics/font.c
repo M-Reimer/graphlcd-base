@@ -477,9 +477,9 @@ const cBitmap * cFont::GetCharacter(uint32_t ch) const
             charBitmap->SetMonochrome(true);
             unsigned char * bufPtr = face->glyph->bitmap.buffer;
             unsigned char pixel;
-            for (int y = 0; y < face->glyph->bitmap.rows; y++)
+            for (unsigned int y = 0; y < face->glyph->bitmap.rows; y++)
             {
-                for (int x = 0; x < face->glyph->bitmap.width; x++)
+                for (unsigned int x = 0; x < face->glyph->bitmap.width; x++)
                 {
                     pixel = (bufPtr[x / 8] >> (7 - x % 8)) & 1;
                     if (pixel)
