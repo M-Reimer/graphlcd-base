@@ -9,6 +9,9 @@
  * (c) 2017 Manuel Reimer <manuel.reimer@gmx.de>
  */
 
+// More information about this Arduino-based USB LCD:
+// https://github.com/M-Reimer/usbserlcd
+
 #include <syslog.h>
 #include <cstring>
 #include <cstdlib>
