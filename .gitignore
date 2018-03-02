@@ -1,3 +1,10 @@
 *.d
 *.o
 *.so*
+tools/convpic/convpic
+tools/crtfont/crtfont
+tools/genfont/genfont
+tools/lcdtestpattern/lcdtestpattern
+tools/showpic/showpic
+tools/showtext/showtext
+tools/skintest/skintest
