@@ -208,7 +208,7 @@ void cDriverUSBserLCD::Refresh(bool refreshAll)
     full_seq.Append(bytes, 0);
 
     if (refreshAll) {
-        port->WriteData(full_seq.GetString());
+        port->WriteData(full_seq);
         // and reset RefreshCounter
         refreshCounter = 0;
         return;
@@ -251,9 +251,9 @@ void cDriverUSBserLCD::Refresh(bool refreshAll)
 
     // Send the smaller data block.
     if (part_seq.GetLength() < full_seq.GetLength())
-        port->WriteData(part_seq.GetString());
+        port->WriteData(part_seq);
     else
-        port->WriteData(full_seq.GetString());
+        port->WriteData(full_seq);
 }
 
 void cDriverUSBserLCD::SetBrightness(unsigned int percent)
@@ -284,7 +284,7 @@ int  cDriverUSBserLCDBuffer::GetLength() const
 {
     return buffer.length();
 }
-std::string cDriverUSBserLCDBuffer::GetString() const
+cDriverUSBserLCDBuffer::operator std::string() const
 {
     return buffer;
 }

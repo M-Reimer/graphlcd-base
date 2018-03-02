@@ -59,7 +59,7 @@ public:
     cDriverUSBserLCDBuffer(int aExpectedBytes);
     int GetLength() const;
     void Append(std::string aBytes, uint16_t aAddress);
-    std::string GetString() const;
+    operator std::string() const;
 };
 
 } // end of namespace
