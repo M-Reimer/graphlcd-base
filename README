@@ -26,9 +26,10 @@ based on the graphlcd plugin for the Video Disc Recorder
     noritake800 driver by      Lucian Muresan (lucianm AT users.sourceforge.net)
     futaba dm140 driver by     Stephan Skrodzki (skrodzki AT stevekist.de)
     futaba md166 driver by     Andreas Brachold <vdr07 AT deltab de>
+    usbserlcd driver by        Manuel Reimer <manuel.reimer AT gmx.de>
 
-Project's homepage: http://graphlcd.berlios.de/
-GIT repo: http://projects.vdr-developer.org/projects/show/graphlcd
+Project's homepage: https://projects.vdr-developer.org/projects/graphlcd-base
+GIT repo: https://projects.vdr-developer.org/git/graphlcd-base.git
 
 See the file COPYING for license information.
 
@@ -97,4 +98,3 @@ support. This way, applications using this library (vdrplugin-graphlcd, or the
 wrapper LCDproc "meta-driver" glcdprocdriver for example, can treat this case
 and have a fallback to the glcdraphics-native raster font if FT2 is not
 supported, or the TTF font could not be loaded for some reason.
-
