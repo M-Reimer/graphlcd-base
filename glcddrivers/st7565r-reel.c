@@ -50,8 +50,13 @@ namespace GLCD
 
 cDriverST7565RReel::cDriverST7565RReel(cDriverConfig * config) : cDriver(config)
 {
+    port = new cSerialPort();
 }
 
+cDriverST7565RReel::~cDriverST7565RReel()
+{
+    delete port;
+}
 
 int cDriverST7565RReel::Init(void)
 {
@@ -72,22 +77,10 @@ int cDriverST7565RReel::Init(void)
         }
     }
 
-    int bdflag=B115200;
-    struct termios tty;
-    fd = open(config->device.c_str(), O_RDWR|O_NONBLOCK|O_NOCTTY);
-    fcntl(fd,F_SETFL,0);
+    if (port->Open(config->device.c_str()) != 0)
+        return -1;
 
-    tcgetattr(fd, &tty);
-    tty.c_iflag = IGNBRK | IGNPAR;
-    tty.c_oflag = 0;
-    tty.c_lflag = 0;
-    tty.c_line = 0;
-    tty.c_cc[VTIME] = 0;
-    tty.c_cc[VMIN] = 1;
-    tty.c_cflag = CS8|CREAD|HUPCL;
-    cfsetispeed(&tty,bdflag);
-    cfsetospeed(&tty,bdflag);
-    tcsetattr(fd, TCSAFLUSH, &tty);
+    port->SetBaudRate(115200);
 
     *oldConfig = *config;
     set_displaymode(0);
@@ -101,13 +94,9 @@ int cDriverST7565RReel::Init(void)
 
 int cDriverST7565RReel::DeInit(void)
 {
-    if (fd>0)
-    {
-        // clear_display();
-        // set_displaymode(1); // Clock
-        // syslog(LOG_INFO, "deint.\n");
-        close(fd);
-    }
+    // clear_display();
+    // set_displaymode(1); // Clock
+    // syslog(LOG_INFO, "deint.\n");
 
     // free lcd array
     if (LCD)
@@ -118,6 +107,9 @@ int cDriverST7565RReel::DeInit(void)
         }
         delete[] LCD;
     }
+
+    if (port->Close() != 0)
+        return -1;
 
     return 0;
 }
@@ -204,40 +196,39 @@ void cDriverST7565RReel::Refresh(bool refreshAll)
         return;
 
     invert=(config->invert != 0) ? 0xff : 0x00;
-    if (fd >= 0)
+
+    for (y = 0; y < (height); y+=8)
     {
-        for (y = 0; y < (height); y+=8)
+        display_cmd( 0xb0+((y/8)&15));
+        for (x = 0; x < width / 8; x+=4)
         {
-            display_cmd( 0xb0+((y/8)&15));
-            for (x = 0; x < width / 8; x+=4)
+            unsigned char d[32]={0};
+
+            for(yy=0;yy<8;yy++)
             {
-                unsigned char d[32]={0};
-
-                for(yy=0;yy<8;yy++)
+                for (xx=0;xx<4;xx++)
                 {
-                    for (xx=0;xx<4;xx++)
-                    {
-                        c = (LCD[x+xx][y+yy])^invert;
+                    c = (LCD[x+xx][y+yy])^invert;
 
-                        for (i = 0; i < 8; i++)
-                        {
-                            d[i+xx*8]>>=1;
-                            if (c & 0x80)
-                                d[i+xx*8]|=0x80;
-                            c<<=1;
-                        }
+                    for (i = 0; i < 8; i++)
+                    {
+                        d[i+xx*8]>>=1;
+                        if (c & 0x80)
+                            d[i+xx*8]|=0x80;
+                        c<<=1;
                     }
                 }
-
-                rx=4+x*8;
-                //    printf("X %i, y%i\n",rx,y);
-
-                display_cmd( 0x10+((rx>>4)&15));
-                display_cmd( 0x00+(rx&15));
-                display_data( d,32);
             }
+
+            rx=4+x*8;
+            //    printf("X %i, y%i\n",rx,y);
+
+            display_cmd( 0x10+((rx>>4)&15));
+            display_cmd( 0x00+(rx&15));
+            display_data( d,32);
         }
     }
+
 // syslog(LOG_INFO, "refresh.\n");
 }
 
@@ -268,7 +259,7 @@ void cDriverST7565RReel::Set8Pixels(int x, int y, unsigned char data)
 void cDriverST7565RReel::display_cmd(unsigned char cmd)
 {
     unsigned char buf[]={0xa5, 0x05, 3, 0, cmd};
-    write(fd,buf,5);
+    port->WriteData(buf, 5);
 //    syslog(LOG_INFO, "%s: display cmd.\n", cmd);
 }
 
@@ -276,13 +267,13 @@ void cDriverST7565RReel::display_data(unsigned char *data, unsigned char l)
 {
     unsigned char buf[64]={0xa5,0x05,(unsigned char)(l+2),+1};
     memcpy(buf+4,data,l);
-    write(fd,buf,l+4);
+    port->WriteData(buf, l+4);
 //    syslog(LOG_INFO, "%s: display data.\n", data);
 }
 void cDriverST7565RReel::set_displaymode(unsigned char m)
 {
     unsigned char buf[]={0xa5,0x09,m};
-    write(fd,buf,3);
+    port->WriteData(buf, 3);
 //    syslog(LOG_INFO, "displaymode.\n");
 }
 
@@ -301,14 +292,14 @@ void cDriverST7565RReel::set_clock(void)
                          (unsigned char)(t>>16),
                          (unsigned char)(t>>8),
                          (unsigned char)t};
-    write(fd,buf,9);
+    port->WriteData(buf, 9);
 //    syslog(LOG_INFO, "set_clock cmd.\n");
 }
 
 void cDriverST7565RReel::clear_display(void)
 {
     unsigned char buf[]={0xa5,0x04};
-    write(fd,buf,2);
+    port->WriteData(buf, 2);
 //    syslog(LOG_INFO, "clear_display cmd.\n");
 }
 
@@ -319,14 +310,14 @@ void cDriverST7565RReel::SetBrightness(unsigned int percent)
     if (n>255)
         n=255;
     buf[2]=(char)(n);
-    write(fd,buf,4);
+    port->WriteData(buf,4);
 }
 
 void cDriverST7565RReel::SetContrast(unsigned int val)
 {
     unsigned char buf[]={0xa5,0x03, 0x00, 0x00};
     buf[2]=(char)(val*25);
-    write(fd,buf,4);
+    port->WriteData(buf,4);
 }
 
 

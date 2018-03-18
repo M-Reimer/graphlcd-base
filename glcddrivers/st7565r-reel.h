@@ -32,6 +32,7 @@
 
 #include "driver.h"
 #include "unistd.h"
+#include "port.h"
 
 namespace GLCD
 {
@@ -41,7 +42,7 @@ class cDriverConfig;
 class cDriverST7565RReel : public cDriver
 {
 private:
-    int fd;
+    cSerialPort* port;
     uint32_t ** LCD;
     int CheckSetup(void);
     void display_cmd(unsigned char cmd);
@@ -52,6 +53,7 @@ private:
 
 public:
     cDriverST7565RReel(cDriverConfig * config);
+    ~cDriverST7565RReel();
 
     virtual int Init();
     virtual int DeInit();
