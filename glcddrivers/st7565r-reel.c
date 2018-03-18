@@ -295,7 +295,7 @@ void cDriverST7565RReel::display_data( unsigned char *data, int l)
 }
 void cDriverST7565RReel::set_displaymode(int m)
 {
-        char buf[]={0xa5,0x09,m};
+    unsigned char buf[]={0xa5,0x09,m};
         write(fd,buf,3);
 //    syslog(LOG_INFO, "displaymode.\n");
 }
@@ -307,7 +307,7 @@ void cDriverST7565RReel::set_clock(void)
         t=time(0);
         localtime_r(&t,&tm);
     {
-	char buf[]={0xa5,0x7,tm.tm_hour,tm.tm_min,tm.tm_sec,
+    unsigned char buf[]={0xa5,0x7,tm.tm_hour,tm.tm_min,tm.tm_sec,
 	        t>>24,t>>16,t>>8,t};
 	write(fd,buf,9);
     } 
@@ -316,14 +316,14 @@ void cDriverST7565RReel::set_clock(void)
 
 void cDriverST7565RReel::clear_display(void)
 {
-        char buf[]={0xa5,0x04};
+    unsigned char buf[]={0xa5,0x04};
         write(fd,buf,2);
 //    syslog(LOG_INFO, "clear_display cmd.\n");
 }
 
 void cDriverST7565RReel::SetBrightness(unsigned int percent)
 {
-        char buf[]={0xa5,0x02, 0x00, 0x00};
+    unsigned char buf[]={0xa5,0x02, 0x00, 0x00};
     int n=static_cast<int>(percent*2.5);
     if (n>255)
 	n=255;
@@ -333,7 +333,7 @@ void cDriverST7565RReel::SetBrightness(unsigned int percent)
 
 void cDriverST7565RReel::SetContrast(unsigned int val)
 {
-        char buf[]={0xa5,0x03, 0x00, 0x00};
+    unsigned char buf[]={0xa5,0x03, 0x00, 0x00};
     buf[2]=(char)(val*25);
         write(fd,buf,4);
 }
