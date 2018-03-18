@@ -57,6 +57,7 @@ enum eDriver
     kDriverILI9341       = 22,
 #endif
     kDriverUSBserLCD     = 23,
+    kDriverST7565RReel   = 24,
     kDriverSerDisp       = 100,
     kDriverG15daemon     = 200
 };

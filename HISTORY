@@ -1,6 +1,9 @@
 GraphLCD base package Revision History
 --------------------------------------
 
+2018-03-16:
+- New driver "st7565r-reel"
+
 2018-03-02:
 - New driver "usbserlcd". With this driver it is possible to diy an USB LCD.
   See also: https://github.com/M-Reimer/usbserlcd/

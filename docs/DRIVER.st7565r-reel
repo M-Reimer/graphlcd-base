@@ -1,0 +1,38 @@
+---------------------------------------------------------------------
+GraphLCD driver library
+
+The ST7565R-REEL driver
+---------------------------------------------------------------------
+
+Description
+-----------
+The ST7565R-REEL driver supports the Reelbox Frontpanel LCD Displays.
+Connection is Serial
+
+
+Configuration Parameters
+------------------------
+The ST7565R-REEL driver supports the following parameters in config
+file:
+
+Device
+ In a Reelbox enviroment the serial port was linked to /dev/frontpanel
+ Connected to "normal pc" use serial port for example /dev/ttyS0
+
+Width
+ Sets the horizontal size of the display. If this parameter is not
+ given, a default value of 128 pixels is used.
+
+Height
+ Sets the vertical size of the display. If this parameter is not
+ given, a default value of 64 pixels is used.
+
+Brightness
+ Sets the brightness of your display's backlight.
+ Possible values: 0 <= x <= 100)
+ Default value: 100
+
+Contrast
+ Sets the contrast of your display's.
+ Possible values: 0 <= x <= 100)
+ Default value: 100

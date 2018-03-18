@@ -31,6 +31,7 @@
 #include "serdisp.h"
 #include "g15daemon.h"
 #include "usbserlcd.h"
+#include "st7565r-reel.h"
 #ifdef HAVE_LIBHID
 #include "futabaMDM166A.h"
 #endif
@@ -72,6 +73,7 @@ tDriver drivers[] =
     {"gu126x64D-K610A4", kDriverGU126X64D_K610A4},
     {"dm140gink",     kDriverDM140GINK},
     {"usbserlcd",     kDriverUSBserLCD},
+    {"st7565r-reel",  kDriverST7565RReel},
 #ifdef HAVE_LIBHID
     {"futabaMDM166A", kDriverFutabaMDM166A},
 #endif
@@ -148,6 +150,8 @@ cDriver * CreateDriver(int driverID, cDriverConfig * config)
             return new cDriverDM140GINK(config);
         case kDriverUSBserLCD:
             return new cDriverUSBserLCD(config);
+        case kDriverST7565RReel:
+            return new cDriverST7565RReel(config);
 #ifdef HAVE_LIBHID
         case kDriverFutabaMDM166A:
             return new cDriverFutabaMDM166A(config);
