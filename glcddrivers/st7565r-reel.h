@@ -45,8 +45,8 @@ private:
     uint32_t ** LCD;
     int CheckSetup(void);
     void display_cmd(unsigned char cmd);
-    void display_data(unsigned char *data, int l);
-    void set_displaymode(int m);
+    void display_data(unsigned char *data, unsigned char l);
+    void set_displaymode(unsigned char m);
     void set_clock(void);
     void clear_display(void);
 

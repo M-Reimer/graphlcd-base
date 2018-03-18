@@ -265,21 +265,21 @@ void cDriverST7565RReel::Set8Pixels(int x, int y, unsigned char data)
     }
 }
 
-void cDriverST7565RReel::display_cmd( unsigned char cmd)
+void cDriverST7565RReel::display_cmd(unsigned char cmd)
 {
     unsigned char buf[]={0xa5, 0x05, 3, 0, cmd};
     write(fd,buf,5);
 //    syslog(LOG_INFO, "%s: display cmd.\n", cmd);
 }
 
-void cDriverST7565RReel::display_data( unsigned char *data, int l)
+void cDriverST7565RReel::display_data(unsigned char *data, unsigned char l)
 {
-    unsigned char buf[64]={0xa5,0x05,l+2,+1};
+    unsigned char buf[64]={0xa5,0x05,(unsigned char)(l+2),+1};
     memcpy(buf+4,data,l);
     write(fd,buf,l+4);
 //    syslog(LOG_INFO, "%s: display data.\n", data);
 }
-void cDriverST7565RReel::set_displaymode(int m)
+void cDriverST7565RReel::set_displaymode(unsigned char m)
 {
     unsigned char buf[]={0xa5,0x09,m};
     write(fd,buf,3);
@@ -293,7 +293,14 @@ void cDriverST7565RReel::set_clock(void)
     t=time(0);
     localtime_r(&t,&tm);
 
-    unsigned char buf[]={0xa5,0x7,tm.tm_hour,tm.tm_min,tm.tm_sec,t>>24,t>>16,t>>8,t};
+    unsigned char buf[]={0xa5,0x7,
+                         (unsigned char)tm.tm_hour,
+                         (unsigned char)tm.tm_min,
+                         (unsigned char)tm.tm_sec,
+                         (unsigned char)(t>>24),
+                         (unsigned char)(t>>16),
+                         (unsigned char)(t>>8),
+                         (unsigned char)t};
     write(fd,buf,9);
 //    syslog(LOG_INFO, "set_clock cmd.\n");
 }
