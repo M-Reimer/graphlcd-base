@@ -265,6 +265,11 @@ void cDriverST7565RReel::display_cmd(unsigned char cmd)
 
 void cDriverST7565RReel::display_data(unsigned char *data, unsigned char l)
 {
+    if (l > 60)
+    {
+        syslog(LOG_ERR, "cDriverST7565RReel::display_data buffer length exceeded!");
+    }
+
     unsigned char buf[64]={0xa5,0x05,(unsigned char)(l+2),+1};
     memcpy(buf+4,data,l);
     port->WriteData(buf, l+4);
