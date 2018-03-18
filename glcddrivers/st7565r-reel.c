@@ -268,6 +268,7 @@ void cDriverST7565RReel::display_data(unsigned char *data, unsigned char l)
     if (l > 60)
     {
         syslog(LOG_ERR, "cDriverST7565RReel::display_data buffer length exceeded!");
+        return;
     }
 
     unsigned char buf[64]={0xa5,0x05,(unsigned char)(l+2),+1};
