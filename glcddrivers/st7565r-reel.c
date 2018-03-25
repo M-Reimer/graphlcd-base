@@ -84,7 +84,6 @@ int cDriverST7565RReel::Init(void)
 
     *oldConfig = *config;
     set_displaymode(0);
-    set_clock();
     // clear display
     Clear();
 
@@ -94,10 +93,6 @@ int cDriverST7565RReel::Init(void)
 
 int cDriverST7565RReel::DeInit(void)
 {
-    // clear_display();
-    // set_displaymode(1); // Clock
-    // syslog(LOG_INFO, "deint.\n");
-
     // free lcd array
     if (LCD)
     {
@@ -275,32 +270,6 @@ void cDriverST7565RReel::set_displaymode(unsigned char m)
     unsigned char buf[]={0xa5,0x09,m};
     port->WriteData(buf, 3);
 //    syslog(LOG_INFO, "displaymode.\n");
-}
-
-void cDriverST7565RReel::set_clock(void)
-{
-    time_t t;
-    struct tm tm;
-    t=time(0);
-    localtime_r(&t,&tm);
-
-    unsigned char buf[]={0xa5,0x7,
-                         (unsigned char)tm.tm_hour,
-                         (unsigned char)tm.tm_min,
-                         (unsigned char)tm.tm_sec,
-                         (unsigned char)(t>>24),
-                         (unsigned char)(t>>16),
-                         (unsigned char)(t>>8),
-                         (unsigned char)t};
-    port->WriteData(buf, 9);
-//    syslog(LOG_INFO, "set_clock cmd.\n");
-}
-
-void cDriverST7565RReel::clear_display(void)
-{
-    unsigned char buf[]={0xa5,0x04};
-    port->WriteData(buf, 2);
-//    syslog(LOG_INFO, "clear_display cmd.\n");
 }
 
 void cDriverST7565RReel::SetBrightness(unsigned int percent)
