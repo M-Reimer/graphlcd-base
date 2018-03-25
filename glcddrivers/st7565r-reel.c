@@ -61,19 +61,19 @@ cDriverST7565RReel::~cDriverST7565RReel()
 int cDriverST7565RReel::Init(void)
 {
     width = config->width;
-    if (width < 0)
+    if (width <= 0)
         width = 128;
     height = config->height;
-    if (height < 0)
+    if (height <= 0)
         height = 64;
 
     // setup lcd array
-    LCD = new uint32_t *[width];
+    LCD = new unsigned char *[width / 8];
     if (LCD)
     {
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < width / 8; x++)
         {
-            LCD[x] = new uint32_t[height];
+            LCD[x] = new unsigned char[height];
         }
     }
 
@@ -101,7 +101,7 @@ int cDriverST7565RReel::DeInit(void)
     // free lcd array
     if (LCD)
     {
-        for (int x = 0; x < width; x++)
+        for (int x = 0; x < width / 8; x++)
         {
             delete[] LCD[x];
         }
@@ -152,14 +152,8 @@ int cDriverST7565RReel::CheckSetup(void)
 
 void cDriverST7565RReel::Clear(void)
 {
-    for (int y = 0; y < height; y++)
-    {
-        for (int x = 0; x < width; x++)
-        {
-            LCD[x][y] = GRAPHLCD_White;
-        }
-    }
-//    syslog(LOG_INFO, "Clear.\n");
+    for (int x = 0; x < width / 8; x++)
+        memset(LCD[x], 0, height);
 }
 
 void cDriverST7565RReel::SetPixel(int x, int y, uint32_t data)

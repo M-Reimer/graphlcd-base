@@ -43,7 +43,7 @@ class cDriverST7565RReel : public cDriver
 {
 private:
     cSerialPort* port;
-    uint32_t ** LCD;
+    unsigned char ** LCD;
     int CheckSetup(void);
     void display_cmd(unsigned char cmd);
     void display_data(unsigned char *data, unsigned char l);
