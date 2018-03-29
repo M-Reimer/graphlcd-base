@@ -68,10 +68,10 @@ int cDriverST7565RReel::Init(void)
         height = 64;
 
     // setup lcd array
-    LCD = new unsigned char *[width / 8];
+    LCD = new unsigned char *[(width + 7) / 8];
     if (LCD)
     {
-        for (int x = 0; x < width / 8; x++)
+        for (int x = 0; x < (width + 7) / 8; x++)
         {
             LCD[x] = new unsigned char[height];
         }
@@ -96,7 +96,7 @@ int cDriverST7565RReel::DeInit(void)
     // free lcd array
     if (LCD)
     {
-        for (int x = 0; x < width / 8; x++)
+        for (int x = 0; x < (width + 7) / 8; x++)
         {
             delete[] LCD[x];
         }
@@ -147,7 +147,7 @@ int cDriverST7565RReel::CheckSetup(void)
 
 void cDriverST7565RReel::Clear(void)
 {
-    for (int x = 0; x < width / 8; x++)
+    for (int x = 0; x < (width + 7) / 8; x++)
         memset(LCD[x], 0, height);
 }
 
@@ -189,7 +189,7 @@ void cDriverST7565RReel::Refresh(bool refreshAll)
     for (y = 0; y < (height); y+=8)
     {
         display_cmd( 0xb0+((y/8)&15));
-        for (x = 0; x < width / 8; x+=4)
+        for (x = 0; x < (width + 7) / 8; x+=4)
         {
             unsigned char d[32]={0};
 
