@@ -3,7 +3,7 @@
 #
 
 
--include ../Make.config
+include ../Make.config
 
 ### Targets:
 
@@ -39,7 +39,7 @@ endif
 	@$(MAKE) -C showtext uninstall
 	@$(MAKE) -C lcdtestpattern uninstall
 	@$(MAKE) -C skintest uninstall
- 
+
 clean:
 	@$(MAKE) -C convpic clean
 	@$(MAKE) -C crtfont clean
@@ -48,4 +48,3 @@ clean:
 	@$(MAKE) -C showtext clean
 	@$(MAKE) -C lcdtestpattern clean
 	@$(MAKE) -C skintest clean
-

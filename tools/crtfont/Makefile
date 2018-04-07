@@ -2,7 +2,7 @@
 # Makefile for the GraphLCD tool crtfont
 #
 
--include ../../Make.config
+include ../../Make.config
 
 PRGNAME = crtfont
 
@@ -31,12 +31,11 @@ $(PRGNAME): $(OBJS)
 	$(CXX) $(CXXFLAGS) $(LDFLAGS) -rdynamic $(OBJS) $(LIBDIRS) -lglcdgraphics -lstdc++ -o $(PRGNAME)
 
 install: $(PRGNAME)
-	install -d $(BINDIR)
-	install -m 755 -o root -g root $(HAVE_STRIP) $(PRGNAME) $(BINDIR)
+	install -d $(DESTDIR)$(BINDIR)
+	install -m 755 $(HAVE_STRIP) $(PRGNAME) $(DESTDIR)$(BINDIR)
 
 uninstall:
-	rm -f $(BINDIR)/$(PRGNAME)
+	rm -f $(DESTDIR)$(BINDIR)/$(PRGNAME)
 
 clean:
 	@-rm -f $(OBJS) $(DEPFILE) $(PRGNAME) *~
-

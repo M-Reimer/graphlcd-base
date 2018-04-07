@@ -2,8 +2,7 @@
 # Makefile for the GraphLCD skin library
 #
 
--include ../Make.config
-
+include ../Make.config
 
 CXXFLAGS += -fPIC
 
@@ -48,18 +47,18 @@ $(LIBNAME): $(OBJS)
 	ln -sf $(LIBNAME) $(BASENAME)
 
 install: all
-	install -d $(LIBDIR)
-	install -m 755 $(LIBNAME) $(LIBDIR)/
-	install -d $(INCDIR)/glcdskin
-	install -m 644 $(HEADERS) $(INCDIR)/glcdskin/
-	( cd $(LIBDIR); ln -sf $(LIBNAME) $(BASENAME).$(VERMAJOR); ln -sf $(LIBNAME) $(BASENAME) )
+	install -d $(DESTDIR)$(LIBDIR)
+	install -m 755 $(LIBNAME) $(DESTDIR)$(LIBDIR)/
+	install -d $(DESTDIR)$(INCDIR)/glcdskin
+	install -m 644 $(HEADERS) $(DESTDIR)$(INCDIR)/glcdskin/
+	( cd $(DESTDIR)$(LIBDIR); ln -sf $(LIBNAME) $(BASENAME).$(VERMAJOR); ln -sf $(LIBNAME) $(BASENAME) )
 
 uninstall:
-	rm -f $(LIBDIR)/$(BASENAME)
-	rm -f $(LIBDIR)/$(BASENAME).$(VERMAJOR)
-	rm -f $(LIBDIR)/$(LIBNAME)
-	(for i in $(HEADERS); do rm -f $(INCDIR)/glcdskin/$$i; done)
-	rmdir $(INCDIR)/glcdskin
+	rm -f $(DESTDIR)$(LIBDIR)/$(BASENAME)
+	rm -f $(DESTDIR)$(LIBDIR)/$(BASENAME).$(VERMAJOR)
+	rm -f $(DESTDIR)$(LIBDIR)/$(LIBNAME)
+	(for i in $(HEADERS); do rm -f $(DESTDIR)$(INCDIR)/glcdskin/$$i; done)
+	rmdir $(DESTDIR)$(INCDIR)/glcdskin
 
 clean:
 	rm -f $(OBJS) $(DEPFILE) $(LIBNAME) $(BASENAME) *~

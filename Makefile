@@ -2,14 +2,15 @@
 # Makefile for the GraphLCD driver library, graphics library and tools
 #
 
+include Make.config
+
 PROJECT = graphlcd-base
 VERSION = 0.3.0
 ARCHIVE = $(PROJECT)-$(VERSION)
 PACKAGE = $(ARCHIVE)
 TMPDIR = /tmp
 
-UDEVRULESDIR ?= /etc/udev/rules.d/
-UDEVRULE ?= 99-graphlcd-base.rules
+UDEVRULE = 99-graphlcd-base.rules
 
 ### Targets:
 
@@ -24,14 +25,21 @@ install:
 	@$(MAKE) -C glcddrivers install
 	@$(MAKE) -C glcdskin install
 	@$(MAKE) -C tools install
-	test -d "${UDEVRULESDIR}" && install -m 644 -o root -g root "$(UDEVRULE)" "$(UDEVRULESDIR)"
+# Checking for UDEVRULESDIR without DESTDIR (check if build system uses systemd)
+ifneq ($(wildcard $(UDEVRULESDIR)/.),)
+	install -d $(DESTDIR)$(UDEVRULESDIR)
+	install -m 644 $(UDEVRULE) $(DESTDIR)$(UDEVRULESDIR)
+endif
+	install -d $(DESTDIR)$(SYSCONFDIR)
+	cp -n graphlcd.conf $(DESTDIR)$(SYSCONFDIR)
 
 uninstall:
 	@$(MAKE) -C glcdgraphics uninstall
 	@$(MAKE) -C glcddrivers uninstall
 	@$(MAKE) -C glcdskin uninstall
 	@$(MAKE) -C tools uninstall
-  
+	rm -f $(DESTDIR)$(UDEVRULESDIR)/$(UDEVRULE)
+
 clean:
 	@-rm -f *.tgz
 	@$(MAKE) -C glcdgraphics clean
@@ -46,4 +54,3 @@ dist: clean
 	@tar czf $(PACKAGE).tgz --exclude .svn --exclude *.cbp --exclude *.layout -C $(TMPDIR) $(ARCHIVE)
 	@-rm -rf $(TMPDIR)/$(ARCHIVE)
 	@echo Distribution package created as $(PACKAGE).tgz
-
