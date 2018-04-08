@@ -1,18 +1,15 @@
 GraphLCD base package Revision History
 --------------------------------------
 
-2018-03-16:
+2018-04-08: Version 1.0.0
 - New driver "st7565r-reel"
-
-2018-03-02:
 - New driver "usbserlcd". With this driver it is possible to diy an USB LCD.
   See also: https://github.com/M-Reimer/usbserlcd/
-
-2016-10-29:
 - branch "touchcol" merged back to "master"
 - Tag name is now always passed if "GetToken" is called.
   This makes it possible to use graphlcd-base without bothering about token id's
 - "alphacool" and "sdcmegtron" are now predefined entries in graphlcd.conf
+- Makefile optimized for packaging
 
 2011-05-01: branch touchcol, first commit
 - glcddrivers changes / enhancements:
