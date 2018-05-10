@@ -9,10 +9,10 @@ PRGNAME = genfont
 OBJS = genfont.o
 
 INCLUDES += -I../../
-INCLUDES += `freetype-config --cflags`
+INCLUDES += $(shell pkg-config freetype2 --cflags)
 
 LIBDIRS += -L../../glcdgraphics/
-LIBS += `freetype-config --libs`
+LIBS += $(shell pkg-config freetype2 --libs)
 
 all: $(PRGNAME)
 .PHONY: all

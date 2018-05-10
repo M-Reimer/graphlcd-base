@@ -41,14 +41,9 @@ DEPFILE = $(OBJS:%.o=%.d)
 -include $(DEPFILE)
 
 ifdef HAVE_FREETYPE2
-	ifneq ($(shell which freetype-config),)
-		INCLUDES += $(shell freetype-config --cflags)
-		LIBS += $(shell freetype-config --libs)
-	else
-		INCLUDES += -I/usr/include/freetype -I/usr/local/include/freetype
-		LIBS += -lfreetype
-	endif
 	DEFINES += -DHAVE_FREETYPE2
+	INCLUDES += $(shell pkg-config freetype2 --cflags)
+	LIBS += $(shell pkg-config freetype2 --libs)
 endif
 
 # two ifdef/endif are used because older installations may not support 'else ifdef'
