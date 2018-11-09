@@ -34,7 +34,6 @@ void uSleep(long us);
 
 unsigned char ReverseBits(unsigned char value);
 void clip(int & value, int min, int max);
-void sort(int & value1, int & value2);
 std::string trim(const std::string & s);
 
 } // end of namespace
