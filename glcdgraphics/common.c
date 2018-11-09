@@ -12,6 +12,7 @@
 
 #include <ctype.h>
 #include <syslog.h>
+#include <algorithm>
 
 #include "common.h"
 
@@ -40,23 +41,12 @@ void sort(int & value1, int & value2)
 
 std::string trim(const std::string & s)
 {
-	std::string::size_type start, end;
-
-	start = 0;
-	while (start < s.length())
-	{
-		if (!isspace(s[start]))
-			break;
-		start++;
-	}
-	end = s.length() - 1;
-	while (end > start)
-	{
-		if (!isspace(s[end]))
-			break;
-		end--;
-	}
-	return s.substr(start, end - start + 1);
+    std::string::size_type left, right;
+    left = std::find_if_not(s.begin(), s.end(), isspace) - s.begin();
+    if (left == s.length()) // String consists of space characters only
+        return "";
+    right = std::find_if_not(s.rbegin(), s.rend(), isspace) - s.rbegin();
+    return s.substr(left, s.length() - left - right);
 }
 
 
