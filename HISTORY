@@ -1,6 +1,12 @@
 GraphLCD base package Revision History
 --------------------------------------
 
+2018-11-10: Version 1.0.2
+- Improved "trim" function which doesn't cause negative size_type values
+
+2018-05-10: Version 1.0.1
+- Fixed building against freetype 2.9.1
+
 2018-04-08: Version 1.0.0
 - New driver "st7565r-reel"
 - New driver "usbserlcd". With this driver it is possible to diy an USB LCD.
