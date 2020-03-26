@@ -17,7 +17,6 @@
 #include <syslog.h>
 #include <unistd.h>
 #include <pthread.h>
-#include <sys/io.h>
 #include <sys/ioctl.h>
 #include <linux/ppdev.h>
 #include <linux/parport.h>
@@ -28,6 +27,7 @@
 
 #if defined(__linux__) && (defined(__i386__) || defined(__x86_64__))
   #define __HAS_DIRECTIO__ 1
+  #include <sys/io.h>
 #endif
 
 namespace GLCD
