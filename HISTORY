@@ -1,6 +1,11 @@
 GraphLCD base package Revision History
 --------------------------------------
 
+2020-08-14: Version 2.0.0
+- If a required font file is neither in "FontPath" nor in the "fonts"
+  subdirectory of "SkinPath", then (if available) fontconfig is used to search
+  all common system font paths for the wanted font file
+
 2018-11-10: Version 1.0.2
 - Improved "trim" function which doesn't cause negative size_type values
 
