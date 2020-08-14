@@ -1070,7 +1070,7 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                     for (int j = 1; j < (int) NumObjects(); j++)
                     {
                         int px, py, ph,pw;
-                        char buf[10];
+                        char buf[11];
                         const cSkinObject * o = GetObject(j);
                         cSkinObject obj(*o);
                         obj.SetListIndex(maxitems, i);
@@ -1080,13 +1080,13 @@ void cSkinObject::Render(GLCD::cBitmap * screen)
                         py = obj.Pos().y + Pos().y + yoffset;           // obj.mPos1.y += mPos1.y + yoffset;
                         ph = o->Size().h;                               // obj.mPos2.y += mPos1.y + yoffset;
                         pw = o->Size().w;
-                        snprintf(buf, 9, "%d", px); obj.mX1.Parse((const char*)buf);
-                        snprintf(buf, 9, "%d", py); obj.mY1.Parse((const char*)buf);
+                        snprintf(buf, 11, "%d", px); obj.mX1.Parse((const char*)buf);
+                        snprintf(buf, 11, "%d", py); obj.mY1.Parse((const char*)buf);
                         if (ph > 0) {
-                            snprintf(buf, 9, "%d", ph); obj.mHeight.Parse((const char*)buf);
+                            snprintf(buf, 11, "%d", ph); obj.mHeight.Parse((const char*)buf);
                         }
 
-                        snprintf(buf, 9, "%d", pw); obj.mWidth.Parse((const char*)buf);
+                        snprintf(buf, 11, "%d", pw); obj.mWidth.Parse((const char*)buf);
                         obj.Render(screen);
                     }
                     yoffset += itemheight;
