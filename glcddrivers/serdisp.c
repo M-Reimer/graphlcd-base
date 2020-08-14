@@ -273,8 +273,8 @@ int cDriverSerDisp::Init(void)
     if (config->device == "" && config->port > 0)  /* port will only be used if device is not set */
     {
         // use DirectIO
-        char temp[10];
-        snprintf(temp, 8, "0x%x", config->port);
+        char temp[11];
+        snprintf(temp, 11, "0x%x", config->port);
 
         sdcd = fp_SDCONN_open(temp);
 
