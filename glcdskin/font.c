@@ -33,6 +33,12 @@ cSkinFont::~cSkinFont(void) {
 #endif
 }
 
+bool cSkinFont::FileExists(const std::string& path)
+{
+    std::ifstream f(path.c_str());
+    return (f.is_open());
+}
+
 bool cSkinFont::ParseUrl(const std::string & url)
 {
     bool isFontconfig = false;
@@ -143,16 +149,7 @@ bool cSkinFont::ParseUrl(const std::string & url)
         }
         mFile += "fonts/";
         mFile += rawfont;
-#if (__GNUC__ < 3)
-        std::ifstream f(mFile.c_str(), std::ios::in | std::ios::binary);
-#else
-        std::ifstream f(mFile.c_str(), std::ios_base::in | std::ios_base::binary);
-#endif
-        if (f.is_open())
-        {
-            f.close();
-        }
-        else
+        if (!FileExists(mFile))
         {
             // then try generic font dir
             mFile = mSkin->Config().FontPath();
@@ -162,6 +159,33 @@ bool cSkinFont::ParseUrl(const std::string & url)
                     mFile += '/';
             }
             mFile += rawfont;
+
+#ifdef HAVE_FONTCONFIG
+            // If we have fontconfig, then at last search for the font file in
+            // all system default font directories
+            if (!FileExists(mFile))
+            {
+                if (cSkinFont::FcInitCount <= 0)
+                {
+                    FcInit();
+                }
+                cSkinFont::FcInitCount++;
+
+                FcStrList* dirlist = FcConfigGetFontDirs(NULL);
+                FcChar8* dir;
+                while ((dir = FcStrListNext(dirlist)))
+                {
+                    mFile.assign((const char*)dir);
+                    mFile += '/';
+                    mFile += rawfont;
+                    if (FileExists(mFile))
+                    {
+                        break;
+                    }
+                }
+                FcStrListDone(dirlist);
+            }
+#endif
         }
     }
 

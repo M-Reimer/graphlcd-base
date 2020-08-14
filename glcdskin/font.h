@@ -51,6 +51,8 @@ private:
 
     static int FcInitCount;
 
+    bool FileExists(const std::string& path);
+
 public:
     cSkinFont(cSkin * Parent);
     ~cSkinFont(void);
