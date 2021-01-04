@@ -176,7 +176,7 @@ bool cFont::LoadFNT(const std::string & fileName, const std::string & encoding)
  
         int y; int loop; 
         int num = 0;
-        uint dot; uint b;
+        unsigned int dot; unsigned int b;
         cBitmap * charBitmap = new cBitmap(charWidth, fontHeight);
         charBitmap->SetMonochrome(true);
         charBitmap->Clear();
