@@ -43,11 +43,11 @@ ifeq ($(shell pkg-config --exists libusb && echo 1), 1)
 endif
 
 ifeq ($(HAVE_DRIVER_VNCSERVER), 1)
-ifeq ($(shell libvncserver-config --version >/dev/null && echo 1), 1)
+ifeq ($(shell pkg-config --exists libvncserver && echo 1), 1)
     DEFINES += -DHAVE_DRIVER_VNCSERVER
     OBJS += vncserver.o
-    INCLUDES += $(shell libvncserver-config --cflags)
-    LIBS += $(shell libvncserver-config --libs)
+    INCLUDES += $(shell pkg-config --cflags libvncserver)
+    LIBS += $(shell pkg-config --libs libvncserver)
 endif
 endif
 
