@@ -1,6 +1,10 @@
 GraphLCD base package Revision History
 --------------------------------------
 
+2021-01-04: Version 2.0.1
+- Replace libvncserver-config with pkg-config to make vncserver driver work
+  with later libvncserver versions. Thanks to Conrad Kostecki!
+
 2020-08-14: Version 2.0.0
 - If a required font file is neither in "FontPath" nor in the "fonts"
   subdirectory of "SkinPath", then (if available) fontconfig is used to search
