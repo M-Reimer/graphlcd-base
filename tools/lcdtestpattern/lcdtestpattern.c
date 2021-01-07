@@ -66,7 +66,6 @@ void usage()
     fprintf(stdout, "  -d  --display     specifies the output display (default is the first one)\n");
     fprintf(stdout, "  -u  --upsidedown  rotates the output by 180 degrees (default: no)\n");
     fprintf(stdout, "  -i  --invert      inverts the output (default: no)\n");
-    fprintf(stdout, "  -e  --endless     show all images in endless loop (default: no)\n");
     fprintf(stdout, "  -s  --sleep       set sleeptime between two patterns [ms] (default: %d ms)\n", kDefaultSleepMs);
     fprintf(stdout, "  -b  --brightness  set brightness for display if driver support it [%%]\n");
     fprintf(stdout, "                    (default: config file value)\n");
@@ -84,7 +83,6 @@ int main(int argc, char *argv[])
         {"config",     required_argument, NULL, 'c'},
         {"display",    required_argument, NULL, 'd'},
         {"sleep",      required_argument, NULL, 's'},
-        {"endless",          no_argument, NULL, 'e'},
         {"upsidedown",       no_argument, NULL, 'u'},
         {"invert",           no_argument, NULL, 'i'},
         {"brightness", required_argument, NULL, 'b'},
@@ -96,13 +94,11 @@ int main(int argc, char *argv[])
     bool upsideDown = false;
     bool invert = false;
     int brightness = -1;
-    bool delay = false;
     int sleepMs = kDefaultSleepMs;
-    bool endless = false;
     unsigned int displayNumber = 0;
 
     int c, option_index = 0;
-    while ((c = getopt_long(argc, argv, "c:d:s:euib:", long_options, &option_index)) != -1)
+    while ((c = getopt_long(argc, argv, "c:d:s:uib:", long_options, &option_index)) != -1)
     {
         switch(c)
         {
@@ -124,11 +120,6 @@ int main(int argc, char *argv[])
 
           case 's':
               sleepMs = atoi(optarg);
-              delay = true;
-              break;
-
-          case 'e':
-              endless = true;
               break;
 
           case 'b':
