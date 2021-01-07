@@ -5,7 +5,7 @@
 include Make.config
 
 PROJECT = graphlcd-base
-VERSION = 2.0.1
+VERSION = 2.0.2
 ARCHIVE = $(PROJECT)-$(VERSION)
 PACKAGE = $(ARCHIVE)
 TMPDIR = /tmp
