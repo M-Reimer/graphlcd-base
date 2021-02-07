@@ -13,8 +13,6 @@
 namespace GLCD
 {
 
-int cSkinFont::FcInitCount = 0;
-
 
 cSkinFont::cSkinFont(cSkin * Parent)
 :   mSkin(Parent),
@@ -25,12 +23,6 @@ cSkinFont::cSkinFont(cSkin * Parent)
 }
 
 cSkinFont::~cSkinFont(void) {
-#ifdef HAVE_FONTCONFIG
-    cSkinFont::FcInitCount --;
-    if (cSkinFont::FcInitCount <= 0) {
-      FcFini();
-    }
-#endif
 }
 
 bool cSkinFont::FileExists(const std::string& path)
@@ -96,10 +88,7 @@ bool cSkinFont::ParseUrl(const std::string & url)
             return false;
         }
 
-        if (cSkinFont::FcInitCount <= 0) {
-          FcInit();
-        }
-        cSkinFont::FcInitCount ++;
+        FcInit();
 
         FcPattern *pat = FcNameParse((FcChar8 *) rawfont.c_str() );
         rawfont = "";
@@ -165,11 +154,7 @@ bool cSkinFont::ParseUrl(const std::string & url)
             // all system default font directories
             if (!FileExists(mFile))
             {
-                if (cSkinFont::FcInitCount <= 0)
-                {
-                    FcInit();
-                }
-                cSkinFont::FcInitCount++;
+                FcInit();
 
                 FcStrList* dirlist = FcConfigGetFontDirs(NULL);
                 FcChar8* dir;

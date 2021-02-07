@@ -49,8 +49,6 @@ private:
     cSkinDisplay mDummyDisplay;
     cSkinObject mDummyObject;
 
-    static int FcInitCount;
-
     bool FileExists(const std::string& path);
 
 public:
