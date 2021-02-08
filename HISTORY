@@ -1,6 +1,10 @@
 GraphLCD base package Revision History
 --------------------------------------
 
+2021-02-08: Version 2.0.3
+- Remove usage of FcFini() to prevent race conditions with other users of
+  fontconfig
+
 2021-01-07: Version 2.0.2
 - Remove non-standard "uint" file type which does not exist in some
   environments. Thanks to Conrad Kostecki!
