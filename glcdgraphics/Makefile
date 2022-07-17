@@ -49,8 +49,8 @@ endif
 # two ifdef/endif are used because older installations may not support 'else ifdef'
 ifeq ($(IMAGELIB), imagemagick)
 	DEFINES += -DHAVE_IMAGEMAGICK
-	INCLUDES += $(shell pkg-config --cflags ImageMagick++)
-	LIBS += $(shell pkg-config --libs ImageMagick++)
+	INCLUDES += $(shell pkg-config --cflags Magick++)
+	LIBS += $(shell pkg-config --libs Magick++)
 endif
 ifeq ($(IMAGELIB), graphicsmagick)
 	DEFINES += -DHAVE_IMAGEMAGICK # yep, really HAVE_IMAGEMAGICK here
