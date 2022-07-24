@@ -65,6 +65,7 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
 
   if (MagickReadImage(mw, fileName.c_str()) == MagickFalse) {
     syslog(LOG_ERR, "glcdgraphics: Couldn't load '%s' (cExtFormatFile::LoadScaled)", fileName.c_str());
+    DestroyMagickWand(mw);
     return false;
   }
 
@@ -127,6 +128,7 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
 
       if (status == MagickFalse) {
         syslog(LOG_ERR, "glcdgraphics: Couldn't load '%s' (cExtFormatFile::LoadScaled): MagickGetImagePixels", fileName.c_str());
+        DestroyMagickWand(mw);
         return false;
       }
 
@@ -155,6 +157,7 @@ bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_
       bmpdata = NULL;
     }
   }
+  DestroyMagickWand(mw);
   return true;
 #else
   return false;
