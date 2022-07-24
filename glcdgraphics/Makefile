@@ -12,6 +12,7 @@ ifdef HAVE_GRAPHICSMAGICK
 endif
 ifdef HAVE_IMAGEMAGICK
 	IMAGELIB = imagemagick
+	HAVE_IMAGEMAGICK_7 = $(shell pkg-config --atleast-version=7.0.0 MagickWand && echo true)
 endif
 
 
@@ -49,13 +50,17 @@ endif
 # two ifdef/endif are used because older installations may not support 'else ifdef'
 ifeq ($(IMAGELIB), imagemagick)
 	DEFINES += -DHAVE_IMAGEMAGICK
-	INCLUDES += $(shell pkg-config --cflags Magick++)
-	LIBS += $(shell pkg-config --libs Magick++)
+	INCLUDES += $(shell pkg-config --cflags MagickWand)
+	LIBS += $(shell pkg-config --libs MagickWand)
+	ifeq ($(HAVE_IMAGEMAGICK_7), true)
+		DEFINES += -DHAVE_IMAGEMAGICK_7
+	endif
 endif
+
 ifeq ($(IMAGELIB), graphicsmagick)
 	DEFINES += -DHAVE_IMAGEMAGICK # yep, really HAVE_IMAGEMAGICK here
-	INCLUDES += $(shell pkg-config --cflags GraphicsMagick++)
-	LIBS += $(shell pkg-config --libs GraphicsMagick++)
+	INCLUDES += $(shell pkg-config --cflags GraphicsMagickWand)
+	LIBS += $(shell pkg-config --libs GraphicsMagickWand)
 endif
 
 

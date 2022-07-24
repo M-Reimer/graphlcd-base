@@ -21,11 +21,10 @@
 #include "extformats.h"
 #include "image.h"
 
-#ifdef HAVE_IMAGEMAGICK
-#include <Magick++.h>
-//#elif defined(HAVE_IMLIB2)
-//#include "quantize.h"
-//#include <Imlib2.h>
+#ifdef HAVE_IMAGEMAGICK_7
+  #include <MagickWand/MagickWand.h>
+#elifdef HAVE_IMAGEMAGICK
+  #include <wand/magick_wand.h>
 #endif
 
 
@@ -37,9 +36,11 @@ using namespace std;
 
 cExtFormatFile::cExtFormatFile()
 {
-#ifdef HAVE_IMAGEMAGICK
-  Magick::InitializeMagick(NULL);
-#endif    
+#ifdef HAVE_IMAGEMAGICK_7
+  MagickWandGenesis();
+#elifdef HAVE_IMAGEMAGICK
+  InitializeMagick(NULL);
+#endif
 }
 
 cExtFormatFile::~cExtFormatFile()
@@ -56,118 +57,103 @@ bool cExtFormatFile::Load(cImage & image, const string & fileName)
 bool cExtFormatFile::LoadScaled(cImage & image, const string & fileName, uint16_t & scalew, uint16_t & scaleh)
 {
 #ifdef HAVE_IMAGEMAGICK
-  std::vector<Magick::Image> extimages;
-  try {
-    uint16_t width = 0;
-    uint16_t height = 0;
-    //uint16_t count;
-    uint32_t delay;
+  MagickWand* mw = NewMagickWand();
 
-    std::vector<Magick::Image>::iterator it;
-    readImages(&extimages, fileName);
-    if (extimages.size() == 0) {
-      syslog(LOG_ERR, "glcdgraphics: Couldn't load '%s' (cExtFormatFile::LoadScaled)", fileName.c_str());
-      return false;
-    }
+  uint16_t width = 0;
+  uint16_t height = 0;
+  uint32_t delay;
 
-    delay = (uint32_t)(extimages[0].animationDelay() * 10);
+  if (MagickReadImage(mw, fileName.c_str()) == MagickFalse) {
+    syslog(LOG_ERR, "glcdgraphics: Couldn't load '%s' (cExtFormatFile::LoadScaled)", fileName.c_str());
+    return false;
+  }
 
-    image.Clear();
-    image.SetDelay(delay);
+  delay = (uint32_t)(MagickGetImageDelay(mw) * 10);
 
-    bool firstImage = true;
+  image.Clear();
+  image.SetDelay(delay);
 
-    for (it = extimages.begin(); it != extimages.end(); ++it) {
-      bool ignoreImage = false;
+  for (unsigned long imageindex = 0; imageindex < MagickGetNumberImages(mw); imageindex++) {
 
-      //(*it).quantizeColorSpace( Magick::RGBColorspace );
-      //(*it).quantizeColors( 256*256*256 /*colors*/ );
-      //(*it).quantize();
+#ifdef HAVE_IMAGEMAGICK_7
+    MagickSetIteratorIndex(mw, imageindex);
+#else
+    MagickSetImageIndex(mw, imageindex);
+#endif
 
-      if (firstImage) {
-        width = (uint16_t)((*it).columns());
-        height = (uint16_t)((*it).rows());
-        firstImage = false;
+    bool ignoreImage = false;
 
-        // one out of scalew/h == 0 ? -> auto aspect ratio
-        if (scalew && ! scaleh) {
-          scaleh = (uint16_t)( ((uint32_t)scalew * (uint32_t)height) / (uint32_t)width );
-        } else if (!scalew && scaleh) {
-          scalew = (uint16_t)( ((uint32_t)scaleh * (uint32_t)width) / (uint32_t)height );
-        }
+    if (imageindex == 0) { // If first image
+      width = (uint16_t)MagickGetImageWidth(mw);
+      height = (uint16_t)MagickGetImageHeight(mw);
 
-        // scale image
-        if (scalew && ! (scalew == width && scaleh == height)) {
-          (*it).sample(Magick::Geometry(scalew, scaleh));
-          width = scalew;
-          height = scaleh;
-        } else {
-          // not scaled => reset to 0
-          scalew = 0;
-          scaleh = 0;
-        }
-
-        image.SetWidth(width);
-        image.SetHeight(height);
-      } else {
-        if (scalew && scaleh) {
-          (*it).sample(Magick::Geometry(scalew, scaleh));
-        } else 
-        if ( (width != (uint16_t)((*it).columns())) || (height != (uint16_t)((*it).rows())) ) {
-          ignoreImage = true;
-        }
+      // one out of scalew/h == 0 ? -> auto aspect ratio
+      if (scalew && ! scaleh) {
+        scaleh = (uint16_t)( ((uint32_t)scalew * (uint32_t)height) / (uint32_t)width );
+      } else if (!scalew && scaleh) {
+        scalew = (uint16_t)( ((uint32_t)scaleh * (uint32_t)width) / (uint32_t)height );
       }
 
-      if (! ignoreImage) {
-        /*
-        if ((*it).depth() > 8) {
-          esyslog("ERROR: text2skin: More than 8bpp images are not supported");
-          return false;
-        }
-        */
-        uint32_t * bmpdata = new uint32_t[height * width];
-        //Dprintf("this image has %d colors\n", (*it).totalColors());
+      // scale image
+      if (scalew && ! (scalew == width && scaleh == height)) {
+        MagickSampleImage(mw, scalew, scaleh);
+        width = scalew;
+        height = scaleh;
+      } else {
+        // not scaled => reset to 0
+        scalew = 0;
+        scaleh = 0;
+      }
 
-        bool isMatte = (*it).matte();
-        //bool isMonochrome = ((*it).totalColors() <= 2) ? true : false;
-        const Magick::PixelPacket *pix = (*it).getConstPixels(0, 0, (int)width, (int)height);
+      image.SetWidth(width);
+      image.SetHeight(height);
+    } else {
+      if (scalew && scaleh) {
+        MagickSampleImage(mw, scalew, scaleh);
+      } else 
+      if ( (width != (uint16_t)MagickGetImageWidth(mw)) || (height != (uint16_t)MagickGetImageHeight(mw)) ) {
+        ignoreImage = true;
+      }
+    }
 
+    if (! ignoreImage) {
+      uint32_t * bmpdata = new uint32_t[height * width];
+
+#ifdef HAVE_IMAGEMAGICK_7
+      unsigned int status = MagickExportImagePixels(mw, 0, 0, width, height, "BGRA", CharPixel, (unsigned char*)bmpdata);
+#else
+      unsigned int status = MagickGetImagePixels(mw, 0, 0, width, height, "BGRA", CharPixel, (unsigned char*)bmpdata);
+#endif
+
+      if (status == MagickFalse) {
+        syslog(LOG_ERR, "glcdgraphics: Couldn't load '%s' (cExtFormatFile::LoadScaled): MagickGetImagePixels", fileName.c_str());
+        return false;
+      }
+
+#ifdef HAVE_IMAGEMAGICK_7
+      bool isMatte = (MagickGetImageAlphaChannel(mw) == MagickTrue);
+#else
+      bool isMatte = (MagickGetImageMatte(mw) == MagickTrue);
+#endif
+
+      // Give all transparent pixels our defined transparent color
+      if (isMatte) {
         for (int iy = 0; iy < (int)height; ++iy) {
           for (int ix = 0; ix < (int)width; ++ix) {
-            if ( isMatte && Magick::Color::scaleQuantumToDouble(pix->opacity) * 255 == 255 ) {
-                bmpdata[iy*width+ix] = cColor::Transparent;
-            } else {
-                bmpdata[iy*width+ix] = (uint32_t)(
-                                        (uint32_t(255 - (Magick::Color::scaleQuantumToDouble(pix->opacity) * 255)) << 24)  |
-                                        (uint32_t( Magick::Color::scaleQuantumToDouble(pix->red) * 255) << 16) |
-                                        (uint32_t( Magick::Color::scaleQuantumToDouble(pix->green) * 255) << 8) |
-                                         uint32_t( Magick::Color::scaleQuantumToDouble(pix->blue) * 255)
-                                       );
-                //if ( isMonochrome ) {  // if is monochrome: exchange black and white
-                //    uint32_t c = bmpdata[iy*width+ix];
-                //    switch(c) {
-                //        case cColor::White: c = cColor::Black; break;
-                //        case cColor::Black: c = cColor::White; break;
-                //    }
-                //    bmpdata[iy*width+ix] =  c;
-                //}
-            }
-            ++pix;
+            uint32_t* pixel = &bmpdata[ix+iy*width];
+            uint8_t alpha = *pixel >> 24;
+            if (alpha == 0)
+              *pixel = cColor::Transparent;
           }
         }
-        cBitmap * b = new cBitmap(width, height, bmpdata);
-        //b->SetMonochrome(isMonochrome);
-        image.AddBitmap(b);
-        delete[] bmpdata;
-        bmpdata = NULL;
       }
+
+      cBitmap * b = new cBitmap(width, height, bmpdata);
+      //b->SetMonochrome(isMonochrome);
+      image.AddBitmap(b);
+      delete[] bmpdata;
+      bmpdata = NULL;
     }
-  } catch (Magick::Exception &e) {
-    syslog(LOG_ERR, "glcdgraphics: Couldn't load '%s': %s (cExtFormatFile::LoadScaled)", fileName.c_str(), e.what());
-    return false;
-  } catch (...) {
-    syslog(LOG_ERR, "glcdgraphics: Couldn't load '%s': Unknown exception caught (cExtFormatFile::LoadScaled)", fileName.c_str());
-    return false;
   }
   return true;
 #else
