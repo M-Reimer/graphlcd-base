@@ -29,7 +29,7 @@ endif
 
 ### Implicit rules:
 
-%.o: %.c
+%.o: %.cpp
 	$(CXX) $(CXXEXTRA) $(CXXFLAGS) -I.. -c $(DEFINES) $(INCLUDES) $<
 
 # Dependencies:
